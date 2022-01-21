@@ -298,6 +298,9 @@ fit = sampling(StanModel, data = data_stan,
 #saveRDS(fit, file = "fit_6000.Rds")
 #saveRDS(fit, file = "C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/fit_6000.Rds")
 
+dir.create(here("Figures"),recursive = TRUE)
+dir.create(here("Results"),recursive = TRUE) 
+
 
 #### Data ####
 
@@ -327,15 +330,15 @@ library(ggpubr)
 
 # Vaccination over time
 
-png("Vax_over_time.png", width = 6, height = 4, units = 'in', res = 300)
+png("Figures/Vax_over_time.png", width = 6, height = 4, units = 'in', res = 300)
 
 Vax_Date <- ggplot(data = sum_rt) +
   geom_boxplot (mapping = aes(x = date, y = Dose_1, group = date),
-              color = "lightskyblue", size = rel(0.8)) +
+              color = "lightskyblue", size = rel(0.5)) +
   geom_boxplot (mapping = aes(x = date, y = Dose_2, group = date),
-              color = "palegreen", size = rel(0.8)) +
+              color = "palegreen", size = rel(0.5)) +
   geom_boxplot (mapping = aes(x = date, y = Dose_3, group = date),
-              color = "salmon", size = rel(0.8)) +
+              color = "salmon", size = rel(0.5)) +
   theme_classic() +
   labs(title = "Proportion of vaccinated individuals across LTLAs",
        x = "Date",
@@ -354,13 +357,13 @@ dev.off()
 
 # Observed vs Predicted
 
-png("Obs_Pre_Rt.png", width = 6, height = 4, units = 'in', res = 300)
+png("Figures/Obs_Pre_Rt.png", width = 6, height = 4, units = 'in', res = 300)
 
 Rt_Obs_Pre <- ggplot(data = sum_rt) +
-  geom_point(mapping = aes(x = Rt_data, y = Rt_LogP)) +
+  geom_point(mapping = aes(x = Rt_data, y = Rt_LogP), size = rel(0.8)) +
   geom_abline(x = 0, y = 1, col = "red") +
   theme_classic() +
-  labs(title = "Observed vs Predicted Rt",
+  labs(title = "Observed vs Predicted Rt across all LTLAs",
        x = "Rt Observed",
        y = "Rt Predicted") +
   theme(
@@ -374,21 +377,23 @@ dev.off()
 
 # Compared to Vaccination proportion
 
+png("Figures/Obs_Pre_Rt_Vax.png", width = 6, height = 4, units = 'in', res = 300)
+
 p1 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
-  geom_point(mapping = aes(colour = Dose_1)) +
-  scale_colour_gradient(low = "lightskyblue", high = "darkblue") +
+  geom_point(mapping = aes(colour = Dose_1), size = rel(0.8)) +
+  scale_colour_gradient(low = "white", high = "darkblue", limits = c(0,1)) +
   xlab("Rt Observed") + ylab("Rt Predicted") +
   xlim(0.5, 2)+ ylim(0.5, 2) + theme_classic()
 p1
 p2 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
-  geom_point(mapping = aes(colour = Dose_2)) +
-  scale_colour_gradient(low = "palegreen", high = "olivedrab") +
+  geom_point(mapping = aes(colour = Dose_2), size = rel(0.8)) +
+  scale_colour_gradient(low = "white", high = "olivedrab", limits = c(0,1)) +
   xlab("Rt Observed") + ylab("Rt Predicted") +
   xlim(0.5, 2)+ ylim(0.5, 2) + theme_classic()
 p2
 p3 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
-  geom_point(mapping = aes(colour = Dose_3)) +
-  scale_colour_gradient(low = "salmon", high = "darkred") +
+  geom_point(mapping = aes(colour = Dose_3), size = rel(0.8)) +
+  scale_colour_gradient(low = "white", high = "darkred", limits = c(0,1)) +
   xlab("Rt Observed") + ylab("Rt Predicted") +
   xlim(0.5, 2)+ ylim(0.5, 2) + theme_classic()
 p3
@@ -397,15 +402,17 @@ Rts_VaxProp <- ggarrange(p1, p2, p3,
                          ncol = 3, nrow = 1)
 Rts_VaxProp
 
+dev.off()
+
 
 #### Rt Over Time ####
 
 # General
 
-png("Obs_Rt_time.png", width = 6, height = 4, units = 'in', res = 300)
+png("Figures/Obs_Rt_time.png", width = 6, height = 4, units = 'in', res = 300)
 
 Rt_Obs_Date <- ggplot(data = sum_rt) +
-  geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date), size = rel(0.8)) +
+  geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date), size = rel(0.5)) +
   theme_classic() +
   labs(title = "Observed Rt over time",
        x = "Date",
@@ -419,10 +426,10 @@ Rt_Obs_Date
 
 dev.off()
 
-png("Pre_Rt_time.png", width = 6, height = 4, units = 'in', res = 300)
+png("Figures/Pre_Rt_time.png", width = 6, height = 4, units = 'in', res = 300)
 
 Rt_Pre_Date <- ggplot(data = sum_rt) +
-  geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date), size = rel(0.8)) +
+  geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date), size = rel(0.5)) +
   theme_classic() +
   labs(title = "Predicted Rt over time",
        x = "Date",
@@ -439,8 +446,8 @@ dev.off()
 # With vaccination proportion
 
 p4 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_data)) +
-  geom_point(mapping = aes(colour = Dose_1)) +
-  scale_colour_gradient(low = "lightskyblue", high = "darkblue", limits = c(0,1)) +
+  geom_point(mapping = aes(colour = Dose_1), size = rel(0.8)) +
+  scale_colour_gradient(low = "white", high = "darkblue", limits = c(0,1)) +
   xlab("Date") + ylab("Rt Observed") +
   ylim(0.5, 2) +
   theme_classic() +
@@ -450,8 +457,8 @@ p4 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_data)) +
     axis.text=element_text(size=rel(0.9), face="bold"))
 p4
 p5 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_data)) +
-  geom_point(mapping = aes(colour = Dose_2)) +
-  scale_colour_gradient(low = "palegreen", high = "olivedrab", limits = c(0,1)) +
+  geom_point(mapping = aes(colour = Dose_2), size = rel(0.8)) +
+  scale_colour_gradient(low = "white", high = "olivedrab", limits = c(0,1)) +
   xlab("Date") + ylab("Rt Observed") +
   ylim(0.5, 2) + 
   theme_classic() +
@@ -461,8 +468,8 @@ p5 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_data)) +
     axis.text=element_text(size=rel(0.9), face="bold"))
 p5
 p6 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_data)) +
-  geom_point(mapping = aes(colour = Dose_3)) +
-  scale_colour_gradient(low = "salmon", high = "darkred", limits = c(0,1)) +
+  geom_point(mapping = aes(colour = Dose_3), size = rel(0.8)) +
+  scale_colour_gradient(low = "white", high = "darkred", limits = c(0,1)) +
   xlab("Date") + ylab("Rt Observed") +
   ylim(0.5, 2) + 
   theme_classic() +
@@ -472,7 +479,7 @@ p6 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_data)) +
     axis.text=element_text(size=rel(0.9), face="bold"))
 p6
 
-png("Obs_Rt_time_Vax.png", width = 6, height = 6, units = 'in', res = 300)
+png("Figures/Obs_Rt_time_Vax.png", width = 6, height = 6, units = 'in', res = 300)
 
 ObsRts_Date <- ggarrange(p4, p5, p6,
                          ncol = 1, nrow = 3)
@@ -481,8 +488,8 @@ ObsRts_Date
 dev.off()
 
 p7 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
-  geom_point(mapping = aes(colour = Dose_1)) +
-  scale_colour_gradient(low = "lightskyblue", high = "darkblue", limits = c(0,1)) +
+  geom_point(mapping = aes(colour = Dose_1), size = rel(0.8)) +
+  scale_colour_gradient(low = "white", high = "darkblue", limits = c(0,1)) +
   xlab("Date") + ylab("Rt Predicted") +
   ylim(0.5, 2) + 
   theme_classic() +
@@ -492,8 +499,8 @@ p7 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
     axis.text=element_text(size=rel(0.9), face="bold"))
 p7
 p8 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
-  geom_point(mapping = aes(colour = Dose_2)) +
-  scale_colour_gradient(low = "palegreen", high = "olivedrab", limits = c(0,1)) +
+  geom_point(mapping = aes(colour = Dose_2), size = rel(0.8)) +
+  scale_colour_gradient(low = "white", high = "olivedrab", limits = c(0,1)) +
   xlab("Date") + ylab("Rt Predicted") +
   ylim(0.5, 2) + 
   theme_classic() +
@@ -503,8 +510,8 @@ p8 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
     axis.text=element_text(size=rel(0.9), face="bold"))
 p8
 p9 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
-  geom_point(mapping = aes(colour = Dose_3)) +
-  scale_colour_gradient(low = "salmon", high = "darkred", limits = c(0,1)) +
+  geom_point(mapping = aes(colour = Dose_3), size = rel(0.8)) +
+  scale_colour_gradient(low = "white", high = "darkred", limits = c(0,1)) +
   xlab("Date") + ylab("Rt Predicted") +
   ylim(0.5, 2) +
   theme_classic() +
@@ -514,7 +521,7 @@ p9 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
     axis.text=element_text(size=rel(0.9), face="bold"))
 p9
 
-png("Pre_Rt_time_Vax.png", width = 6, height = 6, units = 'in', res = 300)
+png("Figures/Pre_Rt_time_Vax.png", width = 6, height = 6, units = 'in', res = 300)
 
 PreRts_Date <- ggarrange(p7, p8, p9,
                          ncol = 1, nrow = 3)
@@ -555,7 +562,7 @@ RE_uniq = RE_uniq/length(NamesLTLAs)
 SES <- ggplot()+
   geom_point(data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[1]],
                                y = Ran_Eff[data_model$ltla_name==NamesLTLAs[1]]),
-             aes(x=x,y=y), alpha=0.5) + 
+             aes(x=x,y=y), alpha=0.5, size = rel(0.8)) + 
   theme_classic() +
   labs(x = "Date",
        y = "Secular Effect Size") +
@@ -568,14 +575,68 @@ SES <- ggplot()+
 for(i in 2:length(NamesLTLAs)){
   SES <- SES + geom_point(data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
                                             y = Ran_Eff[data_model$ltla_name==NamesLTLAs[i]]),
-                          aes(x=x,y=y), alpha=0.5)}
+                          aes(x=x,y=y), alpha=0.5, size = rel(0.8))}
 #This is the loop to do so
 
-png("SES.png", width = 6, height = 4, units = 'in', res = 300)
+png("Figures/SES.png", width = 6, height = 4, units = 'in', res = 300)
 
 SES = SES + geom_point(
   data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
-                    y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red") +
+                    y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(0.8)) +
+  theme_classic() +
+  labs(title = "SES across all LTLAs",
+       x = "Date",
+       y = "Secular Effect Size") +
+  theme(
+    plot.title = element_text(size = rel(1.2), face="bold"),
+    axis.title.x = element_text(size = rel(1), face="bold"),
+    axis.title.y = element_text(size = rel(1), face="bold"),
+    axis.text=element_text(size=rel(0.9), face="bold"))
+SES
+
+dev.off()
+
+
+#### In a subset of LTLAs ####
+
+# Rt
+
+png("Figures/Obs_Pre_Rt_SUB.png", width = 6, height = 4, units = 'in', res = 300)
+
+Rt_Obs_Pre_SUB <- ggplot(data = sum_rt_20) +
+  geom_point(mapping = aes(x = Rt_data, y = Rt_LogP), size = rel(0.8)) +
+  geom_abline(x = 0, y = 1, col = "red") +
+  theme_classic() +
+  labs(title = "Observed vs Predicted Rt in 20 LTLAs",
+       x = "Rt Observed",
+       y = "Rt Predicted") +
+  theme(
+    plot.title = element_text(size = rel(1.2), face="bold"),
+    axis.title.x = element_text(size = rel(1), face="bold"),
+    axis.title.y = element_text(size = rel(1), face="bold"),
+    axis.text=element_text(size=rel(0.9), face="bold"))
+Rt_Obs_Pre_SUB
+
+dev.off()
+
+# SES
+
+data_model_20 <- data_model[1:820,]
+
+Names20LTLAs <- unique(data_model_20$ltla_name)
+
+Ran_Eff_20 <- Ran_Eff[1:820]
+
+RE_uniq_20 <- Ran_Eff_20[data_model_20$ltla_name == Names20LTLAs[1]]
+for(i in 2:length(Names20LTLAs))	{
+  RE_uniq_20 = RE_uniq_20 + Ran_Eff_20[data_model_20$ltla_name == Names20LTLAs[i]]}
+RE_uniq_20 = RE_uniq_20/length(Names20LTLAs)
+#Random Effects normalised to the number of LTLAs: in his we case, we know 20!
+
+SES_SUB <- ggplot()+
+  geom_point(data = data.frame(x = data_model_20$date[data_model_20$ltla_name==Names20LTLAs[1]],
+                               y = Ran_Eff_20[data_model_20$ltla_name==Names20LTLAs[1]]),
+             aes(x=x,y=y), alpha=0.5, size = rel(0.8)) + 
   theme_classic() +
   labs(x = "Date",
        y = "Secular Effect Size") +
@@ -583,7 +644,29 @@ SES = SES + geom_point(
     axis.title.x = element_text(size = rel(1), face="bold"),
     axis.title.y = element_text(size = rel(1), face="bold"),
     axis.text=element_text(size=rel(0.9), face="bold"))
-SES
+#Note we only plot unique values for each LTLA
+
+for(i in 2:length(Names20LTLAs)){
+  SES_SUB <- SES_SUB + geom_point(data = data.frame(x = data_model_20$date[data_model_20$ltla_name==Names20LTLAs[i]],
+                                            y = Ran_Eff_20[data_model_20$ltla_name==Names20LTLAs[i]]),
+                          aes(x=x,y=y), alpha=0.5, size = rel(0.8))}
+#This is the loop to do so
+
+png("Figures/SES_SUB.png", width = 6, height = 4, units = 'in', res = 300)
+
+SES_SUB = SES_SUB + geom_point(
+  data = data.frame(x = data_model_20$date[data_model_20$ltla_name==Names20LTLAs[i]],
+                    y = RE_uniq_20), aes(x=x,y=y), alpha=1, col = "red", size = rel(0.8)) +
+  theme_classic() +
+  labs(title = "SES across 20 LTLAs",
+       x = "Date",
+       y = "Secular Effect Size") +
+  theme(
+    plot.title = element_text(size = rel(1.2), face="bold"),
+    axis.title.x = element_text(size = rel(1), face="bold"),
+    axis.title.y = element_text(size = rel(1), face="bold"),
+    axis.text=element_text(size=rel(0.9), face="bold"))
+SES_SUB
 
 dev.off()
 
