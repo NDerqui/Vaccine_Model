@@ -1,4 +1,19 @@
-.Rproj.user
-.Rhistory
+
+## main folder
+
+# Files
+Vax_model_1*
+
+
+## Vaccination_model_1 folder
+
+#Folders to ignore
+/Vaccination_model_1/Figures/
+/Vaccination_model_1/Results/
+
+# Files
 .RData
-.Ruserdata
+.RDataTmp
+.Rhistory
+.Rproj.user
+Vaccination_model_1.Rproj
