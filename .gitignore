@@ -7,16 +7,20 @@ Vax_model_1*
 
 ## Vaccination_model_1 folder
 
-#Folders to ignore
+# Folders to ignore
 /Vaccination_model_1/Figures/
 /Vaccination_model_1/Results/
 
 # Files
+
 .RData
 .RDataTmp
 .Rhistory
 .Rproj.user
 Vaccination_model_1.Rproj
-UK_hotspot_Rt_estimates.csv
+
 fit_6000.Rds
+fit_n_int.Rds
+
+UK_hotspot_Rt_estimates.csv
 rtm_incoming_vaccination_20211116-173218-f36a1245_vacc_coverage_ltla.csv
