@@ -15,11 +15,13 @@ Vax_model_1*
 
 .RData
 .RDataTmp
+.RDataTmp1
 .Rhistory
 .Rproj.user
 Vaccination_model_1.Rproj
 
 fit_6000.Rds
+fit_6000C6.Rds
 fit_n_int.Rds
 
 UK_hotspot_Rt_estimates.csv

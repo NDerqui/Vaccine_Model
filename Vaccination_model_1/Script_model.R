@@ -267,7 +267,7 @@ ModelMetaData 				= c()
 ModelMetaData$iter 			= 6000 #Increase
 ModelMetaData$warmup 		= 600 #Increase
 ModelMetaData$thin 			= 1
-ModelMetaData$chains 		= 8 #Increase
+ModelMetaData$chains 		= 6 #Increase
 ModelMetaData$adapt_delta 	= 0.9
 ModelMetaData$max_treedepth = 15
 ModelMetaData$ModelChar 	= ModelChar
@@ -280,7 +280,7 @@ colnames(ModelMetaData_dummy) = NULL
 
 #### Run ####
 
-memory.limit(size = 1000000)
+memory.limit(size = 10000000)
 
 fit = sampling(StanModel, data = data_stan, 
                iter 	= ModelMetaData$iter, 
@@ -295,8 +295,8 @@ fit = sampling(StanModel, data = data_stan,
 
 # MODEL RESULTS -----------------------------------------------------------
 
-#saveRDS(fit, file = "fit_6000.Rds")
-#saveRDS(fit, file = "C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/fit_6000.Rds")
+#saveRDS(fit, file = "fit_6000C6.Rds")
+#saveRDS(fit, file = "C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/fit_6000C6.Rds")
 
 dir.create(here("Figures"),recursive = TRUE)
 dir.create(here("Results"),recursive = TRUE) 
@@ -306,9 +306,9 @@ dir.create(here("Results"),recursive = TRUE)
 
 library(matrixStats)
 
-#model_6000C8_iter <- as.matrix(fit)
-dim(model_6000C8_iter)
-View(model_6000C8_iter)
+model_6000C6_iter <- as.matrix(fit)
+dim(model_6000C6_iter)
+View(model_6000C6_iter)
 
 Rt_data <- exp(data_model$Rt)
 Rt_LogP <- exp(colMeans(model_6000C8_iter[, grep(
