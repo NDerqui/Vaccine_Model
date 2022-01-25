@@ -282,7 +282,7 @@ colnames(ModelMetaData_dummy) = NULL
 
 memory.limit(size = 10000000)
 
-fit = sampling(StanModel, data = data_stan, 
+fit_new = sampling(StanModel, data = data_stan, 
                iter 	= ModelMetaData$iter, 
                warmup 	= ModelMetaData$warmup, 
                thin 	= ModelMetaData$thin, 
@@ -295,8 +295,8 @@ fit = sampling(StanModel, data = data_stan,
 
 # MODEL RESULTS -----------------------------------------------------------
 
-#saveRDS(fit, file = "fit_6000C6.Rds")
-#saveRDS(fit, file = "C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/fit_6000C6.Rds")
+#saveRDS(fit_new, file = "fit_6000C6.Rds")
+#saveRDS(fit_new, file = "C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/fit_6000C6.Rds")
 
 dir.create(here("Figures"),recursive = TRUE)
 dir.create(here("Results"),recursive = TRUE) 
@@ -306,7 +306,7 @@ dir.create(here("Results"),recursive = TRUE)
 
 library(matrixStats)
 
-model_6000C6_iter <- as.matrix(fit)
+model_6000C6_iter <- as.matrix(fit_new)
 dim(model_6000C6_iter)
 View(model_6000C6_iter)
 
