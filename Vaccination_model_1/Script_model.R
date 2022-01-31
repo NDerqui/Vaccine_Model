@@ -20,6 +20,8 @@ data_rt <- read.csv("UK_hotspot_Rt_estimates.csv")
 
 library(dplyr)
 library(rstudioapi)
+library(StanHeaders)
+library(ggplot2)
 library(rstan)
 
 
@@ -250,6 +252,73 @@ data_stan <- list(
 
 
 
+# DESCRIPTION -------------------------------------------------------------
+
+
+## A more detailed description  of data is on the description-workspace ##
+
+Rt_data <- exp(data_model$Rt)
+
+sum_data <- data.frame(Rt_data, 
+                     Dose_1 = data_model$First_Prop,
+                     Dose_2 = data_model$Second_Prop,
+                     Dose_3 = data_model$Third_Prop,
+                     date = data_model$date,
+                     row.names = paste0("Rt", 1:12423))
+
+
+#### Vax Description ####
+
+# Vaccination over time
+
+Vax_Date <- ggplot(data = sum_data) +
+  geom_boxplot (mapping = aes(x = date, y = Dose_1, group = date,
+                              color = "Dose_1"), size = rel(0.5)) +
+  geom_boxplot (mapping = aes(x = date, y = Dose_2, group = date,
+                              color = "Dose_2"), size = rel(0.5)) +
+  geom_boxplot (mapping = aes(x = date, y = Dose_3, group = date,
+                              color = "Dose_3"), size = rel(0.5)) +
+  scale_color_manual(name="Number of doses",
+                     breaks = c("Dose_1", "Dose_2", "Dose_3"),
+                     values = c("Dose_1"="lightskyblue", 
+                                "Dose_2"="palegreen",
+                                "Dose_3"="salmon"),
+                     labels=c("1 dose", "2 doses", "3 doses")) +
+  theme_classic() +
+  labs(title = "Distribution of vaccinated individuals proportion across all LTLAs over time",
+       x = "Date",
+       y = "Total proportion of vaccinated population") +
+  theme(
+    plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
+    axis.title.x = element_text(size = rel(0.9), face="bold"),
+    axis.title.y = element_text(size = rel(0.9), face="bold"),
+    axis.text = element_text(size=rel(0.7)),
+    legend.title = element_text(size = rel(0.9), face="bold"),
+    legend.text = element_text(size=rel(0.7)))
+Vax_Date
+
+
+#### Rt over time ####
+
+# General
+
+Rt_Obs_Date <- ggplot(data = sum_data) +
+  geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date), size = rel(0.5)) +
+  theme_classic() +
+  labs(title = "Observed Rt over time",
+       x = "Date",
+       y = "Rt Observed") +
+  theme(
+    plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
+    axis.title.x = element_text(size = rel(0.9), face="bold"),
+    axis.title.y = element_text(size = rel(0.9), face="bold"),
+    axis.text = element_text(size=rel(0.7)),
+    legend.title = element_text(size = rel(0.9), face="bold"),
+    legend.text = element_text(size=rel(0.7)))
+Rt_Obs_Date
+
+
+
 # STAN MODEL --------------------------------------------------------------
 
 
@@ -267,7 +336,7 @@ ModelMetaData 				= c()
 ModelMetaData$iter 			= 6000 #Increase
 ModelMetaData$warmup 		= 600 #Increase
 ModelMetaData$thin 			= 1
-ModelMetaData$chains 		= 6 #Increase
+ModelMetaData$chains 		= 2 #Increase
 ModelMetaData$adapt_delta 	= 0.9
 ModelMetaData$max_treedepth = 15
 ModelMetaData$ModelChar 	= ModelChar
@@ -295,69 +364,55 @@ fit_new = sampling(StanModel, data = data_stan,
 
 # MODEL RESULTS -----------------------------------------------------------
 
-#saveRDS(fit_new, file = "fit_6000C6.Rds")
-#saveRDS(fit_new, file = "C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/fit_6000C6.Rds")
+saveRDS(fit_new, file = "fit_6000C2.Rds")
+saveRDS(fit_new, file = "C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/fit_6000C2.Rds")
 
-dir.create(here("Figures"),recursive = TRUE)
-dir.create(here("Results"),recursive = TRUE) 
+#dir.create(here("Figures"),recursive = TRUE)
+#dir.create(here("Results"),recursive = TRUE) 
 
 
 #### Data ####
 
 library(matrixStats)
 
-model_6000C6_iter <- as.matrix(fit_new)
-dim(model_6000C6_iter)
-View(model_6000C6_iter)
+model_new <- as.matrix(fit_new)
+dim(model_new)
+View(model_new)
 
 Rt_data <- exp(data_model$Rt)
-Rt_LogP <- exp(colMeans(model_6000C8_iter[, grep(
-  "LogPredictions", colnames(model_6000C8_iter))]))
+Rt_LogP <- exp(colMeans(model_new[, grep(
+  "LogPredictions", colnames(model_new))]))
 
-sum_rt <- data.frame(Rt_data, Rt_LogP,
+Ran_Eff <- exp(colMeans(model_new[, grep(
+  "random_effects", colnames(model_new))]))
+
+Lambda <- exp(colMeans(model_new[, grep(
+  "lambda", colnames(model_new))]))
+
+Gamma <- exp(colMeans(model_new[, grep(
+  "gamma", colnames(model_new))]))
+
+Intercept <- exp(colMeans(model_new[, grep(
+  "intercept", colnames(model_new))]))
+
+sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff,
+                     #Lambda, Gamma, Intercept,
                      LTLA = data_model$LTLAs,
                      Dose_1 = data_model$First_Prop,
                      Dose_2 = data_model$Second_Prop,
                      Dose_3 = data_model$Third_Prop,
                      date = data_model$date,
                      row.names = paste0("Rt", 1:12423))
+
+sum_rt_1 <- sum_rt[1:41,]
 sum_rt_20 <- sum_rt[1:820,]
-
-
-#### Vax Description ####
-
-library(ggpubr)
-
-# Vaccination over time
-
-png("Figures/Vax_over_time.png", width = 6, height = 4, units = 'in', res = 300)
-
-Vax_Date <- ggplot(data = sum_rt) +
-  geom_boxplot (mapping = aes(x = date, y = Dose_1, group = date),
-              color = "lightskyblue", size = rel(0.5)) +
-  geom_boxplot (mapping = aes(x = date, y = Dose_2, group = date),
-              color = "palegreen", size = rel(0.5)) +
-  geom_boxplot (mapping = aes(x = date, y = Dose_3, group = date),
-              color = "salmon", size = rel(0.5)) +
-  theme_classic() +
-  labs(title = "Proportion of vaccinated individuals across LTLAs",
-       x = "Date",
-       y = "Total proportion of vaccinated population") +
-  theme(
-    plot.title = element_text(size = rel(1.2), face="bold"),
-    axis.title.x = element_text(size = rel(1), face="bold"),
-    axis.title.y = element_text(size = rel(1), face="bold"),
-    axis.text=element_text(size=rel(0.9), face="bold"))
-Vax_Date
-
-dev.off()
 
 
 #### LogPredictions ####
 
 # Observed vs Predicted
 
-png("Figures/Obs_Pre_Rt.png", width = 6, height = 4, units = 'in', res = 300)
+#png("Figures/Obs_Pre_Rt.png", width = 6, height = 4, units = 'in', res = 300)
 
 Rt_Obs_Pre <- ggplot(data = sum_rt) +
   geom_point(mapping = aes(x = Rt_data, y = Rt_LogP), size = rel(0.8)) +
@@ -376,8 +431,6 @@ Rt_Obs_Pre
 dev.off()
 
 # Compared to Vaccination proportion
-
-png("Figures/Obs_Pre_Rt_Vax.png", width = 6, height = 4, units = 'in', res = 300)
 
 p1 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
   geom_point(mapping = aes(colour = Dose_1), size = rel(0.8)) +
@@ -398,6 +451,8 @@ p3 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
   xlim(0.5, 2)+ ylim(0.5, 2) + theme_classic()
 p3
 
+#png("Figures/Obs_Pre_Rt_Vax.png", width = 6, height = 4, units = 'in', res = 300)
+
 Rts_VaxProp <- ggarrange(p1, p2, p3,
                          ncol = 3, nrow = 1)
 Rts_VaxProp
@@ -405,28 +460,11 @@ Rts_VaxProp
 dev.off()
 
 
-#### Rt Over Time ####
+#### LogP Over Time ####
 
 # General
 
-png("Figures/Obs_Rt_time.png", width = 6, height = 4, units = 'in', res = 300)
-
-Rt_Obs_Date <- ggplot(data = sum_rt) +
-  geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date), size = rel(0.5)) +
-  theme_classic() +
-  labs(title = "Observed Rt over time",
-       x = "Date",
-       y = "Rt Observed") +
-  theme(
-    plot.title = element_text(size = rel(1.2), face="bold"),
-    axis.title.x = element_text(size = rel(1), face="bold"),
-    axis.title.y = element_text(size = rel(1), face="bold"),
-    axis.text=element_text(size=rel(0.9), face="bold"))
-Rt_Obs_Date
-
-dev.off()
-
-png("Figures/Pre_Rt_time.png", width = 6, height = 4, units = 'in', res = 300)
+#png("Figures/Pre_Rt_time.png", width = 6, height = 4, units = 'in', res = 300)
 
 Rt_Pre_Date <- ggplot(data = sum_rt) +
   geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date), size = rel(0.5)) +
@@ -444,48 +482,6 @@ Rt_Pre_Date
 dev.off()
 
 # With vaccination proportion
-
-p4 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_data)) +
-  geom_point(mapping = aes(colour = Dose_1), size = rel(0.8)) +
-  scale_colour_gradient(low = "white", high = "darkblue", limits = c(0,1)) +
-  xlab("Date") + ylab("Rt Observed") +
-  ylim(0.5, 2) +
-  theme_classic() +
-  theme(
-    axis.title.x = element_text(size = rel(1), face="bold"),
-    axis.title.y = element_text(size = rel(1), face="bold"),
-    axis.text=element_text(size=rel(0.9), face="bold"))
-p4
-p5 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_data)) +
-  geom_point(mapping = aes(colour = Dose_2), size = rel(0.8)) +
-  scale_colour_gradient(low = "white", high = "olivedrab", limits = c(0,1)) +
-  xlab("Date") + ylab("Rt Observed") +
-  ylim(0.5, 2) + 
-  theme_classic() +
-  theme(
-    axis.title.x = element_text(size = rel(1), face="bold"),
-    axis.title.y = element_text(size = rel(1), face="bold"),
-    axis.text=element_text(size=rel(0.9), face="bold"))
-p5
-p6 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_data)) +
-  geom_point(mapping = aes(colour = Dose_3), size = rel(0.8)) +
-  scale_colour_gradient(low = "white", high = "darkred", limits = c(0,1)) +
-  xlab("Date") + ylab("Rt Observed") +
-  ylim(0.5, 2) + 
-  theme_classic() +
-  theme(
-    axis.title.x = element_text(size = rel(1), face="bold"),
-    axis.title.y = element_text(size = rel(1), face="bold"),
-    axis.text=element_text(size=rel(0.9), face="bold"))
-p6
-
-png("Figures/Obs_Rt_time_Vax.png", width = 6, height = 6, units = 'in', res = 300)
-
-ObsRts_Date <- ggarrange(p4, p5, p6,
-                         ncol = 1, nrow = 3)
-ObsRts_Date
-
-dev.off()
 
 p7 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
   geom_point(mapping = aes(colour = Dose_1), size = rel(0.8)) +
@@ -521,7 +517,7 @@ p9 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
     axis.text=element_text(size=rel(0.9), face="bold"))
 p9
 
-png("Figures/Pre_Rt_time_Vax.png", width = 6, height = 6, units = 'in', res = 300)
+#png("Figures/Pre_Rt_time_Vax.png", width = 6, height = 6, units = 'in', res = 300)
 
 PreRts_Date <- ggarrange(p7, p8, p9,
                          ncol = 1, nrow = 3)
@@ -532,10 +528,10 @@ dev.off()
 
 #### VaxEffect ####
 
-VEMean <- colMeans(model_6000C8_iter[, grep(
-         "VaxEffect", colnames(model_6000C8_iter))])
-VEQuan <- colQuantiles(model_6000C8_iter[, grep(
-        "VaxEffect", colnames(model_6000C8_iter))], probs=c(0.025,0.975))
+VEMean <- colMeans(model_new[, grep(
+         "VaxEffect", colnames(model_new))])
+VEQuan <- colQuantiles(model_new[, grep(
+        "VaxEffect", colnames(model_new))], probs=c(0.025,0.975))
 
 sum_ve <- round(data.frame(VEMean, VEQuan,
                      row.names = c("Dose 1", "Dose 2", "Dose 3")),
@@ -595,6 +591,31 @@ SES = SES + geom_point(
 SES
 
 dev.off()
+
+
+#### In one LTLA ####
+
+Plot <- ggplot(data = sum_rt_1) +
+  geom_geompoint (mapping = aes(x = date, y = Lambda, group = date),
+                color = "lightskyblue", size = rel(0.5)) +
+  geom_geompoint (mapping = aes(x = date, y = Lambda*(Gamma[1]), group = date),
+                  color = "palegreen", size = rel(0.5)) +
+  geom_geompoint (mapping = aes(x = date, y = Ran_Eff, group = date),
+                  color = "salmon", size = rel(0.5)) +
+  geom_geompoint (mapping = aes(x = date, y = Rt_data, group = date),
+                  color = "black", size = rel(0.5)) +
+  geom_geompoint (mapping = aes(x = date, y = Rt_LogP, group = date),
+                  color = "grey", size = rel(0.5)) +
+    theme_classic() +
+  labs(title = "Parameters in example LTLA",
+       x = "Date",
+       y = "Parameter value") +
+  theme(
+    plot.title = element_text(size = rel(1.2), face="bold"),
+    axis.title.x = element_text(size = rel(1), face="bold"),
+    axis.title.y = element_text(size = rel(1), face="bold"),
+    axis.text=element_text(size=rel(0.9), face="bold"))
+Plot
 
 
 #### In a subset of LTLAs ####
@@ -673,6 +694,49 @@ dev.off()
 
 
 # ARCHIVE PLOTS -----------------------------------------------------------
+
+
+#### Descriptive ####
+
+png("Figures/Vax_over_time.png", width = 6, height = 4, units = 'in', res = 300)
+
+Vax_Date <- ggplot(data = sum_data) +
+  geom_boxplot (mapping = aes(x = date, y = Dose_1, group = date),
+                color = "lightskyblue", size = rel(0.5)) +
+  geom_boxplot (mapping = aes(x = date, y = Dose_2, group = date),
+                color = "palegreen", size = rel(0.5)) +
+  geom_boxplot (mapping = aes(x = date, y = Dose_3, group = date),
+                color = "salmon", size = rel(0.5)) +
+  theme_classic() +
+  labs(title = "Proportion of vaccinated individuals across LTLAs",
+       x = "Date",
+       y = "Total proportion of vaccinated population") +
+  theme(
+    plot.title = element_text(size = rel(1.2), face="bold"),
+    axis.title.x = element_text(size = rel(1), face="bold"),
+    axis.title.y = element_text(size = rel(1), face="bold"),
+    axis.text = element_text(size=rel(0.9), face="bold"))
+Vax_Date
+
+dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### Preliminary ####
 
 library(ggnewscale)
 
