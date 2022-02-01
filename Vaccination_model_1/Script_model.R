@@ -326,17 +326,18 @@ Rt_Obs_Date
 
 library(here)
 
-ModelChar <- "2stage_LFM_non_centered_Vax"
+#ModelChar <- "2stage_LFM_non_centered_Vax"
+ModelChar <- "2stage_LFM_non_centered_Vax_log_lik"
 StanModel <- stan_model(here(paste0("Stan_models/",ModelChar, ".stan")))
 cat(paste0("Model compilation done\n"))
 
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 6000 #Increase
-ModelMetaData$warmup 		= 600 #Increase
+ModelMetaData$iter 			= 10000 #Increase
+ModelMetaData$warmup 		= 2000 #Increase
 ModelMetaData$thin 			= 1
-ModelMetaData$chains 		= 2 #Increase
+ModelMetaData$chains 		= 10 #Increase
 ModelMetaData$adapt_delta 	= 0.9
 ModelMetaData$max_treedepth = 15
 ModelMetaData$ModelChar 	= ModelChar
@@ -349,14 +350,15 @@ colnames(ModelMetaData_dummy) = NULL
 
 #### Run ####
 
-memory.limit(size = 10000000)
+memory.limit(size = 100000000)
 
-fit_new = sampling(StanModel, data = data_stan, 
+fit = sampling(StanModel, data = data_stan, 
                iter 	= ModelMetaData$iter, 
                warmup 	= ModelMetaData$warmup, 
                thin 	= ModelMetaData$thin, 
                chains 	= ModelMetaData$chains, 
-               pars 	= c("VaxEffect", "LogPredictions", "random_effects", "lambda", "gamma", "intercept"), 
+               pars 	= c("VaxEffect", "LogPredictions", "random_effects",
+                          "lambda", "gamma", "intercept", "log_lik"), 
                control = list(adapt_delta = ModelMetaData$adapt_delta,
                               max_treedepth = ModelMetaData$max_treedepth))
 
@@ -364,39 +366,68 @@ fit_new = sampling(StanModel, data = data_stan,
 
 # MODEL RESULTS -----------------------------------------------------------
 
-saveRDS(fit_new, file = "fit_6000C2.Rds")
-saveRDS(fit_new, file = "C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/fit_6000C2.Rds")
+
+#### Save data ####
+
+model_note <- "" # Ie. "_nointercept"
+
+model_name <- paste0("fit_", ModelMetaData$iter, "_", ModelMetaData$chains, model_note)
+
+# saveRDS(fit, paste0(model_name, ".Rds"))
+# saveRDS(fit, paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/", model_name, ".Rds"))
+
+# Comment with 6000iter-2chains
+# 
+# Warning messages:
+#   1: The largest R-hat is NA, indicating chains have not mixed.
+# Running the chains for more iterations may help. See
+# https://mc-stan.org/misc/warnings.html#r-hat 
+# 2: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+# Running the chains for more iterations may help. See
+# https://mc-stan.org/misc/warnings.html#bulk-ess 
+# 3: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+# Running the chains for more iterations may help. See
+# https://mc-stan.org/misc/warnings.html#tail-ess 
 
 #dir.create(here("Figures"),recursive = TRUE)
 #dir.create(here("Results"),recursive = TRUE) 
+
+
+#### Loo_cv ####
+
+loo_run = loo(fit)
+loo_run
+
+# saveRDS(loo_run, paste0("loo_", model_name, ".Rds")
+# saveRDS(loo_run, paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/", "loo_", model_name,".Rds")
 
 
 #### Data ####
 
 library(matrixStats)
 
-model_new <- as.matrix(fit_new)
-dim(model_new)
-View(model_new)
+model_matrix <- as.matrix(fit)
+dim(model_matrix)
+View(model_matrix)
 
 Rt_data <- exp(data_model$Rt)
-Rt_LogP <- exp(colMeans(model_new[, grep(
-  "LogPredictions", colnames(model_new))]))
+Rt_LogP <- exp(colMeans(model_matrix[, grep(
+  "LogPredictions", colnames(model_matrix))]))
 
-Ran_Eff <- exp(colMeans(model_new[, grep(
-  "random_effects", colnames(model_new))]))
+Ran_Eff <- exp(colMeans(model_matrix[, grep(
+  "random_effects", colnames(model_matrix))]))
 
-Lambda <- exp(colMeans(model_new[, grep(
-  "lambda", colnames(model_new))]))
+Lambda <- exp(colMeans(model_matrix[, grep(
+  "lambda", colnames(model_matrix))]))
 
-Gamma <- exp(colMeans(model_new[, grep(
-  "gamma", colnames(model_new))]))
+Gamma <- exp(colMeans(model_matrix[, grep(
+  "gamma", colnames(model_matrix))]))
 
-Intercept <- exp(colMeans(model_new[, grep(
-  "intercept", colnames(model_new))]))
+Intercept <- exp(colMeans(model_matrix[, grep(
+  "intercept", colnames(model_matrix))]))
 
 sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff,
-                     #Lambda, Gamma, Intercept,
+                     Lambda, Gamma, Intercept,
                      LTLA = data_model$LTLAs,
                      Dose_1 = data_model$First_Prop,
                      Dose_2 = data_model$Second_Prop,
@@ -405,7 +436,7 @@ sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff,
                      row.names = paste0("Rt", 1:12423))
 
 sum_rt_1 <- sum_rt[1:41,]
-sum_rt_20 <- sum_rt[1:820,]
+# sum_rt_20 <- sum_rt[1:820,]
 
 
 #### LogPredictions ####
@@ -528,10 +559,10 @@ dev.off()
 
 #### VaxEffect ####
 
-VEMean <- colMeans(model_new[, grep(
-         "VaxEffect", colnames(model_new))])
-VEQuan <- colQuantiles(model_new[, grep(
-        "VaxEffect", colnames(model_new))], probs=c(0.025,0.975))
+VEMean <- colMeans(model_matrix[, grep(
+         "VaxEffect", colnames(model_matrix))])
+VEQuan <- colQuantiles(model_matrix[, grep(
+        "VaxEffect", colnames(model_matrix))], probs=c(0.025,0.975))
 
 sum_ve <- round(data.frame(VEMean, VEQuan,
                      row.names = c("Dose 1", "Dose 2", "Dose 3")),
@@ -596,15 +627,15 @@ dev.off()
 #### In one LTLA ####
 
 Plot <- ggplot(data = sum_rt_1) +
-  geom_geompoint (mapping = aes(x = date, y = Lambda, group = date),
+  geom_line (mapping = aes(x = date, y = Lambda),
                 color = "lightskyblue", size = rel(0.5)) +
-  geom_geompoint (mapping = aes(x = date, y = Lambda*(Gamma[1]), group = date),
+  geom_line (mapping = aes(x = date, y = Lambda*(Gamma[1])),
                   color = "palegreen", size = rel(0.5)) +
-  geom_geompoint (mapping = aes(x = date, y = Ran_Eff, group = date),
+  geom_line (mapping = aes(x = date, y = Ran_Eff),
                   color = "salmon", size = rel(0.5)) +
-  geom_geompoint (mapping = aes(x = date, y = Rt_data, group = date),
+  geom_line (mapping = aes(x = date, y = Rt_data),
                   color = "black", size = rel(0.5)) +
-  geom_geompoint (mapping = aes(x = date, y = Rt_LogP, group = date),
+  geom_line (mapping = aes(x = date, y = Rt_LogP),
                   color = "grey", size = rel(0.5)) +
     theme_classic() +
   labs(title = "Parameters in example LTLA",
