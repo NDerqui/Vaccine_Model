@@ -19,10 +19,10 @@ Vax_model_1*
 .Rproj.user
 Vaccination_model_1.Rproj
 
-fit_6000.Rds
-fit_6000C2.Rds
-fit_n_int.Rds
-fit_n_sca.Rds
+fit_6000_8.Rds
+fit_6000_2.Rds
+fit_1000_8_nointercept.Rds
+fit_1000_8_noscaling.Rds
 
 UK_hotspot_Rt_estimates.csv
 rtm_incoming_vaccination_20211116-173218-f36a1245_vacc_coverage_ltla.csv
