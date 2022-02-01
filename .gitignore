@@ -19,6 +19,8 @@ Vax_model_1*
 .Rproj.user
 Vaccination_model_1.Rproj
 
+data_model_for_plots.Rds
+
 fit_6000_8.Rds
 fit_6000_2.Rds
 fit_1000_8_nointercept.Rds
