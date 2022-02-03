@@ -235,6 +235,12 @@ NumWeeksByLTLA
 data_model$Rt <- log(data_model$Rt)
 
 
+#### Switches for parameters ####
+
+IncludeIntercept <- 1
+IncludeScaling <- 1
+
+
 #### Stan Data ####
 
 data_model <- select(data_model,
@@ -248,7 +254,9 @@ data_stan <- list(
           NumDoses = length(covar_vax),
           NumDatapoints = NumDatapoints,
           LTLAs = data_model$LTLAs,
-          NumTimepoints = NumTimepoints
+          NumTimepoints = NumTimepoints,
+          IncludeIntercept = IncludeIntercept,
+          IncludeScaling = IncludeScaling
    )
 
 

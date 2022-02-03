@@ -1,5 +1,8 @@
 
 data {
+  int <lower = 0, upper = 1>					IncludeIntercept; 	// Boolean for intercept
+  int <lower = 0, upper = 1>					IncludeScaling; 	// Boolean for scaling
+
   int<lower = 1> 							NumDatapoints; 	// Number of Rt values (all timepoints x regions) 
   int<lower = 1> 							NumDoses; 			// Number of parameters: Vax doses
   int<lower = 1> 							NumLTLAs;				// Number of regions / LTLAs
@@ -67,11 +70,27 @@ transformed parameters{
   
   
   fixed_effects[1:NumDatapoints] = VaxProp * - VaxEffect; // x * -beta in manuscript
+  
   for (i in 1:NumDatapoints){
     for(j in 1:IntDim){
-      random_effects[i] += lambda[i,j] * gamma[LTLAs[i],j] + intercept[LTLAs[i]]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
-    }
-  }
+      
+      if (IncludeIntercept) {
+       
+        if (IncludeScaling) {
+          random_effects[i] += lambda[i,j] * gamma[LTLAs[i],j] + intercept[LTLAs[i]]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
+        } else {
+          random_effects[i] += lambda[i,j] + intercept[LTLAs[i]]; }
+        
+        } else {
+          
+        if (IncludeScaling) {
+          random_effects[i] += lambda[i,j] * gamma[LTLAs[i],j]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
+	      } else {
+          random_effects[i] += lambda[i,j]; }
+        }
+
+        }
+      }
   LogPredictions[1:NumDatapoints] = fixed_effects[1:NumDatapoints] + random_effects[1:NumDatapoints];
 }
 
@@ -98,10 +117,6 @@ model {
 generated quantities {
   vector[NumDatapoints] log_lik;
   for (i in 1:NumDatapoints) {
-   log_lik[i] = normal_lpdf(RtVals[i] | LogPredictions[i], sigma); 
+   log_lik[i] = normal_lpdf(RtVals[i] | LogPredictions[i], sigma); // NOTES: Log of normal function: real normal_lpdf(reals y | reals mu, reals sigma)
   }
 }
-
-// NOTES: Log of normal function
-// real normal_lpdf(reals y | reals mu, reals sigma)
-// The log of the normal density of y given location mu and scale sigma

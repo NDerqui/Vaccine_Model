@@ -11,13 +11,16 @@ Vax_model_1*
 /Vaccination_model_1/Figures/
 /Vaccination_model_1/Results/
 
-# Files
+# R Files
 
 .RData
 .RDataTmp
+.RDataTmp1
 .Rhistory
 .Rproj.user
 Vaccination_model_1.Rproj
+
+# Data Files
 
 data_model_for_plots.Rds
 
