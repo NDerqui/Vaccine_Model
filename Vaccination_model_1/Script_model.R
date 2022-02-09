@@ -97,6 +97,15 @@ BackDate_Char <- "_BD"
 
 Nested_Char <- ""
 
+# Sets of easing lockdown
+
+lockdown_steps <- as.Date(c("05/01/2021", "08/03/2021", "19/04/2021",
+                            "17/05/2021", "19/07/2021"), format = "%d/%m/%Y")
+lockdown__pseudosteps <- as.Date(c("05/01/2021", "08/03/2021", "01/04/2021",
+                                   "19/04/2021", "17/05/2021", "21/06/2021",
+                                   "03/07/2021", "11/07/2021", "19/07/2021"),
+                                 format = "%d/%m/%Y")
+
 
 
 # DATA CLEANING & MERGE --------------------------------------------------
@@ -235,6 +244,51 @@ NumWeeksByLTLA
 data_model$Rt <- log(data_model$Rt)
 
 
+#### Steps ####
+
+# Lockdown steps are not exactly the ones in the data frame: fix this
+
+lockdown_steps %in% data_model$date
+unique(data_model$date)
+min(data_model$date)
+
+Steps <- as.Date(c("05/02/2021","12/03/2021", "23/04/2021",
+                   "21/05/2021", "23/07/2021"), "%d/%m/%Y")
+Steps %in% data_model$date
+
+# Final steps of lockdown
+
+# Knots <- data.frame(
+#             Knot1 = Steps[1],
+#             Knot2 = Steps[2],
+#             Knot3 = Steps[3],
+#             Knot4 = Steps[4],
+#             Knot5 = Steps[5]
+# )
+# Knots2 <- Knots[,1:2]
+Knots <- Steps
+Knots2 <- Knots[1:2]
+NumKnots <- ncol(Knots)
+NumKnots2 <- ncol(Knots2)
+
+weeks <- c(5, 10, 16, 20, 29)
+Knots <- weeks
+Knots2 <- Knots[1:2]
+#In days so that the time scale is in days
+Knots <- Knots*7
+Knots2 <- Knots2*7
+
+# Indexing the parts of the data_model that correspond to the knots
+
+index <- which(data_model$date %in% Steps)
+#As expected: 1515 entries (5 knots * 303 LTLAs)
+index1 <- which(data_model$date %in% Steps[1])
+index2 <- which(data_model$date %in% Steps[2])
+
+data_model[index,]
+#This gives us the entries for the selected knots
+
+
 #### Switches for parameters ####
 
 IncludeIntercept <- 1
@@ -256,8 +310,16 @@ data_stan <- list(
           LTLAs = data_model$LTLAs,
           NumTimepoints = NumTimepoints,
           IncludeIntercept = IncludeIntercept,
-          IncludeScaling = IncludeScaling
+          IncludeScaling = IncludeScaling,
+          NumKnots = NumKnots2,
+          Knots = Knots2,
+          index1 = index1,
+          index2 = index2
    )
+
+# RtSteps <- rbind(filter(data_model, week == 5),
+#   filter(data_model, week == 10), filter(data_model, week == 16),
+#   filter(data_model, week == 20), filter(data_model, week == 29))
 
 
 
@@ -336,17 +398,17 @@ Rt_Obs_Date
 library(here)
 
 #ModelChar <- "2stage_LFM_non_centered_Vax"
-ModelChar <- "2stage_LFM_non_centered_Vax_log_lik"
+ModelChar <- "2stage_LFM_non_centered_Vax_log_lik_linear_int"
 StanModel <- stan_model(here(paste0("Stan_models/",ModelChar, ".stan")))
 cat(paste0("Model compilation done\n"))
 
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 10000 #Increase
-ModelMetaData$warmup 		= 2000 #Increase
+ModelMetaData$iter 			= 100 #Increase
+ModelMetaData$warmup 		= 20 #Increase
 ModelMetaData$thin 			= 1
-ModelMetaData$chains 		= 10 #Increase
+ModelMetaData$chains 		= 1 #Increase
 ModelMetaData$adapt_delta 	= 0.9
 ModelMetaData$max_treedepth = 15
 ModelMetaData$ModelChar 	= ModelChar
@@ -366,8 +428,15 @@ fit = sampling(StanModel, data = data_stan,
                warmup 	= ModelMetaData$warmup, 
                thin 	= ModelMetaData$thin, 
                chains 	= ModelMetaData$chains, 
+               control = list(adapt_delta = ModelMetaData$adapt_delta,
+                              max_treedepth = ModelMetaData$max_treedepth))
+fit = sampling(StanModel, data = data_stan, 
+               iter 	= ModelMetaData$iter, 
+               warmup 	= ModelMetaData$warmup, 
+               thin 	= ModelMetaData$thin, 
+               chains 	= ModelMetaData$chains, 
                pars 	= c("VaxEffect", "LogPredictions", "random_effects",
-                          "lambda", "gamma", "intercept", "log_lik"), 
+                         "lambda", "gamma", "intercept", "log_lik"), 
                control = list(adapt_delta = ModelMetaData$adapt_delta,
                               max_treedepth = ModelMetaData$max_treedepth))
 
@@ -391,7 +460,7 @@ fit = sampling(StanModel, data = data_stan,
 
 #### Model name ####
 
-model_note <- "" # Ie. "_nointercept"
+model_note <- "_linear_dummy" # Ie. "_nointercept"
 
 model_name <- paste0("fit_", ModelMetaData$iter, "_", ModelMetaData$chains, model_note)
 

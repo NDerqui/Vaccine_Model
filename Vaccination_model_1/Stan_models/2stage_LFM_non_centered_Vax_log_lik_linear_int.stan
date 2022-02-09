@@ -7,18 +7,29 @@ data {
   int<lower = 1> 							NumDoses; 			// Number of parameters: Vax doses
   int<lower = 1> 							NumLTLAs;				// Number of regions / LTLAs
   int<lower = 1> 							NumTimepoints;	// Number of timepoints (weeks)
-
+  
   vector[NumDatapoints] 				RtVals; 				
       // y: Rt values across all time points and regions (expressed as giant vector) 
   matrix[NumDatapoints,NumDoses] 	VaxProp; 			
       // x predictor: Binary design matrix. Each row is a region and date combination.
       // Each column has the proportion of vax at that time/LTLA with 1, 2, 3 doses
   int 									LTLAs[NumDatapoints]; 	
-      // vector giving LTLA number for each Rt-region combination. 
+      // vector giving LTLA number for each Rt-region combination.
+      
+  int<lower = 1>              NumKnots;       // Number of knots
+  vector[NumKnots]            Knots;
+      // Sequence of knots
+  int                         index1[NumLTLAs];
+      // Index for Lambda at point 1
+  int                         index2[NumLTLAs];
+      // Index for Lambda at point 2
+//int 									SplineDegree; 	
+      // DEgree of spline (is equal to order - 1)
 }
 
 transformed data{
   int<lower = 1> 	IntDim = 1;			// internal dimension of matrix factors - number of latent factors.
+//int NumBasis = NumKnots + SplineDegree - 1; // total number of B-splines
 }
 
 parameters {
@@ -30,6 +41,9 @@ parameters {
   real<lower = 0> 		sigma_nc;
   real<lower = 0> 		phi2_nc;
   real<lower = 0> 		phi3_nc;
+  
+  matrix[NumLTLAs, IntDim] alpha; //intercept
+  matrix[NumLTLAs, IntDim] beta;  //base
 }
 
 transformed parameters{
@@ -48,6 +62,10 @@ transformed parameters{
   matrix[NumTimepoints,IntDim] lambda_raw 	= rep_matrix(0, NumTimepoints, IntDim); // has NumTimepoints rows (not NumDatapoints)
   matrix[NumDatapoints,IntDim] lambda 		= rep_matrix(0, NumDatapoints, IntDim); // has NumDatapoints rows (not NumTimepoints)
   
+  matrix[NumLTLAs, IntDim] lambda_y;
+  matrix[NumLTLAs, IntDim] lambda_spline_y1;
+  matrix[NumLTLAs, IntDim] lambda_spline_y2;
+ 
   // initialize
   phi  			= phi_nc			* 2.0;
   phi2 			= phi2_nc			* 0.5;
@@ -92,7 +110,16 @@ transformed parameters{
         }
       }
   LogPredictions[1:NumDatapoints] = fixed_effects[1:NumDatapoints] + random_effects[1:NumDatapoints];
-}
+  
+  lambda_spline_y1 = lambda[index1];
+  lambda_spline_y2 = lambda[index2];
+  
+  for (i in 1:NumLTLAs) {
+    
+    lambda_y[i] = (lambda_spline_y2[i] - lambda_spline_y1[i]);
+    lambda_y[i]= alpha[i]*(Knots[2] -Knots[1]) + beta[i];}
+      
+  }
 
 model {
   VaxEffect_nc ~ std_normal();
@@ -112,6 +139,7 @@ model {
   phi3_nc 		~ std_normal();
   sigma_nc 		~ std_normal();
   RtVals 		~ normal(LogPredictions, sigma);
+  
 }
 
 generated quantities {

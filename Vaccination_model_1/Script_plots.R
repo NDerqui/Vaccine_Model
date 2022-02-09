@@ -64,16 +64,23 @@ Ran_Eff <- exp(colMeans(model_matrix[, grep(
   "random_effects", colnames(model_matrix))]))
 
 Lambda <- exp(colMeans(model_matrix[, grep(
-  "lambda", colnames(model_matrix))]))
+  '^lambda\\[', colnames(model_matrix))]))
 
 Gamma <- exp(colMeans(model_matrix[, grep(
-  "gamma", colnames(model_matrix))]))
+  '^gamma\\[', colnames(model_matrix))]))
 
 Intercept <- exp(colMeans(model_matrix[, grep(
-  "intercept", colnames(model_matrix))]))
+  '^intercept\\[', colnames(model_matrix))]))
+
+L_Beta <- colMeans(model_matrix[, grep(
+  "beta", colnames(model_matrix))])
+
+L_Alpha <- colMeans(model_matrix[, grep(
+  "alpha", colnames(model_matrix))])
 
 sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff,
-                     Lambda, Gamma, Intercept,
+                     Lambda[1:12423],
+                     #Gamma, Intercept,
                      LTLA = data_model$LTLAs,
                      Dose_1 = data_model$First_Prop,
                      Dose_2 = data_model$Second_Prop,
@@ -359,6 +366,49 @@ Plot_sum <- ggplot(data = sum_rt_1) +
 Plot_sum
 
 dev.off()
+
+
+
+#### Playing with linear intercept ####
+
+Lamda_knots <- data.frame(
+  knot1 = Lambda[index1],
+  knot2 = Lambda[index2]
+)
+Lamda_knots <- as.numeric(Lamda_knots[1,])
+
+Knots <- Steps
+Knots2 <- Knots[1:2]
+
+point <- mean(L_Alpha)
+slope <- mean(L_Beta)
+
+Line <- ggplot(data = data.frame(x = Knots2, y = Lamda_knots)) +
+  geom_point (mapping = aes(x = x, y = y),
+              size = rel(2), color = "red") +
+  geom_abline(intercept = 0, slope = -1, color="red")
+Line
+
+Lambda_dummy <- ggplot() +
+  geom_point (data = sum_rt,
+              mapping = aes(x = date, y = Lambda, group = date), 
+                size = rel(1), color = "black") +
+  geom_point (data = data.frame(x = Knots2, y = Lamda_knots),
+              mapping = aes(x = x, y = y),
+              size = rel(2), color = "red") +
+  geom_abline(intercept = 5, slope = -5, color="red", 
+              linetype="dashed", size=1.5)
+  theme_classic() +
+  labs(title = "Lambda over time in all LTLAs",
+       x = "Date",
+       y = "Lambda") +
+  theme(
+    plot.title = element_text(size = rel(1.2), face="bold"),
+    axis.title.x = element_text(size = rel(1), face="bold"),
+    axis.title.y = element_text(size = rel(1), face="bold"),
+    axis.text=element_text(size=rel(0.9), face="bold"))
+
+Lambda_dummy
 
 
 
