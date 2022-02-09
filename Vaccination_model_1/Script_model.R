@@ -268,8 +268,8 @@ Steps %in% data_model$date
 # Knots2 <- Knots[,1:2]
 Knots <- Steps
 Knots2 <- Knots[1:2]
-NumKnots <- ncol(Knots)
-NumKnots2 <- ncol(Knots2)
+NumKnots <- length(Knots)
+NumKnots2 <- length(Knots2)
 
 weeks <- c(5, 10, 16, 20, 29)
 Knots <- weeks
@@ -284,6 +284,18 @@ index <- which(data_model$date %in% Steps)
 #As expected: 1515 entries (5 knots * 303 LTLAs)
 index1 <- which(data_model$date %in% Steps[1])
 index2 <- which(data_model$date %in% Steps[2])
+
+data_model[index,]
+#This gives us the entries for the selected knots
+
+#Index the knots for only one LTLA! Because Lambda is the same!
+
+index <- which(data_model$date[data_model$LTLAs==1] %in% Steps)
+#As expected: 1515 entries (5 knots * 303 LTLAs)
+index1 <- which(data_model$date[data_model$LTLAs==1] %in% Steps[1])
+dim(index1) <- 1
+index2 <- which(data_model$date[data_model$LTLAs==1] %in% Steps[2])
+dim(index2) <- 1
 
 data_model[index,]
 #This gives us the entries for the selected knots
@@ -428,15 +440,8 @@ fit = sampling(StanModel, data = data_stan,
                warmup 	= ModelMetaData$warmup, 
                thin 	= ModelMetaData$thin, 
                chains 	= ModelMetaData$chains, 
-               control = list(adapt_delta = ModelMetaData$adapt_delta,
-                              max_treedepth = ModelMetaData$max_treedepth))
-fit = sampling(StanModel, data = data_stan, 
-               iter 	= ModelMetaData$iter, 
-               warmup 	= ModelMetaData$warmup, 
-               thin 	= ModelMetaData$thin, 
-               chains 	= ModelMetaData$chains, 
                pars 	= c("VaxEffect", "LogPredictions", "random_effects",
-                         "lambda", "gamma", "intercept", "log_lik"), 
+                         "lambda", "gamma", "intercept", "log_lik", "alpha"), 
                control = list(adapt_delta = ModelMetaData$adapt_delta,
                               max_treedepth = ModelMetaData$max_treedepth))
 

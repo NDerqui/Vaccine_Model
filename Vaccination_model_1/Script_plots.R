@@ -75,8 +75,8 @@ Intercept <- exp(colMeans(model_matrix[, grep(
 L_Beta <- colMeans(model_matrix[, grep(
   "beta", colnames(model_matrix))])
 
-L_Alpha <- colMeans(model_matrix[, grep(
-  "alpha", colnames(model_matrix))])
+L_Alpha <- log(mean(model_matrix[, grep(
+  "alpha", colnames(model_matrix))]))
 
 sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff,
                      Lambda[1:12423],
@@ -380,13 +380,13 @@ Lamda_knots <- as.numeric(Lamda_knots[1,])
 Knots <- Steps
 Knots2 <- Knots[1:2]
 
-point <- mean(L_Alpha)
-slope <- mean(L_Beta)
+point <- mean(Lamda_knots[1])
+slope <- mean(L_Alpha)
 
 Line <- ggplot(data = data.frame(x = Knots2, y = Lamda_knots)) +
   geom_point (mapping = aes(x = x, y = y),
               size = rel(2), color = "red") +
-  geom_abline(intercept = 0, slope = -1, color="red")
+  geom_abline(intercept = 0, slope = -1)
 Line
 
 Lambda_dummy <- ggplot() +
@@ -396,8 +396,6 @@ Lambda_dummy <- ggplot() +
   geom_point (data = data.frame(x = Knots2, y = Lamda_knots),
               mapping = aes(x = x, y = y),
               size = rel(2), color = "red") +
-  geom_abline(intercept = 5, slope = -5, color="red", 
-              linetype="dashed", size=1.5)
   theme_classic() +
   labs(title = "Lambda over time in all LTLAs",
        x = "Date",

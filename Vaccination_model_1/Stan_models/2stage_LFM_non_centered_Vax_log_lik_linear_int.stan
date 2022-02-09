@@ -19,9 +19,9 @@ data {
   int<lower = 1>              NumKnots;       // Number of knots
   vector[NumKnots]            Knots;
       // Sequence of knots
-  int                         index1[NumLTLAs];
+  int                         index1[1];
       // Index for Lambda at point 1
-  int                         index2[NumLTLAs];
+  int                         index2[1];
       // Index for Lambda at point 2
 //int 									SplineDegree; 	
       // DEgree of spline (is equal to order - 1)
@@ -42,8 +42,8 @@ parameters {
   real<lower = 0> 		phi2_nc;
   real<lower = 0> 		phi3_nc;
   
-  matrix[NumLTLAs, IntDim] alpha; //intercept
-  matrix[NumLTLAs, IntDim] beta;  //base
+  matrix[1, IntDim] alpha; //intercept
+  matrix[1, IntDim] beta;  //base
 }
 
 transformed parameters{
@@ -62,9 +62,8 @@ transformed parameters{
   matrix[NumTimepoints,IntDim] lambda_raw 	= rep_matrix(0, NumTimepoints, IntDim); // has NumTimepoints rows (not NumDatapoints)
   matrix[NumDatapoints,IntDim] lambda 		= rep_matrix(0, NumDatapoints, IntDim); // has NumDatapoints rows (not NumTimepoints)
   
-  matrix[NumLTLAs, IntDim] lambda_y;
-  matrix[NumLTLAs, IntDim] lambda_spline_y1;
-  matrix[NumLTLAs, IntDim] lambda_spline_y2;
+  matrix[1, IntDim] lambda_spline_y1;
+  matrix[1, IntDim] lambda_spline_y2;
  
   // initialize
   phi  			= phi_nc			* 2.0;
@@ -114,12 +113,9 @@ transformed parameters{
   lambda_spline_y1 = lambda[index1];
   lambda_spline_y2 = lambda[index2];
   
-  for (i in 1:NumLTLAs) {
-    
-    lambda_y[i] = (lambda_spline_y2[i] - lambda_spline_y1[i]);
-    lambda_y[i]= alpha[i]*(Knots[2] -Knots[1]) + beta[i];}
-      
-  }
+  lambda_spline_y2 = lambda_spline_y1 + alpha*(Knots[2] - Knots[1]);
+}
+  
 
 model {
   VaxEffect_nc ~ std_normal();
