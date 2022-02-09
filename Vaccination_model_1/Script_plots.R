@@ -20,6 +20,7 @@ library(ggplot2)
 library(rstan)
 library(matrixStats)
 library(ggpubr)
+library(here)
 
 
 
@@ -121,7 +122,7 @@ formattable(sum_ve)
 
 # General
 
-#png("Figures/Obs_Pre_Rt.png", width = 6, height = 4, units = 'in', res = 300)
+#png(paste0("Figures/", model_name, "/Obs_Pre_Rt.png"), width = 6, height = 4, units = 'in', res = 300)
 
 Rt_Obs_Pre <- ggplot(data = sum_rt) +
   geom_point(mapping = aes(x = Rt_data, y = Rt_LogP), size = rel(0.8)) +
@@ -160,7 +161,7 @@ p3 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
   xlim(0.5, 2)+ ylim(0.5, 2) + theme_classic()
 p3
 
-#png("Figures/Obs_Pre_Rt_Vax.png", width = 6, height = 4, units = 'in', res = 300)
+#png(paste0("Figures/", model_name, "/Obs_Pre_Rt_Vax.png"), width = 6, height = 4, units = 'in', res = 300)
 
 Rts_VaxProp <- ggarrange(p1, p2, p3,
                          ncol = 3, nrow = 1)
@@ -173,7 +174,7 @@ dev.off()
 
 # General
 
-#png("Figures/Pre_Rt_time.png", width = 6, height = 4, units = 'in', res = 300)
+#png(paste0("Figures/", model_name, "/Pre_Rt_time.png"), width = 6, height = 4, units = 'in', res = 300)
 
 Rt_Pre_Date <- ggplot(data = sum_rt) +
   geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date), size = rel(0.5)) +
@@ -226,7 +227,7 @@ p9 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
     axis.text=element_text(size=rel(0.9), face="bold"))
 p9
 
-#png("Figures/Pre_Rt_time_Vax.png", width = 6, height = 6, units = 'in', res = 300)
+#png(paste0("Figures/", model_name, "/Pre_Rt_time_Vax.png"), width = 6, height = 6, units = 'in', res = 300)
 
 PreRts_Date <- ggarrange(p7, p8, p9,
                          ncol = 1, nrow = 3)
@@ -262,7 +263,7 @@ for(i in 2:length(NamesLTLAs)){
                           aes(x=x,y=y), alpha=0.5, size = rel(0.8))}
 #This is the loop to do so
 
-#png("Figures/SES.png", width = 6, height = 4, units = 'in', res = 300)
+#png(paste0("Figures/", model_name, "/SES.png"), width = 6, height = 4, units = 'in', res = 300)
 
 SES = SES + geom_point(
   data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
@@ -283,7 +284,7 @@ dev.off()
 
 #### Ran Effect ####
 
-#png("Figures/RanEffect.png", width = 6, height = 4, units = 'in', res = 300)
+#png(paste0("Figures/", model_name, "/RanEffect.png"), width = 6, height = 4, units = 'in', res = 300)
 
 RanEff_time <- ggplot(data = sum_rt) +
   geom_boxplot (mapping = aes(x = date, y = Ran_Eff, group = date), 
@@ -304,7 +305,7 @@ dev.off()
 
 #### Lambda ####
 
-#png("Figures/Lambda.png", width = 6, height = 4, units = 'in', res = 300)
+#png(paste0("Figures/", model_name, "/Lambda.png"), width = 6, height = 4, units = 'in', res = 300)
 
 Lambda_time <- ggplot(data = sum_rt) +
   geom_boxplot (mapping = aes(x = date, y = Lambda, group = date), 
@@ -326,19 +327,19 @@ dev.off()
 
 #### In one LTLA ####
 
-#png("Figures/LTLA_sum_plot.png", width = 6, height = 4, units = 'in', res = 300)
+#png(paste0("Figures/", model_name, "/LTLA_sum_plot.png"), width = 6, height = 4, units = 'in', res = 300)
 
 Plot_sum <- ggplot(data = sum_rt_1) +
   geom_point (mapping = aes(x = date, y = Lambda, 
-                           color = "Lambda"), size =rel(1.5)) +
+                           color = "Lambda"), size =rel(1.2)) +
   geom_line (mapping = aes(x = date, y = Lambda*(Gamma[1]),
-                           color = "Lambda*Gamma"), size =rel(1.5)) +
+                           color = "Lambda*Gamma"), size =rel(1.2)) +
   geom_line (mapping = aes(x = date, y = Ran_Eff,
-                           color = "RanEffect"), size =rel(1.5)) +
+                           color = "RanEffect"), size =rel(1.2)) +
   geom_line (mapping = aes(x = date, y = Rt_data,
-                           color = "RtData"), size =rel(1.5)) +
+                           color = "RtData"), size =rel(1.2)) +
   geom_line (mapping = aes(x = date, y = Rt_LogP,
-                           color = "RtLogP"), size =rel(1.5)) +
+                           color = "RtLogP"), size =rel(1.2)) +
   scale_color_manual(name = "Parameter",
                      breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
                                 "RtData", "RtLogP"),
