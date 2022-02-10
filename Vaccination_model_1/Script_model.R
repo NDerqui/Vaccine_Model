@@ -97,6 +97,10 @@ BackDate_Char <- "_BD"
 
 Nested_Char <- ""
 
+# Analyses by steps of lockdown
+
+DoKnots <- TRUE
+
 # Sets of easing lockdown
 
 lockdown_steps <- as.Date(c("05/01/2021", "08/03/2021", "19/04/2021",
@@ -172,6 +176,7 @@ names(data_merge)
 
 #### Final Cleaning ####
 
+
 # Weekly dates: var for no. of weeks & only one obs per week
 
 #Var for the number of weeks
@@ -183,14 +188,37 @@ data_merge <- mutate(data_merge, combi = paste0(data_merge$week, data_merge$ltla
 #Remove the duplicates
 data_merge <- filter(data_merge, !duplicated(data_merge$combi))
 
+
+# Steps
+
+# First lockdown step is not in the data: take the initial date
+
+lockdown_steps %in% data_merge$date
+min(data_merge$date)
+
+Steps <- c(min(data_merge$date), lockdown_steps[2:5])
+Steps %in% data_merge$date
+
+# Define knots with a day time scale
+
+Knots <- round(as.numeric(floor((Steps - Steps[1] + 1))), digits = 0)
+Knots_weeks <- round(as.numeric(floor((Steps - Steps[1])/7)), digits = 0) + 5
+#Match the weeks of the Knots to the ones in the data (start on week 4)
+
+
 # No NA
 
 data_merge <- data_merge[complete.cases(data_merge),]
+
 
 # Select cols
 
 data_model <- select(data_merge, "ltla_name", "date", "week",
                      "First_Prop", "Second_Prop", "Third_Prop", "Rt")
+
+if (DoKnots) {
+  data_model <- data_model[data_model$week %in% Knots_weeks,]
+}
 
 
 
@@ -238,67 +266,15 @@ for(i in 1: NumLTLAs){
 }
 NumWeeksByLTLA
 
+# No of Knots
+
+NumKnots <- length(Knots)
+NumKnots
+
 
 #### Rt log ####
 
 data_model$Rt <- log(data_model$Rt)
-
-
-#### Steps ####
-
-# Lockdown steps are not exactly the ones in the data frame: fix this
-
-lockdown_steps %in% data_model$date
-unique(data_model$date)
-min(data_model$date)
-
-Steps <- as.Date(c("05/02/2021","12/03/2021", "23/04/2021",
-                   "21/05/2021", "23/07/2021"), "%d/%m/%Y")
-Steps %in% data_model$date
-
-# Final steps of lockdown
-
-# Knots <- data.frame(
-#             Knot1 = Steps[1],
-#             Knot2 = Steps[2],
-#             Knot3 = Steps[3],
-#             Knot4 = Steps[4],
-#             Knot5 = Steps[5]
-# )
-# Knots2 <- Knots[,1:2]
-Knots <- Steps
-Knots2 <- Knots[1:2]
-NumKnots <- length(Knots)
-NumKnots2 <- length(Knots2)
-
-weeks <- c(5, 10, 16, 20, 29)
-Knots <- weeks
-Knots2 <- Knots[1:2]
-#In days so that the time scale is in days
-Knots <- Knots*7
-Knots2 <- Knots2*7
-
-# Indexing the parts of the data_model that correspond to the knots
-
-index <- which(data_model$date %in% Steps)
-#As expected: 1515 entries (5 knots * 303 LTLAs)
-index1 <- which(data_model$date %in% Steps[1])
-index2 <- which(data_model$date %in% Steps[2])
-
-data_model[index,]
-#This gives us the entries for the selected knots
-
-#Index the knots for only one LTLA! Because Lambda is the same!
-
-index <- which(data_model$date[data_model$LTLAs==1] %in% Steps)
-#As expected: 1515 entries (5 knots * 303 LTLAs)
-index1 <- which(data_model$date[data_model$LTLAs==1] %in% Steps[1])
-dim(index1) <- 1
-index2 <- which(data_model$date[data_model$LTLAs==1] %in% Steps[2])
-dim(index2) <- 1
-
-data_model[index,]
-#This gives us the entries for the selected knots
 
 
 #### Switches for parameters ####
@@ -311,7 +287,7 @@ IncludeScaling <- 1
 
 data_model <- select(data_model,
                      "ltla_name", "LTLAs", "date", "week", covar_vax, "Rt")
-saveRDS(data_model, "data_model_for_plots.Rds")
+# saveRDS(data_model, "data_model_for_plots.Rds")
 
 data_stan <- list(
           RtVals = data_model$Rt,
@@ -323,15 +299,9 @@ data_stan <- list(
           NumTimepoints = NumTimepoints,
           IncludeIntercept = IncludeIntercept,
           IncludeScaling = IncludeScaling,
-          NumKnots = NumKnots2,
-          Knots = Knots2,
-          index1 = index1,
-          index2 = index2
+          NumKnots = NumKnots,
+          Knots = Knots
    )
-
-# RtSteps <- rbind(filter(data_model, week == 5),
-#   filter(data_model, week == 10), filter(data_model, week == 16),
-#   filter(data_model, week == 20), filter(data_model, week == 29))
 
 
 
@@ -441,7 +411,8 @@ fit = sampling(StanModel, data = data_stan,
                thin 	= ModelMetaData$thin, 
                chains 	= ModelMetaData$chains, 
                pars 	= c("VaxEffect", "LogPredictions", "random_effects",
-                         "lambda", "gamma", "intercept", "log_lik", "alpha"), 
+                         "lambda", "gamma", "intercept", "log_lik", 
+                         "origin", "slope"), 
                control = list(adapt_delta = ModelMetaData$adapt_delta,
                               max_treedepth = ModelMetaData$max_treedepth))
 

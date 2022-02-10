@@ -72,21 +72,19 @@ Gamma <- exp(colMeans(model_matrix[, grep(
 Intercept <- exp(colMeans(model_matrix[, grep(
   '^intercept\\[', colnames(model_matrix))]))
 
-L_Beta <- colMeans(model_matrix[, grep(
-  "beta", colnames(model_matrix))])
+Origin <- exp(colMeans(model_matrix[, grep(
+  "origin", colnames(model_matrix))]))
 
-L_Alpha <- log(mean(model_matrix[, grep(
-  "alpha", colnames(model_matrix))]))
+Slope <- exp(colMeans(model_matrix[, grep(
+  "slope", colnames(model_matrix))]))
 
-sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff,
-                     Lambda[1:12423],
-                     #Gamma, Intercept,
+sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff, Lambda,
                      LTLA = data_model$LTLAs,
                      Dose_1 = data_model$First_Prop,
                      Dose_2 = data_model$Second_Prop,
                      Dose_3 = data_model$Third_Prop,
                      date = data_model$date,
-                     row.names = paste0("Rt", 1:12423))
+                     row.names = paste0("Rt", 1:1515))
 
 sum_rt_1 <- sum_rt[1:41,]
 
@@ -371,17 +369,7 @@ dev.off()
 
 #### Playing with linear intercept ####
 
-Lamda_knots <- data.frame(
-  knot1 = Lambda[index1],
-  knot2 = Lambda[index2]
-)
-Lamda_knots <- as.numeric(Lamda_knots[1,])
-
-Knots <- Steps
-Knots2 <- Knots[1:2]
-
-point <- mean(Lamda_knots[1])
-slope <- mean(L_Alpha)
+Lamda_knots <- as.numeric(Lambda[1:5])
 
 Line <- ggplot(data = data.frame(x = Knots2, y = Lamda_knots)) +
   geom_point (mapping = aes(x = x, y = y),
@@ -392,10 +380,9 @@ Line
 Lambda_dummy <- ggplot() +
   geom_point (data = sum_rt,
               mapping = aes(x = date, y = Lambda, group = date), 
-                size = rel(1), color = "black") +
-  geom_point (data = data.frame(x = Knots2, y = Lamda_knots),
-              mapping = aes(x = x, y = y),
-              size = rel(2), color = "red") +
+                size = rel(1), color = "red") +
+  geom_abline(intercept = Origin[1],
+              slope = Slope[1], color = "black") +
   theme_classic() +
   labs(title = "Lambda over time in all LTLAs",
        x = "Date",
