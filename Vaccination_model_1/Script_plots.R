@@ -72,10 +72,10 @@ Gamma <- exp(colMeans(model_matrix[, grep(
 Intercept <- exp(colMeans(model_matrix[, grep(
   '^intercept\\[', colnames(model_matrix))]))
 
-Origin <- exp(colMeans(model_matrix[, grep(
+Origin <- (colMeans(model_matrix[, grep(
   "origin", colnames(model_matrix))]))
 
-Slope <- exp(colMeans(model_matrix[, grep(
+Slope <- (colMeans(model_matrix[, grep(
   "slope", colnames(model_matrix))]))
 
 sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff, Lambda,
@@ -380,9 +380,10 @@ Line
 Lambda_dummy <- ggplot() +
   geom_point (data = sum_rt,
               mapping = aes(x = date, y = Lambda, group = date), 
-                size = rel(1), color = "red") +
-  geom_abline(intercept = Origin[1],
-              slope = Slope[1], color = "black") +
+                size = rel(1.2), color = "red") +
+  geom_line (data = sum_rt,
+              mapping = aes(x = date, y = Lambda), 
+              color = "red") +
   theme_classic() +
   labs(title = "Lambda over time in all LTLAs",
        x = "Date",
