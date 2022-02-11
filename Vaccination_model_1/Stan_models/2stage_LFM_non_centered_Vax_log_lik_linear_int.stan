@@ -106,10 +106,10 @@ transformed parameters{
 
   lambda_y = lambda[1:NumKnots];
 
-  for (i in 1:(NumKnots-1)){
+  for (i in 2:(NumKnots)){
     for (j in 1:NumLines) {
-      lambda_change[j] = lambda_y[i+1] - lambda_y[i]; 
-      lambda_change[j] = origin[j] + slope[j]*(Knots[i+1] - Knots[i]);
+      lambda_change[j] = lambda_y[i] - lambda_y[i-1]; 
+      lambda_change[j] = origin[j] + slope[j]*(Knots[i] - Knots[i-1]);
     }
   }
 }
