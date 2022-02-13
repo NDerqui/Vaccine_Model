@@ -83,9 +83,9 @@ sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff,
                      Dose_2 = data_model$Second_Prop,
                      Dose_3 = data_model$Third_Prop,
                      date = data_model$date,
-                     row.names = paste0("Rt", 1:12423))
+                     row.names = paste0("Rt", 1:12726))
 
-sum_rt_1 <- sum_rt[1:41,]
+sum_rt_1 <- sum_rt[1:42,]
 
 
 
