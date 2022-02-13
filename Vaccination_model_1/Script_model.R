@@ -163,6 +163,11 @@ names(data_merge)
 
 #### Final Cleaning ####
 
+# No NA
+
+data_merge <- data_merge[complete.cases(data_merge),]
+
+
 # Weekly dates: var for no. of weeks & only one obs per week
 
 #Var for the number of weeks
@@ -173,10 +178,6 @@ data_merge <- mutate(data_merge, combi = paste0(data_merge$week, data_merge$ltla
 
 #Remove the duplicates
 data_merge <- filter(data_merge, !duplicated(data_merge$combi))
-
-# No NA
-
-data_merge <- data_merge[complete.cases(data_merge),]
 
 # Select cols
 
@@ -264,7 +265,7 @@ data_stan <- list(
 # DESCRIPTION -------------------------------------------------------------
 
 
-## A more detailed description  of data is on the description-workspace ##
+## A more detailed description  of data is on the description script ##
 
 Rt_data <- exp(data_model$Rt)
 
