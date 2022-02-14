@@ -84,6 +84,7 @@ sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff, Lambda,
                      Dose_2 = data_model$Second_Prop,
                      Dose_3 = data_model$Third_Prop,
                      date = data_model$date,
+                     week = data_model$week,
                      row.names = paste0("Rt", 1:1515))
 
 sum_rt_1 <- sum_rt[1:41,]
@@ -371,12 +372,6 @@ dev.off()
 
 Lamda_knots <- as.numeric(Lambda[1:5])
 
-Line <- ggplot(data = data.frame(x = Knots2, y = Lamda_knots)) +
-  geom_point (mapping = aes(x = x, y = y),
-              size = rel(2), color = "red") +
-  geom_abline(intercept = 0, slope = -1)
-Line
-
 Lambda_dummy <- ggplot() +
   geom_point (data = sum_rt,
               mapping = aes(x = date, y = Lambda, group = date), 
@@ -393,9 +388,29 @@ Lambda_dummy <- ggplot() +
     axis.title.x = element_text(size = rel(1), face="bold"),
     axis.title.y = element_text(size = rel(1), face="bold"),
     axis.text=element_text(size=rel(0.9), face="bold"))
-
 Lambda_dummy
 
+Lambda_dummy <- ggplot() +
+  geom_point (data = sum_rt,
+              mapping = aes(x = week, y = Lambda, group = date), 
+              size = rel(1.2), color = "red") +
+  geom_line (data = sum_rt,
+             mapping = aes(x = week, y = Lambda), 
+             color = "red") +
+  geom_abline(slope = Slope[1], intercept = Origin[1], color = "blue") +
+  geom_abline(slope = Slope[2], intercept = Origin[2], color = "green") +
+  geom_abline(slope = Slope[3], intercept = Origin[3], color = "gray") +
+  geom_abline(slope = Slope[4], intercept = Origin[4], color = "black") +
+  theme_classic() +
+  labs(title = "Lambda over time in all LTLAs",
+       x = "Week",
+       y = "Lambda") +
+  theme(
+    plot.title = element_text(size = rel(1.2), face="bold"),
+    axis.title.x = element_text(size = rel(1), face="bold"),
+    axis.title.y = element_text(size = rel(1), face="bold"),
+    axis.text=element_text(size=rel(0.9), face="bold"))
+Lambda_dummy
 
 
 # ARCHIVE PLOTS -----------------------------------------------------------
