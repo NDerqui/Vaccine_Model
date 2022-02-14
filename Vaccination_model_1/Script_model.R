@@ -236,7 +236,7 @@ NumTimepoints <- length(unique(data_model$date))
 NumTimepoints
 length(unique(data_model$week))
 
-Timepoints <- unique(data_model$week)
+Timepoints <- data_model$week
 Timepoints
 
 # No of total obs 
@@ -306,7 +306,8 @@ data_stan <- list(
           IncludeScaling = IncludeScaling,
           NumKnots = NumKnots,
           Knots = Knots_weeks,
-          NumPointsLine = NumPointsLine
+          NumPointsLine = NumPointsLine,
+          Timepoints = Timepoints
    )
 
 
@@ -393,7 +394,7 @@ cat(paste0("Model compilation done\n"))
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 2000 #Increase
+ModelMetaData$iter 			= 1000 #Increase
 ModelMetaData$warmup 		= 200 #Increase
 ModelMetaData$thin 			= 1
 ModelMetaData$chains 		= 4 #Increase
@@ -417,8 +418,8 @@ fit = sampling(StanModel, data = data_stan,
                thin 	= ModelMetaData$thin, 
                chains 	= ModelMetaData$chains, 
                pars 	= c("VaxEffect", "LogPredictions", "random_effects",
-                         "lambda", "gamma", "intercept", "log_lik", 
-                         "origin", "slope"), 
+                         "lambda_parameters", "gamma", "intercept", "log_lik", 
+                         "origin", "slope", "lambda"), 
                control = list(adapt_delta = ModelMetaData$adapt_delta,
                               max_treedepth = ModelMetaData$max_treedepth))
 
