@@ -176,17 +176,9 @@ names(data_merge)
 
 #### Final Cleaning ####
 
+# No NA
 
-# Weekly dates: var for no. of weeks & only one obs per week
-
-#Var for the number of weeks
-data_merge$week <- round(as.numeric(floor((data_merge$date - Date_Start)/7)), digits = 0)
-
-#Combi for unique combination of LTLA*week
-data_merge <- mutate(data_merge, combi = paste0(data_merge$week, data_merge$ltla_name))
-
-#Remove the duplicates
-data_merge <- filter(data_merge, !duplicated(data_merge$combi))
+data_merge <- data_merge[complete.cases(data_merge),]
 
 
 # Steps
@@ -196,19 +188,26 @@ data_merge <- filter(data_merge, !duplicated(data_merge$combi))
 lockdown_steps %in% data_merge$date
 min(data_merge$date)
 
-Steps <- c(min(data_merge$date), lockdown_steps[2:5])
+Steps <- c(min(data_merge$date), lockdown_steps[2:5], max(data_merge$date))
 Steps %in% data_merge$date
 
 # Define knots with a day time scale
 
-Knots <- round(as.numeric(floor((Steps - Steps[1] + 1))), digits = 0)
-Knots_weeks <- round(as.numeric(floor((Steps - Steps[1])/7)), digits = 0) + 5
+Knots <- round(as.numeric(floor((Steps - Steps[1]))), digits = 0)
+Knots_weeks <- round(as.numeric(floor((Steps - Steps[1])/7)), digits = 0)
 #Match the weeks of the Knots to the ones in the data (start on week 4)
 
 
-# No NA
+# Weekly dates: var for no. of weeks & only one obs per week
 
-data_merge <- data_merge[complete.cases(data_merge),]
+#Var for the number of weeks
+data_merge$week <- round(as.numeric(floor((data_merge$date - min(data_merge$date))/7)), digits = 0)
+
+#Combi for unique combination of LTLA*week
+data_merge <- mutate(data_merge, combi = paste0(data_merge$week, data_merge$ltla_name))
+
+#Remove the duplicates
+data_merge <- filter(data_merge, !duplicated(data_merge$combi))
 
 
 # Select cols
@@ -216,9 +215,6 @@ data_merge <- data_merge[complete.cases(data_merge),]
 data_model <- select(data_merge, "ltla_name", "date", "week",
                      "First_Prop", "Second_Prop", "Third_Prop", "Rt")
 
-if (DoKnots) {
-  data_model <- data_model[data_model$week %in% Knots_weeks,]
-}
 
 
 
@@ -239,6 +235,9 @@ NumLTLAs
 NumTimepoints <- length(unique(data_model$date))
 NumTimepoints
 length(unique(data_model$week))
+
+Timepoints <- unique(data_model$week)
+Timepoints
 
 # No of total obs 
 
@@ -271,6 +270,11 @@ NumWeeksByLTLA
 NumKnots <- length(Knots)
 NumKnots
 
+# No of LTLAs x No of Knots
+
+NumPointsLine <- NumLTLAs*NumKnots
+NumPointsLine
+
 
 #### Rt log ####
 
@@ -297,10 +301,12 @@ data_stan <- list(
           NumDatapoints = NumDatapoints,
           LTLAs = data_model$LTLAs,
           NumTimepoints = NumTimepoints,
+          TimePoints = Timepoints,
           IncludeIntercept = IncludeIntercept,
           IncludeScaling = IncludeScaling,
           NumKnots = NumKnots,
-          Knots = Knots
+          Knots = Knots_weeks,
+          NumPointsLine = NumPointsLine
    )
 
 
@@ -387,10 +393,10 @@ cat(paste0("Model compilation done\n"))
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 1000 #Increase
+ModelMetaData$iter 			= 2000 #Increase
 ModelMetaData$warmup 		= 200 #Increase
 ModelMetaData$thin 			= 1
-ModelMetaData$chains 		= 2 #Increase
+ModelMetaData$chains 		= 4 #Increase
 ModelMetaData$adapt_delta 	= 0.9
 ModelMetaData$max_treedepth = 15
 ModelMetaData$ModelChar 	= ModelChar
