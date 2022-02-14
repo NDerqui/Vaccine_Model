@@ -23,7 +23,6 @@ data {
 
 transformed data{
   int<lower = 1> 	IntDim = 1;			// internal dimension of matrix factors - number of latent factors.
-  int<lower = 1>              NumLines = NumKnots - 1;
 }
 
 parameters {
@@ -36,8 +35,6 @@ parameters {
   real<lower = 0> 		phi2_nc;
   real<lower = 0> 		phi3_nc;
   
-  matrix[NumLines, IntDim] origin; //intercept
-  matrix[NumLines, IntDim] slope;  //slope
 }
 
 transformed parameters{
@@ -56,9 +53,10 @@ transformed parameters{
   matrix[NumTimepoints,IntDim] lambda_raw 	= rep_matrix(0, NumTimepoints, IntDim); // has NumTimepoints rows (not NumDatapoints)
   matrix[NumDatapoints,IntDim] lambda 		= rep_matrix(0, NumDatapoints, IntDim); // has NumDatapoints rows (not NumTimepoints)
   
+  matrix[NumKnots-1, IntDim] origin; //intercept
+  matrix[NumKnots-1, IntDim] slope;  //slope
   matrix[NumKnots,IntDim] lambda_y;
-  matrix[NumLines,IntDim] lambda_change;
-  
+
   // initialize
   phi  			= phi_nc			* 2.0;
   phi2 			= phi2_nc			* 0.5;
@@ -107,10 +105,8 @@ transformed parameters{
   lambda_y = lambda[1:NumKnots];
 
   for (i in 1:(NumKnots-1)){
-    for (j in 1:NumLines) {
-      lambda_change[j] = lambda_y[i+1] - lambda_y[i]; 
-      lambda_change[j] = origin[j] + slope[j]*(Knots[i+1] - Knots[i]);
-    }
+    slope[i] = (lambda_y[i+1] - lambda_y[i])/(Knots[i+1] - Knots[i]);
+    origin[i] = lambda_y[i] - slope[i]*Knots[i];
   }
 }
 
