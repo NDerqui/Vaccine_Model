@@ -51,6 +51,8 @@ model_name <- "fit_1000_10_base"
   
 # loo_run <- readRDS(paste0("loo_", model_name, ".Rds"))
 
+data_model <- readRDS("data_model_for_plots.Rds")
+
 
 #### Substract parameters ####
 
@@ -77,8 +79,7 @@ Intercept <- exp(colMeans(model_matrix[, grep(
   "intercept", colnames(model_matrix))]))
 
 sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff,
-                     Lambda, Gamma, Intercept,
-                     LTLA = data_model$LTLAs,
+                     Lambda, LTLA = data_model$LTLAs,
                      Dose_1 = data_model$First_Prop,
                      Dose_2 = data_model$Second_Prop,
                      Dose_3 = data_model$Third_Prop,

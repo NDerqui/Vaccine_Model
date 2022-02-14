@@ -22,6 +22,9 @@ Vaccination_model_1.Rproj
 
 # Data Files
 
+fit_1000_2_linear_dummy.Rds
+fit_1000_2_linear_dummy_2.Rds
+
 data_model_for_plots.Rds
 
 UK_hotspot_Rt_estimates.csv
