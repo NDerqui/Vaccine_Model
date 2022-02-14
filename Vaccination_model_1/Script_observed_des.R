@@ -141,6 +141,8 @@ dev.off()
 
 # Get the data - apply same cleaning criteria
 
+# data_vax <- read.csv("rtm_incoming_vaccination_20211116-173218-f36a1245_vacc_coverage_ltla.csv")
+
 #We want age groups
 data_age <- data_vax
 data_age <- filter(data_age, !is.na(age_band_min))
