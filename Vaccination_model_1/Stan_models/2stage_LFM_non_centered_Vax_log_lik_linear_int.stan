@@ -8,7 +8,7 @@ data {
   int<lower = 1> 							NumLTLAs;				// Number of regions / LTLAs
   int<lower = 1> 							NumTimepoints;	// Number of timepoints (weeks)
   int<lower = 1>              NumKnots;       // Number of knots
-  int<lower = 1>              NumPointsLine;  // Number of knots*Number of LTLAs
+  int<lower = 1>              NumPointsLine;  // Number of lambdas (knots x regions)
   
   vector[NumDatapoints] 				RtVals; 				
       // y: Rt values across all time points and regions (expressed as giant vector) 
