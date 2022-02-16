@@ -394,10 +394,10 @@ cat(paste0("Model compilation done\n"))
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 1000 #Increase
-ModelMetaData$warmup 		= 200 #Increase
+ModelMetaData$iter 			= 100 #Increase
+ModelMetaData$warmup 		= 20 #Increase
 ModelMetaData$thin 			= 1
-ModelMetaData$chains 		= 4 #Increase
+ModelMetaData$chains 		= 1 #Increase
 ModelMetaData$adapt_delta 	= 0.9
 ModelMetaData$max_treedepth = 15
 ModelMetaData$ModelChar 	= ModelChar
@@ -443,7 +443,7 @@ fit = sampling(StanModel, data = data_stan,
 
 #### Model name ####
 
-model_note <- "_linear_dummy" # Ie. "_nointercept"
+model_note <- "_linear" # Ie. "_nointercept"
 
 model_name <- paste0("fit_", ModelMetaData$iter, "_", ModelMetaData$chains, model_note)
 

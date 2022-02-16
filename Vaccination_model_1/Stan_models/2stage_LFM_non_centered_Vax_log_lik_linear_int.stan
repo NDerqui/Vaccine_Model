@@ -8,7 +8,7 @@ data {
   int<lower = 1> 							NumLTLAs;				// Number of regions / LTLAs
   int<lower = 1> 							NumTimepoints;	// Number of timepoints (weeks)
   int<lower = 1>              NumKnots;       // Number of knots
-  int<lower = 1>              NumPointsLine;  // Number of lambdas (knots x regions)
+  int<lower = 1>              NumPointsLine;  // Number of line-lambdas (knots x regions)
   
   vector[NumDatapoints] 				RtVals; 				
       // y: Rt values across all time points and regions (expressed as giant vector) 
@@ -73,7 +73,7 @@ transformed parameters{
   intercept 	= intercept 		* phi3;
   lambda_raw 	= lambda_raw_nc 	* phi3;
   {  
-  	// initialize lambda matrix to have same values for every LTLA
+  	// initialize lambda matrix to have same values for every LTLA - calculate line
     int ind = 0; // initialize index
     for (i in 1:NumLTLAs){
       for(j in 1:IntDim){
@@ -89,7 +89,7 @@ transformed parameters{
     origin[i] = lambda[i] - slope[i]*Knots[i];
   }
 
-  // initialise lambda from line
+  // initialise lambda_pars calcualted from line - save value for every LTLA
   lambda_raw_par 	= lambda_raw_nc_par 	* phi3;
   {  
   	int ind_2 = 0; // initialize index
