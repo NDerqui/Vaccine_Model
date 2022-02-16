@@ -45,7 +45,7 @@ dim(data_model)
 
 #### Load data ####
 
-model_name <- "fit_2000_8_base"
+model_name <- "fit_2000_8_noscaling_nointercept"
 
 # fit <- readRDS(paste0(model_name, ".Rds"))
   
@@ -56,8 +56,8 @@ model_name <- "fit_2000_8_base"
 
 model_matrix <- as.matrix(fit)
 
-dim(model_matrix)
-View(model_matrix)
+#dim(model_matrix)
+#View(model_matrix)
 
 Rt_data <- exp(data_model$Rt)
 
@@ -799,11 +799,11 @@ dev.off()
 
 # Obs vs Pre
 
-Keep_1a <- ggplot(data = sum_rt) +
+Keep_1d <- ggplot(data = sum_rt) +
   geom_point(mapping = aes(x = Rt_data, y = Rt_LogP), size = rel(0.8)) +
   geom_abline(x = 0, y = 1, col = "red") +
   theme_classic() +
-  labs(title = "a",
+  labs(title = "d",
        x = "Rt Observed",
        y = "Rt Predicted") +
   theme(
@@ -811,17 +811,17 @@ Keep_1a <- ggplot(data = sum_rt) +
     axis.title.x = element_text(size = rel(0.9), face="bold"),
     axis.title.y = element_text(size = rel(0.9), face="bold"),
     axis.text = element_text(size=rel(0.7)))
-Keep_1a
+Keep_1d
 
 #png("Figures/4model_check_Pre_Obs.png", width = 10, height = 6, units = 'in', res = 300)
 
-ggarrange(Keep_1a,
+ggarrange(Keep_1a, Keep_1b, Keep_1c, Keep_1d,
           ncol = 2, nrow = 2)
 dev.off()
 
 # Scatter
 
-Keep_2a <- ggplot(data = sum_rt) +
+Keep_2d <- ggplot(data = sum_rt) +
   geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date,
                               color = "Rt_data"), size = rel(0.5)) +
   geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date,
@@ -832,7 +832,7 @@ Keep_2a <- ggplot(data = sum_rt) +
                                 "Rt_LogP"="forestgreen"),
                      labels=c("Observed", "Predicted")) +
   theme_classic() +
-  labs(title = "a",
+  labs(title = "d",
        x = "Date",
        y = "Reproduction number") +
   theme(
@@ -842,21 +842,21 @@ Keep_2a <- ggplot(data = sum_rt) +
     axis.text = element_text(size=rel(0.7)),
     legend.title = element_text(size = rel(0.9), face="bold"),
     legend.text = element_text(size=rel(0.7)))
-Keep_2a
+Keep_2d
 
 #png("Figures/4model_check_Pre_Obs_time.png", width = 10, height = 6, units = 'in', res = 300)
 
-ggarrange(Keep_2a,
+ggarrange(Keep_2a, Keep_2b, Keep_2c,Keep_2d,
           common.legend = TRUE, ncol = 2, nrow = 2)
 dev.off()
 
 # Secular Trend
 
-Keep_3a = SES + geom_point(
+Keep_3d = SES + geom_point(
   data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
                     y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(0.8)) +
   theme_classic() +
-  labs(title = "a",
+  labs(title = "d",
        x = "Date",
        y = "Secular Trend") +
   theme(
@@ -866,11 +866,11 @@ Keep_3a = SES + geom_point(
     axis.text = element_text(size=rel(0.7)),
     legend.title = element_text(size = rel(0.9), face="bold"),
     legend.text = element_text(size=rel(0.7)))
-Keep_3a
+Keep_3d
 
 #png("Figures/4model_check_SES.png", width = 10, height = 6, units = 'in', res = 300)
 
-ggarrange(Keep_3a,
+ggarrange(Keep_3a, Keep_3b, Keep_3c, Keep_3d,
           ncol = 2, nrow = 2)
 dev.off()
 
