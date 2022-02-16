@@ -45,13 +45,11 @@ dim(data_model)
 
 #### Load data ####
 
-model_name <- "fit_1000_10_base"
+model_name <- "fit_2000_8_base"
 
 # fit <- readRDS(paste0(model_name, ".Rds"))
   
 # loo_run <- readRDS(paste0("loo_", model_name, ".Rds"))
-
-data_model <- readRDS("data_model_for_plots.Rds")
 
 
 #### Substract parameters ####
@@ -86,14 +84,12 @@ sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff,
                      date = data_model$date,
                      row.names = paste0("Rt", 1:12726))
 
-sum_rt_1 <- sum_rt[1:42,]
-
 
 
 # DIRECTORY ---------------------------------------------------------------
 
-# dir.create(here(paste0("Figures/", model_name)),recursive = TRUE)
-# dir.create(here(paste0("Results/", model_name)),recursive = TRUE) 
+dir.create(here(paste0("Figures/", model_name)),recursive = TRUE)
+dir.create(here(paste0("Results/", model_name)),recursive = TRUE) 
 
 
 
@@ -286,8 +282,8 @@ Obs_Pre_Date <- ggplot(data = sum_rt) +
                               color = "Rt_LogP"), size = rel(0.5)) +
   scale_color_manual(name="Reproduction number",
                      breaks = c("Rt_data", "Rt_LogP"),
-                     values = c("Rt_data"="grey", 
-                                "Rt_LogP"="black"),
+                     values = c("Rt_data"="firebrick", 
+                                "Rt_LogP"="forestgreen"),
                      labels=c("Observed", "Predicted")) +
   theme_classic() +
   labs(title = "Observed and Predicted Rt across LTLAs over time",
@@ -308,19 +304,19 @@ dev.off()
 
 p1 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
   geom_point(mapping = aes(colour = Dose_1), size = rel(0.8)) +
-  scale_colour_gradient(low = "white", high = "darkblue", limits = c(0,1)) +
+  scale_colour_gradient(low = "white", high = "navy", limits = c(0,1)) +
   xlab("Rt Observed") + ylab("Rt Predicted") +
   xlim(0.5, 2)+ ylim(0.5, 2) + theme_classic()
 p1
 p2 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
   geom_point(mapping = aes(colour = Dose_2), size = rel(0.8)) +
-  scale_colour_gradient(low = "white", high = "olivedrab", limits = c(0,1)) +
+  scale_colour_gradient(low = "white", high = "cyan3", limits = c(0,1)) +
   xlab("Rt Observed") + ylab("Rt Predicted") +
   xlim(0.5, 2)+ ylim(0.5, 2) + theme_classic()
 p2
 p3 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
   geom_point(mapping = aes(colour = Dose_3), size = rel(0.8)) +
-  scale_colour_gradient(low = "white", high = "darkred", limits = c(0,1)) +
+  scale_colour_gradient(low = "white", high = "lightgreen", limits = c(0,1)) +
   xlab("Rt Observed") + ylab("Rt Predicted") +
   xlim(0.5, 2)+ ylim(0.5, 2) + theme_classic()
 p3
@@ -361,7 +357,7 @@ dev.off()
 
 p7 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
   geom_point(mapping = aes(colour = Dose_1), size = rel(0.8)) +
-  scale_colour_gradient(low = "white", high = "darkblue", limits = c(0,1)) +
+  scale_colour_gradient(low = "white", high = "navy", limits = c(0,1)) +
   xlab("Date") + ylab("Rt Predicted") +
   ylim(0.5, 2) + 
   theme_classic() +
@@ -372,7 +368,7 @@ p7 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
 p7
 p8 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
   geom_point(mapping = aes(colour = Dose_2), size = rel(0.8)) +
-  scale_colour_gradient(low = "white", high = "olivedrab", limits = c(0,1)) +
+  scale_colour_gradient(low = "white", high = "cyan3", limits = c(0,1)) +
   xlab("Date") + ylab("Rt Predicted") +
   ylim(0.5, 2) + 
   theme_classic() +
@@ -383,7 +379,7 @@ p8 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
 p8
 p9 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
   geom_point(mapping = aes(colour = Dose_3), size = rel(0.8)) +
-  scale_colour_gradient(low = "white", high = "darkred", limits = c(0,1)) +
+  scale_colour_gradient(low = "white", high = "palegreen", limits = c(0,1)) +
   xlab("Date") + ylab("Rt Predicted") +
   ylim(0.5, 2) +
   theme_classic() +
@@ -437,7 +433,7 @@ SES = SES + geom_point(
   theme_classic() +
   labs(title = "Secular Trend across all LTLAs over time",
        x = "Date",
-       y = "Secular Effect Size") +
+       y = "Secular Trend") +
   theme(
     plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
     axis.title.x = element_text(size = rel(0.9), face="bold"),
@@ -458,9 +454,9 @@ RanEff_time <- ggplot(data = sum_rt) +
   geom_boxplot (mapping = aes(x = date, y = Ran_Eff, group = date), 
                 size = rel(0.5)) +
   theme_classic() +
-  labs(title = "Random Effects across all LTLAs over time",
+  labs(title = "Secular Trend across all LTLAs over time",
        x = "Date",
-       y = "Random Effects") +
+       y = "Secular Trend") +
   theme(
     plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
     axis.title.x = element_text(size = rel(0.9), face="bold"),
@@ -481,9 +477,9 @@ Lambda_time <- ggplot(data = sum_rt) +
   geom_boxplot (mapping = aes(x = date, y = Lambda, group = date), 
                 size = rel(0.5)) +
   theme_classic() +
-  labs(title = "Lambda over time",
+  labs(title = "National Trend over time",
        x = "Date",
-       y = "Lambda") +
+       y = "National Trend") +
   theme(
     plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
     axis.title.x = element_text(size = rel(0.9), face="bold"),
@@ -501,26 +497,26 @@ dev.off()
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_1.png"), width = 10, height = 6, units = 'in', res = 300)
 
 Plot_sum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
-  geom_point (mapping = aes(x = date, y = Lambda, 
+  geom_line (mapping = aes(x = date, y = Lambda, 
                            color = "Lambda"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Lambda*(Gamma[1]),
                            color = "Lambda*Gamma"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Ran_Eff,
                            color = "RanEffect"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Rt_data,
-                           color = "RtData"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Rt_LogP,
                            color = "RtLogP"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Rt_data,
+                           color = "RtData"), size =rel(1)) +
   scale_color_manual(name = "Parameter",
                      breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
-                                "RtData", "RtLogP"),
-                     values = c("Lambda" = "olivedrab",
-                                "Lambda*Gamma" = "darkblue",
-                                "RanEffect" = "salmon",
-                                "RtData" = "grey",
-                                "RtLogP" = "black"),
-                     labels = c("Lambda", "Lambda*Gamma", "Random Effects",
-                                "Observed Rt", "Predicted Rt")) +
+                                "RtLogP", "RtData"),
+                     values = c("Lambda" = "navy",
+                                "Lambda*Gamma" = "cyan3",
+                                "RanEffect" = "lightgreen",
+                                "RtLogP" = "forestgreen",
+                                "RtData" = "firebrick"),
+                     labels = c("National Trend", "National Trend x LTLA factor",
+                                "Secular Trend", "Predicted Rt", "Observed Rt")) +
   theme_classic() +
   labs(title = "Parameters in LTLA 1",
        x = "Date",
@@ -539,26 +535,26 @@ dev.off()
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_2.png"), width = 10, height = 6, units = 'in', res = 300)
 
 Plot_sum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
-  geom_point (mapping = aes(x = date, y = Lambda, 
+  geom_line (mapping = aes(x = date, y = Lambda, 
                             color = "Lambda"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Lambda*(Gamma[147]),
                            color = "Lambda*Gamma"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Ran_Eff,
                            color = "RanEffect"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Rt_data,
-                           color = "RtData"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Rt_LogP,
                            color = "RtLogP"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Rt_data,
+                           color = "RtData"), size =rel(1)) +
   scale_color_manual(name = "Parameter",
                      breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
-                                "RtData", "RtLogP"),
-                     values = c("Lambda" = "olivedrab",
-                                "Lambda*Gamma" = "darkblue",
-                                "RanEffect" = "salmon",
-                                "RtData" = "grey",
-                                "RtLogP" = "black"),
-                     labels = c("Lambda", "Lambda*Gamma", "Random Effects",
-                                "Observed Rt", "Predicted Rt")) +
+                                "RtLogP", "RtData"),
+                     values = c("Lambda" = "navy",
+                                "Lambda*Gamma" = "cyan3",
+                                "RanEffect" = "lightgreen",
+                                "RtLogP" = "forestgreen",
+                                "RtData" = "firebrick"),
+                     labels = c("National Trend", "National Trend x LTLA factor",
+                                "Secular Trend", "Predicted Rt", "Observed Rt")) +
   theme_classic() +
   labs(title = "Parameters in LTLA 2",
        x = "Date",
@@ -577,26 +573,26 @@ dev.off()
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_3.png"), width = 10, height = 6, units = 'in', res = 300)
 
 Plot_sum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
-  geom_point (mapping = aes(x = date, y = Lambda, 
+  geom_line (mapping = aes(x = date, y = Lambda, 
                             color = "Lambda"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Lambda*(Gamma[208]),
                            color = "Lambda*Gamma"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Ran_Eff,
                            color = "RanEffect"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Rt_data,
-                           color = "RtData"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Rt_LogP,
                            color = "RtLogP"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Rt_data,
+                           color = "RtData"), size =rel(1)) +
   scale_color_manual(name = "Parameter",
                      breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
-                                "RtData", "RtLogP"),
-                     values = c("Lambda" = "olivedrab",
-                                "Lambda*Gamma" = "darkblue",
-                                "RanEffect" = "salmon",
-                                "RtData" = "grey",
-                                "RtLogP" = "black"),
-                     labels = c("Lambda", "Lambda*Gamma", "Random Effects",
-                                "Observed Rt", "Predicted Rt")) +
+                                "RtLogP", "RtData"),
+                     values = c("Lambda" = "navy",
+                                "Lambda*Gamma" = "cyan3",
+                                "RanEffect" = "lightgreen",
+                                "RtLogP" = "forestgreen",
+                                "RtData" = "firebrick"),
+                     labels = c("National Trend", "National Trend x LTLA factor",
+                                "Secular Trend", "Predicted Rt", "Observed Rt")) +
   theme_classic() +
   labs(title = "Parameters in LTLA 3",
        x = "Date",
@@ -615,26 +611,26 @@ dev.off()
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_4.png"), width = 10, height = 6, units = 'in', res = 300)
 
 Plot_sum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
-  geom_point (mapping = aes(x = date, y = Lambda, 
+  geom_line (mapping = aes(x = date, y = Lambda, 
                             color = "Lambda"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Lambda*(Gamma[299]),
                            color = "Lambda*Gamma"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Ran_Eff,
                            color = "RanEffect"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Rt_data,
-                           color = "RtData"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Rt_LogP,
                            color = "RtLogP"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Rt_data,
+                           color = "RtData"), size =rel(1)) +
   scale_color_manual(name = "Parameter",
                      breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
-                                "RtData", "RtLogP"),
-                     values = c("Lambda" = "olivedrab",
-                                "Lambda*Gamma" = "darkblue",
-                                "RanEffect" = "salmon",
-                                "RtData" = "grey",
-                                "RtLogP" = "black"),
-                     labels = c("Lambda", "Lambda*Gamma", "Random Effects",
-                                "Observed Rt", "Predicted Rt")) +
+                                "RtLogP", "RtData"),
+                     values = c("Lambda" = "navy",
+                                "Lambda*Gamma" = "cyan3",
+                                "RanEffect" = "lightgreen",
+                                "RtLogP" = "forestgreen",
+                                "RtData" = "firebrick"),
+                     labels = c("National Trend", "National Trend x LTLA factor",
+                                "Secular Trend", "Predicted Rt", "Observed Rt")) +
   theme_classic() +
   labs(title = "Parameters in LTLA 4",
        x = "Date",
@@ -650,11 +646,232 @@ Plot_sum_4
 
 dev.off()
 
-library(grid)
-library(gridExtra)
+library(ggpubr)
 
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_all.png"), width = 10, height = 6, units = 'in', res = 300)
-grid.arrange(Plot_sum,Plot_sum_2, Plot_sum_3, Plot_sum_4,ncol=2)
+
+ggarrange(Plot_sum,Plot_sum_2, Plot_sum_3, Plot_sum_4,
+             common.legend = TRUE, legend = "right", ncol = 2, nrow = 2)
+dev.off()
+
+
+
+# FOR THESIS --------------------------------------------------------------
+
+
+#### Renaming 4LTLA plot ####
+
+Psum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
+  geom_line (mapping = aes(x = date, y = Lambda, 
+                            color = "Lambda"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Lambda*(Gamma[1]),
+                           color = "Lambda*Gamma"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Ran_Eff,
+                           color = "RanEffect"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Rt_LogP,
+                           color = "RtLogP"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Rt_data,
+                           color = "RtData"), size =rel(1)) +
+  scale_color_manual(name = "Parameter",
+                     breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
+                                "RtLogP", "RtData"),
+                     values = c("Lambda" = "navy",
+                                "Lambda*Gamma" = "cyan3",
+                                "RanEffect" = "lightgreen",
+                                "RtLogP" = "forestgreen",
+                                "RtData" = "firebrick"),
+                     labels = c("National Trend", "National Trend x LTLA factor",
+                                "Secular Trend", "Predicted Rt", "Observed Rt")) +
+  theme_classic() +
+  labs(title = "a",
+       x = "Date",
+       y = "Parameter value") +
+  theme(
+    plot.title = element_text(size = rel(1), face="bold"),
+    axis.title.x = element_text(size = rel(0.9), face="bold"),
+    axis.title.y = element_text(size = rel(0.9), face="bold"),
+    axis.text = element_text(size=rel(0.7)),
+    legend.title = element_text(size = rel(0.9), face="bold"),
+    legend.text = element_text(size=rel(0.7)))
+Psum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
+  geom_line (mapping = aes(x = date, y = Lambda, 
+                            color = "Lambda"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Lambda*(Gamma[147]),
+                           color = "Lambda*Gamma"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Ran_Eff,
+                           color = "RanEffect"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Rt_LogP,
+                           color = "RtLogP"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Rt_data,
+                           color = "RtData"), size =rel(1)) +
+  scale_color_manual(name = "Parameter",
+                     breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
+                                "RtLogP", "RtData"),
+                     values = c("Lambda" = "navy",
+                                "Lambda*Gamma" = "cyan3",
+                                "RanEffect" = "lightgreen",
+                                "RtLogP" = "forestgreen",
+                                "RtData" = "firebrick"),
+                     labels = c("National Trend", "National Trend x LTLA factor",
+                                "Secular Trend", "Predicted Rt", "Observed Rt")) +
+  theme_classic() +
+  labs(title = "b",
+       x = "Date",
+       y = "Parameter value") +
+  theme(
+    plot.title = element_text(size = rel(1), face="bold"),
+    axis.title.x = element_text(size = rel(0.9), face="bold"),
+    axis.title.y = element_text(size = rel(0.9), face="bold"),
+    axis.text = element_text(size=rel(0.7)),
+    legend.title = element_text(size = rel(0.9), face="bold"),
+    legend.text = element_text(size=rel(0.7)))
+Psum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
+  geom_line (mapping = aes(x = date, y = Lambda, 
+                            color = "Lambda"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Lambda*(Gamma[208]),
+                           color = "Lambda*Gamma"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Ran_Eff,
+                           color = "RanEffect"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Rt_LogP,
+                           color = "RtLogP"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Rt_data,
+                           color = "RtData"), size =rel(1)) +
+  scale_color_manual(name = "Parameter",
+                     breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
+                                "RtLogP", "RtData"),
+                     values = c("Lambda" = "navy",
+                                "Lambda*Gamma" = "cyan3",
+                                "RanEffect" = "lightgreen",
+                                "RtLogP" = "forestgreen",
+                                "RtData" = "firebrick"),
+                     labels = c("National Trend", "National Trend x LTLA factor",
+                                "Secular Trend", "Predicted Rt", "Observed Rt")) +
+  theme_classic() +
+  labs(title = "c",
+       x = "Date",
+       y = "Parameter value") +
+  theme(
+    plot.title = element_text(size = rel(1), face="bold"),
+    axis.title.x = element_text(size = rel(0.9), face="bold"),
+    axis.title.y = element_text(size = rel(0.9), face="bold"),
+    axis.text = element_text(size=rel(0.7)),
+    legend.title = element_text(size = rel(0.9), face="bold"),
+    legend.text = element_text(size=rel(0.7)))
+Psum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
+  geom_line (mapping = aes(x = date, y = Lambda, 
+                            color = "Lambda"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Lambda*(Gamma[299]),
+                           color = "Lambda*Gamma"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Ran_Eff,
+                           color = "RanEffect"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Rt_LogP,
+                           color = "RtLogP"), size =rel(1)) +
+  geom_line (mapping = aes(x = date, y = Rt_data,
+                           color = "RtData"), size =rel(1)) +
+  scale_color_manual(name = "Parameter",
+                     breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
+                                "RtLogP", "RtData"),
+                     values = c("Lambda" = "navy",
+                                "Lambda*Gamma" = "cyan3",
+                                "RanEffect" = "lightgreen",
+                                "RtLogP" = "forestgreen",
+                                "RtData" = "firebrick"),
+                     labels = c("National Trend", "National Trend x LTLA factor",
+                                "Secular Trend", "Predicted Rt", "Observed Rt")) +
+  theme_classic() +
+  labs(title = "d",
+       x = "Date",
+       y = "Parameter value") +
+  theme(
+    plot.title = element_text(size = rel(1), face="bold"),
+    axis.title.x = element_text(size = rel(0.9), face="bold"),
+    axis.title.y = element_text(size = rel(0.9), face="bold"),
+    axis.text = element_text(size=rel(0.7)),
+    legend.title = element_text(size = rel(0.9), face="bold"),
+    legend.text = element_text(size=rel(0.7)))
+png(paste0("Figures/", model_name, "/LTLA_sum_plot_all_abc.png"), width = 10, height = 6, units = 'in', res = 300)
+ggarrange(Psum,Psum_2, Psum_3, Psum_4,
+          common.legend = TRUE, legend = "right", ncol = 2, nrow = 2)
+dev.off()
+ 
+
+#### Combine w/ other ####
+
+# Obs vs Pre
+
+Keep_1a <- ggplot(data = sum_rt) +
+  geom_point(mapping = aes(x = Rt_data, y = Rt_LogP), size = rel(0.8)) +
+  geom_abline(x = 0, y = 1, col = "red") +
+  theme_classic() +
+  labs(title = "a",
+       x = "Rt Observed",
+       y = "Rt Predicted") +
+  theme(
+    plot.title = element_text(size = rel(1), face="bold"),
+    axis.title.x = element_text(size = rel(0.9), face="bold"),
+    axis.title.y = element_text(size = rel(0.9), face="bold"),
+    axis.text = element_text(size=rel(0.7)))
+Keep_1a
+
+#png("Figures/4model_check_Pre_Obs.png", width = 10, height = 6, units = 'in', res = 300)
+
+ggarrange(Keep_1a,
+          ncol = 2, nrow = 2)
+dev.off()
+
+# Scatter
+
+Keep_2a <- ggplot(data = sum_rt) +
+  geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date,
+                              color = "Rt_data"), size = rel(0.5)) +
+  geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date,
+                              color = "Rt_LogP"), size = rel(0.5)) +
+  scale_color_manual(name="Reproduction number",
+                     breaks = c("Rt_data", "Rt_LogP"),
+                     values = c("Rt_data"="firebrick", 
+                                "Rt_LogP"="forestgreen"),
+                     labels=c("Observed", "Predicted")) +
+  theme_classic() +
+  labs(title = "a",
+       x = "Date",
+       y = "Reproduction number") +
+  theme(
+    plot.title = element_text(size = rel(1), face="bold"),
+    axis.title.x = element_text(size = rel(0.9), face="bold"),
+    axis.title.y = element_text(size = rel(0.9), face="bold"),
+    axis.text = element_text(size=rel(0.7)),
+    legend.title = element_text(size = rel(0.9), face="bold"),
+    legend.text = element_text(size=rel(0.7)))
+Keep_2a
+
+#png("Figures/4model_check_Pre_Obs_time.png", width = 10, height = 6, units = 'in', res = 300)
+
+ggarrange(Keep_2a,
+          common.legend = TRUE, ncol = 2, nrow = 2)
+dev.off()
+
+# Secular Trend
+
+Keep_3a = SES + geom_point(
+  data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
+                    y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(0.8)) +
+  theme_classic() +
+  labs(title = "a",
+       x = "Date",
+       y = "Secular Trend") +
+  theme(
+    plot.title = element_text(size = rel(1), face="bold"),
+    axis.title.x = element_text(size = rel(0.9), face="bold"),
+    axis.title.y = element_text(size = rel(0.9), face="bold"),
+    axis.text = element_text(size=rel(0.7)),
+    legend.title = element_text(size = rel(0.9), face="bold"),
+    legend.text = element_text(size=rel(0.7)))
+Keep_3a
+
+#png("Figures/4model_check_SES.png", width = 10, height = 6, units = 'in', res = 300)
+
+ggarrange(Keep_3a,
+          ncol = 2, nrow = 2)
 dev.off()
 
 

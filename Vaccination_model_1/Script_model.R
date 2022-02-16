@@ -344,10 +344,10 @@ cat(paste0("Model compilation done\n"))
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 10000 #Increase
-ModelMetaData$warmup 		= 2000 #Increase
+ModelMetaData$iter 			= 2000 #Increase
+ModelMetaData$warmup 		= 500 #Increase
 ModelMetaData$thin 			= 1
-ModelMetaData$chains 		= 10 #Increase
+ModelMetaData$chains 		= 8 #Increase
 ModelMetaData$adapt_delta 	= 0.9
 ModelMetaData$max_treedepth = 15
 ModelMetaData$ModelChar 	= ModelChar
@@ -409,4 +409,4 @@ loo_run = loo(fit)
 loo_run
 
 # saveRDS(loo_run, paste0("loo_", model_name, ".Rds")
-# saveRDS(loo_run, paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/", "loo_", model_name,".Rds")
+# saveRDS(loo_run, paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/", "loo_", model_name,".Rds"))

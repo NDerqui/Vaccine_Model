@@ -34,7 +34,7 @@ dir.create(here("Results/Description"),recursive = TRUE)
 
 
 
-# DES: PLOTS --------------------------------------------------------------
+# PLOTS --------------------------------------------------------------
 
 
 Rt_data <- exp(data_model$Rt)
@@ -63,9 +63,9 @@ Vax_Date <- ggplot(data = sum_data) +
                               color = "Dose_3"), size = rel(0.5)) +
   scale_color_manual(name="Number of doses",
                      breaks = c("Dose_1", "Dose_2", "Dose_3"),
-                     values = c("Dose_1"="lightskyblue", 
-                                "Dose_2"="palegreen",
-                                "Dose_3"="salmon"),
+                     values = c("Dose_1"="navy", 
+                                "Dose_2"="cyan3",
+                                "Dose_3"="lightgreen"),
                      labels=c("1 dose", "2 doses", "3 doses")) +
   theme_classic() +
   labs(title = "Distribution of vaccinated individuals proportion across all LTLAs over time",
@@ -93,9 +93,9 @@ Vax_Date_line <- ggplot(data = sum_data) +
                            color = "Dose_3")) +
   scale_color_manual(name="Number of doses",
                      breaks = c("Dose_1", "Dose_2", "Dose_3"),
-                     values = c("Dose_1"="lightskyblue", 
-                                "Dose_2"="palegreen",
-                                "Dose_3"="salmon"),
+                     values = c("Dose_1"="navy", 
+                                "Dose_2"="cyan3",
+                                "Dose_3"="lightgreen"),
                      labels=c("1 dose", "2 doses", "3 doses")) +
   theme_classic() +
   labs(title = "Proportion of vaccinated individuals in all LTLAs over time",
@@ -189,9 +189,9 @@ Vax_Date_age <-  ggplot(data = data_age) +
                               color = "Third_Prop"), size = rel(0.2), outlier.size = 0.01) +
   scale_color_manual(name="Number of doses",
                      breaks = c("First_Prop", "Second_Prop", "Third_Prop"),
-                     values = c("First_Prop"="lightskyblue", 
-                                "Second_Prop"="palegreen",
-                                "Third_Prop"="salmon"),
+                     values = c("First_Prop"="navy", 
+                                "Second_Prop"="cyan3",
+                                "Third_Prop"="lightgreen"),
                      labels=c("1 dose", "2 doses", "3 doses")) +
   theme_classic() +
   labs(title = "Distribution of vaccinated individuals proportion across all LTLAs over time",
@@ -214,7 +214,7 @@ dev.off()
 
 
 
-# DES: TABLES -------------------------------------------------------------
+# TABLES -------------------------------------------------------------
 
 
 names(sum_data)
