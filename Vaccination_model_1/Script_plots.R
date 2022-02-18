@@ -292,6 +292,9 @@ Obs_Pre_Date <- ggplot(data = sum_rt) +
                                color = "Rt_data"), size = rel(0.5)) +
    geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date,
                                color = "Rt_LogP"), size = rel(0.5)) +
+  geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021",
+                                    "19/07/2021"), format = "%d/%m/%Y"),
+             color = "darkmagenta") +
    scale_color_manual(name="Reproduction number",
                       breaks = c("Rt_data", "Rt_LogP"),
                       values = c("Rt_data"="firebrick", 
@@ -349,7 +352,10 @@ dev.off()
 png(paste0("Figures/", model_name, "/Pre_Rt_time.png"), width = 10, height = 6, units = 'in', res = 600)
  
 Rt_Pre_Date <- ggplot(data = sum_rt) +
-   geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date), size = rel(0.5)) +
+  geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date), size = rel(0.5)) +
+  geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021",
+                                    "19/07/2021"), format = "%d/%m/%Y"),
+             color = "darkmagenta") +
    theme_classic() +
    labs(title = "Predicted Rt across LTLAs over time",
         x = "Date",
@@ -440,8 +446,11 @@ for(i in 2:length(NamesLTLAs)){
 png(paste0("Figures/", model_name, "/SES.png"), width = 10, height = 6, units = 'in', res = 600)
  
 SES = SES + geom_point(
-   data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
+  data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
                      y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(0.8)) +
+  geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021",
+                                    "19/07/2021"), format = "%d/%m/%Y"),
+             color = "darkmagenta") +
    theme_classic() +
    labs(title = "Secular Trend across all LTLAs over time",
         x = "Date",
@@ -465,6 +474,9 @@ png(paste0("Figures/", model_name, "/RanEffect.png"), width = 10, height = 6, un
 RanEff_time <- ggplot(data = sum_rt) +
    geom_boxplot (mapping = aes(x = date, y = Ran_Eff, group = date), 
                  size = rel(0.5)) +
+  geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021",
+                                    "19/07/2021"), format = "%d/%m/%Y"),
+             color = "darkmagenta") +
    theme_classic() +
    labs(title = "Secular Trend across all LTLAs over time",
         x = "Date",
@@ -488,6 +500,9 @@ png(paste0("Figures/", model_name, "/Lambda.png"), width = 10, height = 6, units
 Lambda_time <- ggplot(data = sum_rt) +
    geom_boxplot (mapping = aes(x = date, y = LambdaParameter, group = date), 
                  size = rel(0.5)) +
+  geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021",
+                                    "19/07/2021"), format = "%d/%m/%Y"),
+             color = "darkmagenta") +
    theme_classic() +
    labs(title = "National Trend over time",
         x = "Date",
