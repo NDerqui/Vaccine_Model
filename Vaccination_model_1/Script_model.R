@@ -97,6 +97,19 @@ BackDate_Char <- "_BD"
 
 Nested_Char <- ""
 
+# Analyses by steps of lockdown
+
+DoKnots <- TRUE
+
+# Sets of easing lockdown
+
+lockdown_steps <- as.Date(c("05/01/2021", "08/03/2021", "19/04/2021",
+                            "17/05/2021", "19/07/2021"), format = "%d/%m/%Y")
+lockdown__pseudosteps <- as.Date(c("05/01/2021", "08/03/2021", "01/04/2021",
+                                   "19/04/2021", "17/05/2021", "21/06/2021",
+                                   "03/07/2021", "11/07/2021", "19/07/2021"),
+                                 format = "%d/%m/%Y")
+
 
 
 # DATA CLEANING & MERGE --------------------------------------------------
@@ -168,10 +181,27 @@ names(data_merge)
 data_merge <- data_merge[complete.cases(data_merge),]
 
 
+# Steps
+
+# First lockdown step is not in the data: take the initial date
+
+lockdown_steps %in% data_merge$date
+min(data_merge$date)
+
+Steps <- c(min(data_merge$date), lockdown_steps[2:5], max(data_merge$date))
+Steps %in% data_merge$date
+
+# Define knots with a day time scale
+
+Knots <- round(as.numeric(floor((Steps - Steps[1]))), digits = 0)
+Knots_weeks <- round(as.numeric(floor((Steps - Steps[1])/7)), digits = 0)
+#Match the weeks of the Knots to the ones in the data (start on week 4)
+
+
 # Weekly dates: var for no. of weeks & only one obs per week
 
 #Var for the number of weeks
-data_merge$week <- round(as.numeric(floor((data_merge$date - Date_Start)/7)), digits = 0)
+data_merge$week <- round(as.numeric(floor((data_merge$date - min(data_merge$date))/7)), digits = 0)
 
 #Combi for unique combination of LTLA*week
 data_merge <- mutate(data_merge, combi = paste0(data_merge$week, data_merge$ltla_name))
@@ -179,10 +209,12 @@ data_merge <- mutate(data_merge, combi = paste0(data_merge$week, data_merge$ltla
 #Remove the duplicates
 data_merge <- filter(data_merge, !duplicated(data_merge$combi))
 
+
 # Select cols
 
 data_model <- select(data_merge, "ltla_name", "date", "week",
                      "First_Prop", "Second_Prop", "Third_Prop", "Rt")
+
 
 
 
@@ -203,6 +235,9 @@ NumLTLAs
 NumTimepoints <- length(unique(data_model$date))
 NumTimepoints
 length(unique(data_model$week))
+
+Timepoints <- data_model$week
+Timepoints
 
 # No of total obs 
 
@@ -230,6 +265,16 @@ for(i in 1: NumLTLAs){
 }
 NumWeeksByLTLA
 
+# No of Knots
+
+NumKnots <- length(Knots)
+NumKnots
+
+# No of LTLAs x No of Knots
+
+NumPointsLine <- NumLTLAs*NumKnots
+NumPointsLine
+
 
 #### Rt log ####
 
@@ -246,7 +291,7 @@ IncludeScaling <- 1
 
 data_model <- select(data_model,
                      "ltla_name", "LTLAs", "date", "week", covar_vax, "Rt")
-saveRDS(data_model, "data_model_for_plots.Rds")
+# saveRDS(data_model, "data_model_for_plots.Rds")
 
 data_stan <- list(
           RtVals = data_model$Rt,
@@ -256,8 +301,13 @@ data_stan <- list(
           NumDatapoints = NumDatapoints,
           LTLAs = data_model$LTLAs,
           NumTimepoints = NumTimepoints,
+          TimePoints = Timepoints,
           IncludeIntercept = IncludeIntercept,
-          IncludeScaling = IncludeScaling
+          IncludeScaling = IncludeScaling,
+          NumKnots = NumKnots,
+          Knots = Knots_weeks,
+          NumPointsLine = NumPointsLine,
+          Timepoints = Timepoints
    )
 
 
@@ -265,7 +315,7 @@ data_stan <- list(
 # DESCRIPTION -------------------------------------------------------------
 
 
-## A more detailed description  of data is on the description script ##
+## A more detailed description  of data is on the description-workspace ##
 
 Rt_data <- exp(data_model$Rt)
 
@@ -337,17 +387,17 @@ Rt_Obs_Date
 library(here)
 
 #ModelChar <- "2stage_LFM_non_centered_Vax"
-ModelChar <- "2stage_LFM_non_centered_Vax_log_lik"
+ModelChar <- "2stage_LFM_non_centered_Vax_log_lik_linear_int"
 StanModel <- stan_model(here(paste0("Stan_models/",ModelChar, ".stan")))
 cat(paste0("Model compilation done\n"))
 
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 2000 #Increase
-ModelMetaData$warmup 		= 500 #Increase
+ModelMetaData$iter 			= 100 #Increase
+ModelMetaData$warmup 		= 20 #Increase
 ModelMetaData$thin 			= 1
-ModelMetaData$chains 		= 8 #Increase
+ModelMetaData$chains 		= 1 #Increase
 ModelMetaData$adapt_delta 	= 0.9
 ModelMetaData$max_treedepth = 15
 ModelMetaData$ModelChar 	= ModelChar
@@ -368,7 +418,8 @@ fit = sampling(StanModel, data = data_stan,
                thin 	= ModelMetaData$thin, 
                chains 	= ModelMetaData$chains, 
                pars 	= c("VaxEffect", "LogPredictions", "random_effects",
-                          "lambda", "gamma", "intercept", "log_lik"), 
+                         "lambda_parameters", "gamma", "intercept", "log_lik", 
+                         "origin", "slope", "lambda"), 
                control = list(adapt_delta = ModelMetaData$adapt_delta,
                               max_treedepth = ModelMetaData$max_treedepth))
 
@@ -392,7 +443,7 @@ fit = sampling(StanModel, data = data_stan,
 
 #### Model name ####
 
-model_note <- "" # Ie. "_nointercept"
+model_note <- "_base" # Ie. "_nointercept"
 
 model_name <- paste0("fit_", ModelMetaData$iter, "_", ModelMetaData$chains, model_note)
 
@@ -409,4 +460,4 @@ loo_run = loo(fit)
 loo_run
 
 # saveRDS(loo_run, paste0("loo_", model_name, ".Rds")
-saveRDS(loo_run, paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/", "loo_", model_name,".Rds"))
+# saveRDS(loo_run, paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/", "loo_", model_name,".Rds")

@@ -813,9 +813,9 @@ Keep_1d <- ggplot(data = sum_rt) +
     axis.text = element_text(size=rel(0.7)))
 Keep_1d
 
-saveRDS(paste0("Figures/Combined_figures/Keep_1", model_name, ".png"))
+saveRDS(Keep_1d, paste0("Figures/Combined_figures/Data/Keep_1", model_name, ".Rds"))
 
-#png("Figures/Combined_figures/4model_check_Pre_Obs.png", width = 10, height = 6, units = 'in', res = 300)
+png("Figures/Combined_figures/4model_check_Pre_Obs.png", width = 10, height = 6, units = 'in', res = 300)
 
 ggarrange(Keep_1a, Keep_1b, Keep_1c, Keep_1d,
           ncol = 2, nrow = 2)
@@ -846,9 +846,9 @@ Keep_2d <- ggplot(data = sum_rt) +
     legend.text = element_text(size=rel(0.7)))
 Keep_2d
 
-saveRDS(paste0("Figures/Combined_figures/Keep_2", model_name, ".png"))
+saveRDS(Keep_2d, paste0("Figures/Combined_figures/Data/Keep_2", model_name, ".Rds"))
 
-#png("Figures/Combined_figures/4model_check_Pre_Obs_time.png", width = 10, height = 6, units = 'in', res = 300)
+png("Figures/Combined_figures/4model_check_Pre_Obs_time.png", width = 10, height = 6, units = 'in', res = 300)
 
 ggarrange(Keep_2a, Keep_2b, Keep_2c,Keep_2d,
           common.legend = TRUE, ncol = 2, nrow = 2)
@@ -872,9 +872,9 @@ Keep_3d = SES + geom_point(
     legend.text = element_text(size=rel(0.7)))
 Keep_3d
 
-saveRDS(paste0("Figures/Combined_figures/Keep_3", model_name, ".png"))
+saveRDS(Keep_3d, paste0("Figures/Combined_figures/Data/Keep_3", model_name, ".Rds"))
 
-#png("Figures/Combined_figures/4model_check_SES.png", width = 10, height = 6, units = 'in', res = 300)
+png("Figures/Combined_figures/4model_check_SES.png", width = 10, height = 6, units = 'in', res = 300)
 
 ggarrange(Keep_3a, Keep_3b, Keep_3c, Keep_3d,
           ncol = 2, nrow = 2)
