@@ -760,9 +760,9 @@ Lambda_dummy
 #### Renaming 4LTLA plot ####
 
 Psum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
-  geom_line (mapping = aes(x = date, y = Lambda, 
+  geom_line (mapping = aes(x = date, y = LambdaParameter, 
                            color = "Lambda"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Lambda*(Gamma[1]),
+  geom_line (mapping = aes(x = date, y = LambdaParameter*(Gamma[1]),
                            color = "Lambda*Gamma"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Ran_Eff,
                            color = "RanEffect"), size =rel(1)) +
@@ -792,9 +792,9 @@ Psum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
     legend.title = element_text(size = rel(0.9), face="bold"),
     legend.text = element_text(size=rel(0.7)))
 Psum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
-  geom_line (mapping = aes(x = date, y = Lambda, 
+  geom_line (mapping = aes(x = date, y = LambdaParameter, 
                            color = "Lambda"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Lambda*(Gamma[147]),
+  geom_line (mapping = aes(x = date, y = LambdaParameter*(Gamma[147]),
                            color = "Lambda*Gamma"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Ran_Eff,
                            color = "RanEffect"), size =rel(1)) +
@@ -824,9 +824,9 @@ Psum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
     legend.title = element_text(size = rel(0.9), face="bold"),
     legend.text = element_text(size=rel(0.7)))
 Psum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
-  geom_line (mapping = aes(x = date, y = Lambda, 
+  geom_line (mapping = aes(x = date, y = LambdaParameter, 
                            color = "Lambda"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Lambda*(Gamma[208]),
+  geom_line (mapping = aes(x = date, y = LambdaParameter*(Gamma[208]),
                            color = "Lambda*Gamma"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Ran_Eff,
                            color = "RanEffect"), size =rel(1)) +
@@ -856,9 +856,9 @@ Psum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
     legend.title = element_text(size = rel(0.9), face="bold"),
     legend.text = element_text(size=rel(0.7)))
 Psum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
-  geom_line (mapping = aes(x = date, y = Lambda, 
+  geom_line (mapping = aes(x = date, y = LambdaParameter, 
                            color = "Lambda"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Lambda*(Gamma[299]),
+  geom_line (mapping = aes(x = date, y = LambdaParameter*(Gamma[299]),
                            color = "Lambda*Gamma"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Ran_Eff,
                            color = "RanEffect"), size =rel(1)) +
