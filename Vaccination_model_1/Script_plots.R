@@ -913,7 +913,7 @@ Keep_1d
 
 saveRDS(Keep_1d, paste0("Figures/Combined_figures/Data/Keep_1", model_name, ".Rds"))
 
-#png("Figures/Combined_figures/4model_check_Pre_Obs.png", width = 10, height = 6, units = 'in', res = 300)
+png("Figures/Combined_figures/4model_linear_Pre_Obs.png", width = 10, height = 6, units = 'in', res = 300)
 
 ggarrange(Keep_1a, Keep_1b, Keep_1c, Keep_1d,
           ncol = 2, nrow = 2)
@@ -946,10 +946,10 @@ Keep_2d
 
 saveRDS(Keep_2d, paste0("Figures/Combined_figures/Data/Keep_2", model_name, ".Rds"))
 
-#png("Figures/Combined_figures/4model_check_Pre_Obs_time.png", width = 10, height = 6, units = 'in', res = 300)
+png("Figures/Combined_figures/4model_linear_Pre_Obs_time.png", width = 10, height = 6, units = 'in', res = 300)
 
 ggarrange(Keep_2a, Keep_2b, Keep_2c,Keep_2d,
-          common.legend = TRUE, ncol = 2, nrow = 2)
+          common.legend = TRUE, legend = "bottom", ncol = 2, nrow = 2)
 dev.off()
 
 # Secular Trend
@@ -972,7 +972,7 @@ Keep_3d
 
 saveRDS(Keep_3d, paste0("Figures/Combined_figures/Data/Keep_3", model_name, ".Rds"))
 
-#png("Figures/Combined_figures/4model_check_SES.png", width = 10, height = 6, units = 'in', res = 300)
+png("Figures/Combined_figures/4model_linear_SES.png", width = 10, height = 6, units = 'in', res = 300)
 
 ggarrange(Keep_3a, Keep_3b, Keep_3c, Keep_3d,
           ncol = 2, nrow = 2)
