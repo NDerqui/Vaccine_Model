@@ -851,7 +851,7 @@ saveRDS(Keep_2d, paste0("Figures/Combined_figures/Data/Keep_2", model_name, ".Rd
 png("Figures/Combined_figures/4model_check_Pre_Obs_time.png", width = 10, height = 6, units = 'in', res = 300)
 
 ggarrange(Keep_2a, Keep_2b, Keep_2c,Keep_2d,
-          common.legend = TRUE, ncol = 2, nrow = 2)
+          common.legend = TRUE, legend = "bottom", ncol = 2, nrow = 2)
 dev.off()
 
 # Secular Trend
