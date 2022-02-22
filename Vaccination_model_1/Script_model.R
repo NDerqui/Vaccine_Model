@@ -303,11 +303,11 @@ data_stan <- list(
           NumTimepoints = NumTimepoints,
           TimePoints = Timepoints,
           IncludeIntercept = IncludeIntercept,
-          IncludeScaling = IncludeScaling,
-          NumKnots = NumKnots,
-          Knots = Knots_weeks,
-          NumPointsLine = NumPointsLine,
-          Timepoints = Timepoints
+          IncludeScaling = IncludeScaling
+          # NumKnots = NumKnots,
+          # Knots = Knots_weeks,
+          # NumPointsLine = NumPointsLine,
+          # Timepoints = Timepoints
    )
 
 
@@ -387,15 +387,15 @@ Rt_Obs_Date
 library(here)
 
 #ModelChar <- "2stage_LFM_non_centered_Vax"
-ModelChar <- "2stage_LFM_non_centered_Vax_log_lik_linear_int"
+ModelChar <- "2stage_LFM_non_centered_Vax_log_lik"
 StanModel <- stan_model(here(paste0("Stan_models/",ModelChar, ".stan")))
 cat(paste0("Model compilation done\n"))
 
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 100 #Increase
-ModelMetaData$warmup 		= 20 #Increase
+ModelMetaData$iter 			= 1000 #Increase
+ModelMetaData$warmup 		= 200 #Increase
 ModelMetaData$thin 			= 1
 ModelMetaData$chains 		= 1 #Increase
 ModelMetaData$adapt_delta 	= 0.9
@@ -418,8 +418,7 @@ fit = sampling(StanModel, data = data_stan,
                thin 	= ModelMetaData$thin, 
                chains 	= ModelMetaData$chains, 
                pars 	= c("VaxEffect", "LogPredictions", "random_effects",
-                         "lambda_parameters", "gamma", "intercept", "log_lik", 
-                         "origin", "slope", "lambda"), 
+                         "lambda", "gamma", "intercept", "log_lik"), 
                control = list(adapt_delta = ModelMetaData$adapt_delta,
                               max_treedepth = ModelMetaData$max_treedepth))
 
