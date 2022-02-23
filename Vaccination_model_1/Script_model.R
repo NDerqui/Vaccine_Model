@@ -97,19 +97,6 @@ BackDate_Char <- "_BD"
 
 Nested_Char <- ""
 
-# Analyses by steps of lockdown
-
-DoKnots <- TRUE
-
-# Sets of easing lockdown
-
-lockdown_steps <- as.Date(c("05/01/2021", "08/03/2021", "19/04/2021",
-                            "17/05/2021", "19/07/2021"), format = "%d/%m/%Y")
-lockdown__pseudosteps <- as.Date(c("05/01/2021", "08/03/2021", "01/04/2021",
-                                   "19/04/2021", "17/05/2021", "21/06/2021",
-                                   "03/07/2021", "11/07/2021", "19/07/2021"),
-                                 format = "%d/%m/%Y")
-
 
 
 # DATA CLEANING & MERGE --------------------------------------------------
@@ -143,7 +130,7 @@ drt <- rename(drt, ltla_name = area)
 # Select the vars of interest
 
 dvax <- select(dvax, "ltla_name", "date",
-                "First_Prop", "Second_Prop", "Third_Prop")
+               "First_Prop", "Second_Prop", "Third_Prop")
 drt <- select(drt, "ltla_name", "date", "Rt")
 
 # Data from Rt has now more obs
@@ -181,27 +168,10 @@ names(data_merge)
 data_merge <- data_merge[complete.cases(data_merge),]
 
 
-# Steps
-
-# First lockdown step is not in the data: take the initial date
-
-lockdown_steps %in% data_merge$date
-min(data_merge$date)
-
-Steps <- c(min(data_merge$date), lockdown_steps[2:5], max(data_merge$date))
-Steps %in% data_merge$date
-
-# Define knots with a day time scale
-
-Knots <- round(as.numeric(floor((Steps - Steps[1]))), digits = 0)
-Knots_weeks <- round(as.numeric(floor((Steps - Steps[1])/7)), digits = 0)
-#Match the weeks of the Knots to the ones in the data (start on week 4)
-
-
 # Weekly dates: var for no. of weeks & only one obs per week
 
 #Var for the number of weeks
-data_merge$week <- round(as.numeric(floor((data_merge$date - min(data_merge$date))/7)), digits = 0)
+data_merge$week <- round(as.numeric(floor((data_merge$date - Date_Start)/7)), digits = 0)
 
 #Combi for unique combination of LTLA*week
 data_merge <- mutate(data_merge, combi = paste0(data_merge$week, data_merge$ltla_name))
@@ -209,12 +179,10 @@ data_merge <- mutate(data_merge, combi = paste0(data_merge$week, data_merge$ltla
 #Remove the duplicates
 data_merge <- filter(data_merge, !duplicated(data_merge$combi))
 
-
 # Select cols
 
 data_model <- select(data_merge, "ltla_name", "date", "week",
                      "First_Prop", "Second_Prop", "Third_Prop", "Rt")
-
 
 
 
@@ -235,9 +203,6 @@ NumLTLAs
 NumTimepoints <- length(unique(data_model$date))
 NumTimepoints
 length(unique(data_model$week))
-
-Timepoints <- data_model$week
-Timepoints
 
 # No of total obs 
 
@@ -265,16 +230,6 @@ for(i in 1: NumLTLAs){
 }
 NumWeeksByLTLA
 
-# No of Knots
-
-NumKnots <- length(Knots)
-NumKnots
-
-# No of LTLAs x No of Knots
-
-NumPointsLine <- NumLTLAs*NumKnots
-NumPointsLine
-
 
 #### Rt log ####
 
@@ -287,28 +242,32 @@ IncludeIntercept <- 1
 IncludeScaling <- 1
 
 
+#### Set vax proportions ####
+
+vax <- data.frame(
+  First_Prop = rep(0.30, times = 12726),
+  Second_Prop = rep(0.05, times = 12726),
+  Third_Prop = rep(0.0, times = 12726)
+)
+
+
 #### Stan Data ####
 
 data_model <- select(data_model,
                      "ltla_name", "LTLAs", "date", "week", covar_vax, "Rt")
-# saveRDS(data_model, "data_model_for_plots.Rds")
+saveRDS(data_model, "data_model_for_plots.Rds")
 
 data_stan <- list(
-          RtVals = data_model$Rt,
-          VaxProp = data_model[,covar_vax],
-          NumLTLAs = NumLTLAs,
-          NumDoses = length(covar_vax),
-          NumDatapoints = NumDatapoints,
-          LTLAs = data_model$LTLAs,
-          NumTimepoints = NumTimepoints,
-          TimePoints = Timepoints,
-          IncludeIntercept = IncludeIntercept,
-          IncludeScaling = IncludeScaling
-          # NumKnots = NumKnots,
-          # Knots = Knots_weeks,
-          # NumPointsLine = NumPointsLine,
-          # Timepoints = Timepoints
-   )
+  RtVals = data_model$Rt,
+  VaxProp = data_model[,covar_vax],
+  NumLTLAs = NumLTLAs,
+  NumDoses = length(covar_vax),
+  NumDatapoints = NumDatapoints,
+  LTLAs = data_model$LTLAs,
+  NumTimepoints = NumTimepoints,
+  IncludeIntercept = IncludeIntercept,
+  IncludeScaling = IncludeScaling
+)
 
 
 
@@ -459,4 +418,4 @@ loo_run = loo(fit)
 loo_run
 
 # saveRDS(loo_run, paste0("loo_", model_name, ".Rds")
-# saveRDS(loo_run, paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/", "loo_", model_name,".Rds")
+# saveRDS(loo_run, paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/", "loo_", model_name,".Rds"))
