@@ -171,7 +171,7 @@ data_merge <- data_merge[complete.cases(data_merge),]
 # Weekly dates: var for no. of weeks & only one obs per week
 
 #Var for the number of weeks
-data_merge$week <- round(as.numeric(floor((data_merge$date - Date_Start)/7)), digits = 0)
+data_merge$week <- round(as.numeric(floor((data_merge$date - min(data_merge$date))/7)), digits = 0)
 
 #Combi for unique combination of LTLA*week
 data_merge <- mutate(data_merge, combi = paste0(data_merge$week, data_merge$ltla_name))
@@ -240,15 +240,6 @@ data_model$Rt <- log(data_model$Rt)
 
 IncludeIntercept <- 1
 IncludeScaling <- 1
-
-
-#### Set vax proportions ####
-
-vax <- data.frame(
-  First_Prop = rep(0.30, times = 12726),
-  Second_Prop = rep(0.05, times = 12726),
-  Third_Prop = rep(0.0, times = 12726)
-)
 
 
 #### Stan Data ####
