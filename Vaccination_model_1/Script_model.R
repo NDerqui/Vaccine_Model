@@ -191,7 +191,7 @@ min(data_merge$date)
 Steps <- c(min(data_merge$date), lockdown_steps[2:5], max(data_merge$date))
 Steps %in% data_merge$date
 
-# Define knots with a day time scale
+# Define knots with a day and week time scale
 
 Knots <- round(as.numeric(floor((Steps - Steps[1]))), digits = 0)
 Knots_weeks <- round(as.numeric(floor((Steps - Steps[1])/7)), digits = 0)
@@ -301,7 +301,6 @@ data_stan <- list(
           NumDatapoints = NumDatapoints,
           LTLAs = data_model$LTLAs,
           NumTimepoints = NumTimepoints,
-          TimePoints = Timepoints,
           IncludeIntercept = IncludeIntercept,
           IncludeScaling = IncludeScaling,
           NumKnots = NumKnots,
