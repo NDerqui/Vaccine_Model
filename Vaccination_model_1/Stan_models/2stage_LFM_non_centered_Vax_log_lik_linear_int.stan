@@ -2,6 +2,7 @@
 data {
   int <lower = 0, upper = 1>					IncludeIntercept; 	// Boolean for intercept
   int <lower = 0, upper = 1>					IncludeScaling; 	// Boolean for scaling
+  int <lower = 0, upper = 1>          DoKnots;        // Boolean for linear 
 
   int<lower = 1> 							NumDatapoints; 	// Number of Rt values (all timepoints x regions) 
   int<lower = 1> 							NumDoses; 			// Number of parameters: Vax doses
@@ -71,6 +72,8 @@ transformed parameters{
   VaxEffect 	= VaxEffect_nc 	* phi;
   gamma 		= gamma_nc 			* phi2;
   intercept 	= intercept 		* phi3;
+  
+  //Lambda for the LINE
   lambda_raw 	= lambda_raw_nc 	* phi3;
   {  
   	// initialize lambda matrix to have same values for every LTLA - calculate line
@@ -82,16 +85,16 @@ transformed parameters{
       ind = ind + NumKnots; // update index
     }
   }
-  
   // line to fit the lambda
   for (i in 1:(NumKnots-1)){
     slope[i] = (lambda[i+1] - lambda[i])/(Knots[i+1] - Knots[i]);
     origin[i] = lambda[i] - slope[i]*Knots[i];
   }
 
-  // initialise lambda_pars calcualted from line - save value for every LTLA
+  //Lambda for the MODEL LOGPred
   lambda_raw_par 	= lambda_raw_nc_par 	* phi3;
   {  
+    // initialise lambda_pars calcualted from line - save value for every LTLA
   	int ind_2 = 0; // initialize index
     for (i in 1:NumLTLAs){
       for(j in 1:IntDim){
@@ -100,8 +103,9 @@ transformed parameters{
       ind_2 = ind_2 + NumTimepoints; // update index
     }
   }
-
-  for (i in 1:NumDatapoints){
+  //Calculate lambda from the line ONLY IF we are doing knots
+ if (DoKnots) {
+    for (i in 1:NumDatapoints){
     if(Timepoints[i] < 6) {
       lambda_parameters[i] = origin[1] + slope[1]*Timepoints[i];
     } else {
@@ -121,8 +125,10 @@ transformed parameters{
         }
       }
     }
-  }
-  
+  } 
+ }
+
+  // CONTINUE WITH LOG PRED MODEL WHETHER LAMBDA WAS FIT IN THE LINE OR NOT
   fixed_effects[1:NumDatapoints] = VaxProp * - VaxEffect; // x * -beta in manuscript
   
   for (i in 1:NumDatapoints){

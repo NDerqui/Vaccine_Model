@@ -97,10 +97,6 @@ BackDate_Char <- "_BD"
 
 Nested_Char <- ""
 
-# Analyses by steps of lockdown
-
-DoKnots <- TRUE
-
 # Sets of easing lockdown
 
 lockdown_steps <- as.Date(c("05/01/2021", "08/03/2021", "19/04/2021",
@@ -286,6 +282,10 @@ data_model$Rt <- log(data_model$Rt)
 IncludeIntercept <- 1
 IncludeScaling <- 1
 
+# Analyses by steps of lockdown
+
+DoKnots <- 0
+
 
 #### Stan Data ####
 
@@ -303,6 +303,7 @@ data_stan <- list(
           NumTimepoints = NumTimepoints,
           IncludeIntercept = IncludeIntercept,
           IncludeScaling = IncludeScaling,
+          DoKnots = DoKnots,
           NumKnots = NumKnots,
           Knots = Knots_weeks,
           NumPointsLine = NumPointsLine,
@@ -396,7 +397,7 @@ ModelMetaData 				= c()
 ModelMetaData$iter 			= 1000 #Increase
 ModelMetaData$warmup 		= 200 #Increase
 ModelMetaData$thin 			= 1
-ModelMetaData$chains 		= 4 #Increase
+ModelMetaData$chains 		= 1 #Increase
 ModelMetaData$adapt_delta 	= 0.9
 ModelMetaData$max_treedepth = 15
 ModelMetaData$ModelChar 	= ModelChar
