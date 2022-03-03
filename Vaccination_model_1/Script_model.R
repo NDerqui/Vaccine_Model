@@ -344,8 +344,8 @@ cat(paste0("Model compilation done\n"))
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 8000 #Increase
-ModelMetaData$warmup 		= 2000 #Increase
+ModelMetaData$iter 			= 2000 #Increase
+ModelMetaData$warmup 		= 500 #Increase
 ModelMetaData$thin 			= 1
 ModelMetaData$chains 		= 8 #Increase
 ModelMetaData$adapt_delta 	= 0.9
