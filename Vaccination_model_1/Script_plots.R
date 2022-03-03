@@ -45,7 +45,7 @@ dim(data_model)
 
 #### Load data ####
 
-model_name <- "fit_2000_8_noscaling_nointercept"
+model_name <- "fit_2000_8_base"
 
 # fit <- readRDS(paste0(model_name, ".Rds"))
   
@@ -683,7 +683,7 @@ Psum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
                      labels = c("National Trend", "National Trend x LTLA factor",
                                 "Secular Trend", "Predicted Rt", "Observed Rt")) +
   theme_classic() +
-  labs(title = "a",
+  labs(title = "i",
        x = "Date",
        y = "Parameter value") +
   theme(
@@ -715,7 +715,7 @@ Psum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
                      labels = c("National Trend", "National Trend x LTLA factor",
                                 "Secular Trend", "Predicted Rt", "Observed Rt")) +
   theme_classic() +
-  labs(title = "b",
+  labs(title = "ii",
        x = "Date",
        y = "Parameter value") +
   theme(
@@ -747,7 +747,7 @@ Psum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
                      labels = c("National Trend", "National Trend x LTLA factor",
                                 "Secular Trend", "Predicted Rt", "Observed Rt")) +
   theme_classic() +
-  labs(title = "c",
+  labs(title = "iii",
        x = "Date",
        y = "Parameter value") +
   theme(
@@ -779,7 +779,7 @@ Psum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
                      labels = c("National Trend", "National Trend x LTLA factor",
                                 "Secular Trend", "Predicted Rt", "Observed Rt")) +
   theme_classic() +
-  labs(title = "d",
+  labs(title = "iv",
        x = "Date",
        y = "Parameter value") +
   theme(
@@ -789,21 +789,24 @@ Psum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
     axis.text = element_text(size=rel(0.7)),
     legend.title = element_text(size = rel(0.9), face="bold"),
     legend.text = element_text(size=rel(0.7)))
+
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_all_abc.png"), width = 10, height = 6, units = 'in', res = 300)
+
 ggarrange(Psum,Psum_2, Psum_3, Psum_4,
           common.legend = TRUE, legend = "right", ncol = 2, nrow = 2)
+
 dev.off()
- 
+
 
 #### Combine w/ other ####
 
 # Obs vs Pre
 
-Keep_1d <- ggplot(data = sum_rt) +
+Keep_1a <- ggplot(data = sum_rt) +
   geom_point(mapping = aes(x = Rt_data, y = Rt_LogP), size = rel(0.8)) +
   geom_abline(x = 0, y = 1, col = "red") +
   theme_classic() +
-  labs(title = "d",
+  labs(title = "a",
        x = "Rt Observed",
        y = "Rt Predicted") +
   theme(
@@ -811,19 +814,22 @@ Keep_1d <- ggplot(data = sum_rt) +
     axis.title.x = element_text(size = rel(0.9), face="bold"),
     axis.title.y = element_text(size = rel(0.9), face="bold"),
     axis.text = element_text(size=rel(0.7)))
-Keep_1d
+Keep_1a
 
-saveRDS(Keep_1d, paste0("Figures/Combined_figures/Data/Keep_1", model_name, ".Rds"))
+saveRDS(Keep_1a, paste0("Figures/Combined_figures/Data/Keep_1", model_name, ".Rds"))
 
-png("Figures/Combined_figures/4model_check_Pre_Obs.png", width = 10, height = 6, units = 'in', res = 300)
+png("Figures/Combined_figures/No_iter_check_Pre_Obs.png", width = 15, height = 6, units = 'in', res = 300)
 
-ggarrange(Keep_1a, Keep_1b, Keep_1c, Keep_1d,
-          ncol = 2, nrow = 2)
+ggarrange(Keep_1a ,
+          Keep_1b + rremove("ylab"),
+          Keep_1c + rremove("ylab"),
+          #Keep_1d,
+          ncol = 3, nrow = 1)
 dev.off()
 
 # Scatter
 
-Keep_2d <- ggplot(data = sum_rt) +
+Keep_2a <- ggplot(data = sum_rt) +
   geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date,
                               color = "Rt_data"), size = rel(0.5)) +
   geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date,
@@ -834,7 +840,7 @@ Keep_2d <- ggplot(data = sum_rt) +
                                 "Rt_LogP"="forestgreen"),
                      labels=c("Observed", "Predicted")) +
   theme_classic() +
-  labs(title = "d",
+  labs(title = "a",
        x = "Date",
        y = "Reproduction number") +
   theme(
@@ -844,23 +850,27 @@ Keep_2d <- ggplot(data = sum_rt) +
     axis.text = element_text(size=rel(0.7)),
     legend.title = element_text(size = rel(0.9), face="bold"),
     legend.text = element_text(size=rel(0.7)))
-Keep_2d
+Keep_2a
 
-saveRDS(Keep_2d, paste0("Figures/Combined_figures/Data/Keep_2", model_name, ".Rds"))
+saveRDS(Keep_2a, paste0("Figures/Combined_figures/Data/Keep_2", model_name, ".Rds"))
 
-png("Figures/Combined_figures/4model_check_Pre_Obs_time.png", width = 10, height = 6, units = 'in', res = 300)
+png("Figures/Combined_figures/No_iter_check_Pre_Obs_time.png", width = 18, height = 6, units = 'in', res = 300)
 
-ggarrange(Keep_2a, Keep_2b, Keep_2c,Keep_2d,
-          common.legend = TRUE, legend = "bottom", ncol = 2, nrow = 2)
+ggarrange(Keep_2a ,
+          Keep_2b + rremove("ylab"),
+          Keep_2c + rremove("ylab"),
+          #Keep_2d,
+          ncol = 3, nrow = 1,
+          common.legend = TRUE, legend = "bottom")
 dev.off()
 
 # Secular Trend
 
-Keep_3d = SES + geom_point(
+Keep_3a = SES + geom_point(
   data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
                     y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(0.8)) +
   theme_classic() +
-  labs(title = "d",
+  labs(title = "a",
        x = "Date",
        y = "Secular Trend") +
   theme(
@@ -870,15 +880,70 @@ Keep_3d = SES + geom_point(
     axis.text = element_text(size=rel(0.7)),
     legend.title = element_text(size = rel(0.9), face="bold"),
     legend.text = element_text(size=rel(0.7)))
-Keep_3d
+Keep_3a
 
-saveRDS(Keep_3d, paste0("Figures/Combined_figures/Data/Keep_3", model_name, ".Rds"))
+saveRDS(Keep_3a, paste0("Figures/Combined_figures/Data/Keep_3", model_name, ".Rds"))
 
-png("Figures/Combined_figures/4model_check_SES.png", width = 10, height = 6, units = 'in', res = 300)
+png("Figures/Combined_figures/No_iter_check_SES.png", width = 18, height = 6, units = 'in', res = 300)
 
-ggarrange(Keep_3a, Keep_3b, Keep_3c, Keep_3d,
-          ncol = 2, nrow = 2)
+ggarrange(Keep_3a ,
+          Keep_3b + rremove("ylab"),
+          Keep_3c + rremove("ylab"),
+          #Keep_3d,
+          ncol = 3, nrow = 1)
 dev.off()
+
+# Single LTLAs
+
+Keep_4c <- ggarrange(Psum + rremove("xlab"),
+                     Psum_2 + rremove("xlab") + rremove("ylab"),
+                     Psum_3,
+                     Psum_4 + rremove("ylab"),
+                     ncol = 2, nrow = 2,
+                     legend = "none")
+#                     common.legend = TRUE, legend = "right")
+Keep_4c
+
+saveRDS(Keep_4c, paste0("Figures/Combined_figures/Data/Keep_4", model_name, ".Rds"))
+
+legend <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
+  geom_line (mapping = aes(x = date, y = Lambda, color = "Lambda")) +
+  geom_line (mapping = aes(x = date, y = Lambda*(Gamma[299]), color = "Lambda*Gamma")) +
+  geom_line (mapping = aes(x = date, y = Ran_Eff, color = "RanEffect")) +
+  geom_line (mapping = aes(x = date, y = Rt_LogP, color = "RtLogP")) +
+  geom_line (mapping = aes(x = date, y = Rt_data, color = "RtData")) +
+  scale_color_manual(name = "Parameter",
+                     breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
+                                "RtLogP", "RtData"),
+                     values = c("Lambda" = "navy",
+                                "Lambda*Gamma" = "cyan3",
+                                "RanEffect" = "lightgreen",
+                                "RtLogP" = "forestgreen",
+                                "RtData" = "firebrick"),
+                     labels = c("National Trend", "National Trend x LTLA factor",
+                                "Secular Trend", "Predicted Rt", "Observed Rt")) +
+  lims(x = c(0,0), y = c(0,0)) +
+  theme_void() +
+  theme(
+    legend.position = c(0.5,0.5),
+    legend.title = element_text(size = rel(0.9), face="bold"),
+    legend.text = element_text(size=rel(0.7)))
+
+png("Figures/Combined_figures/No_iter_check_LTLA.png", width = 10, height = 6, units = 'in', res = 300)
+
+ggarrange(annotate_figure(Keep_4a, fig.lab = "a", fig.lab.pos = "top.left",
+                          fig.lab.size = 12, fig.lab.face = "bold"),
+          annotate_figure(Keep_4b, fig.lab = "b", fig.lab.pos = "top.left",
+                          fig.lab.size = 12, fig.lab.face = "bold"),
+          annotate_figure(Keep_4c, fig.lab = "c", fig.lab.pos = "top.left",
+                          fig.lab.size = 12, fig.lab.face = "bold"),
+          legend,
+          ncol = 2, nrow = 2)
+
+dev.off()
+
+
+
 
 
 

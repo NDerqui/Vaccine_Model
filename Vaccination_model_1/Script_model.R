@@ -344,10 +344,10 @@ cat(paste0("Model compilation done\n"))
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 1000 #Increase
-ModelMetaData$warmup 		= 200 #Increase
+ModelMetaData$iter 			= 8000 #Increase
+ModelMetaData$warmup 		= 2000 #Increase
 ModelMetaData$thin 			= 1
-ModelMetaData$chains 		= 1 #Increase
+ModelMetaData$chains 		= 8 #Increase
 ModelMetaData$adapt_delta 	= 0.9
 ModelMetaData$max_treedepth = 15
 ModelMetaData$ModelChar 	= ModelChar
@@ -360,7 +360,7 @@ colnames(ModelMetaData_dummy) = NULL
 
 #### Run ####
 
-memory.limit(size = 100000000)
+memory.limit(size = 1000000000)
 
 fit = sampling(StanModel, data = data_stan, 
                iter 	= ModelMetaData$iter, 
@@ -375,19 +375,6 @@ fit = sampling(StanModel, data = data_stan,
 
 
 # MODEL RESULTS -----------------------------------------------------------
-
-# Comment with 6000iter-2chains
-# 
-# Warning messages:
-#   1: The largest R-hat is NA, indicating chains have not mixed.
-# Running the chains for more iterations may help. See
-# https://mc-stan.org/misc/warnings.html#r-hat 
-# 2: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-# Running the chains for more iterations may help. See
-# https://mc-stan.org/misc/warnings.html#bulk-ess 
-# 3: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-# Running the chains for more iterations may help. See
-# https://mc-stan.org/misc/warnings.html#tail-ess 
 
 
 #### Model name ####
