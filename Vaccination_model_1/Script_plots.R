@@ -45,7 +45,7 @@ dim(data_model)
 
 #### Load data ####
 
-model_name <- "fit_1000_4_linear_noscaling_nointercept"
+model_name <- "fit_2000_8_linear_noscaling_nointercept"
 
 # fit <- readRDS(paste0(model_name, ".Rds"))
   
@@ -56,8 +56,8 @@ model_name <- "fit_1000_4_linear_noscaling_nointercept"
 
 model_matrix <- as.matrix(fit)
 
-dim(model_matrix)
-View(model_matrix)
+#dim(model_matrix)
+#View(model_matrix)
 
 Rt_data <- exp(data_model$Rt)
 
@@ -781,7 +781,7 @@ Psum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
                      labels = c("National Trend", "National Trend x LTLA factor",
                                 "Secular Trend", "Predicted Rt", "Observed Rt")) +
   theme_classic() +
-  labs(title = "a",
+  labs(title = "i",
        x = "Date",
        y = "Parameter value") +
   theme(
@@ -813,7 +813,7 @@ Psum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
                      labels = c("National Trend", "National Trend x LTLA factor",
                                 "Secular Trend", "Predicted Rt", "Observed Rt")) +
   theme_classic() +
-  labs(title = "b",
+  labs(title = "ii",
        x = "Date",
        y = "Parameter value") +
   theme(
@@ -845,7 +845,7 @@ Psum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
                      labels = c("National Trend", "National Trend x LTLA factor",
                                 "Secular Trend", "Predicted Rt", "Observed Rt")) +
   theme_classic() +
-  labs(title = "c",
+  labs(title = "iii",
        x = "Date",
        y = "Parameter value") +
   theme(
@@ -877,7 +877,7 @@ Psum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
                      labels = c("National Trend", "National Trend x LTLA factor",
                                 "Secular Trend", "Predicted Rt", "Observed Rt")) +
   theme_classic() +
-  labs(title = "d",
+  labs(title = "iv",
        x = "Date",
        y = "Parameter value") +
   theme(
@@ -887,7 +887,9 @@ Psum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
     axis.text = element_text(size=rel(0.7)),
     legend.title = element_text(size = rel(0.9), face="bold"),
     legend.text = element_text(size=rel(0.7)))
+
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_all_abc.png"), width = 10, height = 6, units = 'in', res = 300)
+
 ggarrange(Psum,Psum_2, Psum_3, Psum_4,
           common.legend = TRUE, legend = "right", ncol = 2, nrow = 2)
 dev.off()
@@ -913,9 +915,12 @@ Keep_1d
 
 saveRDS(Keep_1d, paste0("Figures/Combined_figures/Data/Keep_1", model_name, ".Rds"))
 
-png("Figures/Combined_figures/4model_linear_Pre_Obs.png", width = 10, height = 6, units = 'in', res = 300)
+png("Figures/Combined_figures/4model_linear_Pre_Obs.png", width = 15, height = 15, units = 'in', res = 300)
 
-ggarrange(Keep_1a, Keep_1b, Keep_1c, Keep_1d,
+ggarrange(Keep_1a + rremove("xlab"),
+          Keep_1b + rremove("xlab") + rremove("ylab"),
+          Keep_1c,
+          Keep_1d + rremove("ylab"),
           ncol = 2, nrow = 2)
 dev.off()
 
@@ -946,9 +951,12 @@ Keep_2d
 
 saveRDS(Keep_2d, paste0("Figures/Combined_figures/Data/Keep_2", model_name, ".Rds"))
 
-png("Figures/Combined_figures/4model_linear_Pre_Obs_time.png", width = 10, height = 6, units = 'in', res = 300)
+png("Figures/Combined_figures/4model_linear_Pre_Obs_time.png", width = 18, height = 12, units = 'in', res = 300)
 
-ggarrange(Keep_2a, Keep_2b, Keep_2c,Keep_2d,
+ggarrange(Keep_2a + rremove("xlab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta") ,
+          Keep_2b + rremove("xlab") + rremove("ylab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta") ,
+          Keep_2c + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta") ,
+          Keep_2d + rremove("ylab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta") ,
           common.legend = TRUE, legend = "bottom", ncol = 2, nrow = 2)
 dev.off()
 
@@ -972,12 +980,66 @@ Keep_3d
 
 saveRDS(Keep_3d, paste0("Figures/Combined_figures/Data/Keep_3", model_name, ".Rds"))
 
-png("Figures/Combined_figures/4model_linear_SES.png", width = 10, height = 6, units = 'in', res = 300)
+png("Figures/Combined_figures/4model_linear_SES.png", width = 18, height = 12, units = 'in', res = 300)
 
-ggarrange(Keep_3a, Keep_3b, Keep_3c, Keep_3d,
+ggarrange(Keep_3a + rremove("xlab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta"),
+          Keep_3b + rremove("xlab") + rremove("ylab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta"),
+          Keep_3c + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta"),
+          Keep_3d + rremove("ylab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta"),
           ncol = 2, nrow = 2)
 dev.off()
 
+# Single LTLA #
+
+Keep_4d <- ggarrange(Psum + rremove("xlab"),
+                     Psum_2 + rremove("xlab") + rremove("ylab"),
+                     Psum_3,
+                     Psum_4 + rremove("ylab"),
+                     ncol = 2, nrow = 2, legend = "none")
+Keep_4d
+
+saveRDS(Keep_4d, paste0("Figures/Combined_figures/Data/Keep_4", model_name, ".Rds"))
+
+legend <- ggplot(data = sum_rt, aes(x = date, y = LambdaParameter)) +
+  geom_line (mapping = aes(color = "Lambda")) +
+  geom_line (mapping = aes(color = "Lambda*Gamma")) +
+  geom_line (mapping = aes(color = "RanEffect")) +
+  geom_line (mapping = aes(color = "RtLogP")) +
+  geom_line (mapping = aes(color = "RtData")) +
+  scale_color_manual(name = "Parameter",
+                     breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
+                                "RtLogP", "RtData"),
+                     values = c("Lambda" = "navy",
+                                "Lambda*Gamma" = "cyan3",
+                                "RanEffect" = "lightgreen",
+                                "RtLogP" = "forestgreen",
+                                "RtData" = "firebrick"),
+                     labels = c("National Trend", "National Trend x LTLA factor",
+                                "Secular Trend", "Predicted Rt", "Observed Rt")) +
+  lims(x = c(0,0), y = c(0,0)) +
+  theme_void() +
+  theme(
+    legend.position = c(0.5,0.5),
+    legend.title = element_text(size = rel(0.9), face="bold"),
+    legend.text = element_text(size=rel(0.7)))
+legend
+
+png("Figures/Combined_figures/4model_linear_LTLA.png", width = 18, height = 10, units = 'in', res = 300)
+
+ggarrange(annotate_figure(Keep_4a, fig.lab = "a", fig.lab.pos = "top.left",
+                          fig.lab.size = 12, fig.lab.face = "bold"),
+          annotate_figure(Keep_4b, fig.lab = "b", fig.lab.pos = "top.left",
+                          fig.lab.size =12, fig.lab.face = "bold"),
+          legend,
+          annotate_figure(Keep_4c, fig.lab = "c", fig.lab.pos = "top.left",
+                          fig.lab.size = 12, fig.lab.face = "bold"),
+          annotate_figure(Keep_4d, fig.lab = "d", fig.lab.pos = "top.left",
+                          fig.lab.size = 12, fig.lab.face = "bold"),
+          legend,
+          ncol = 3, nrow = 2)
+dev.off()
+          
+          
 
 
 # ARCHIVE PLOTS -----------------------------------------------------------
