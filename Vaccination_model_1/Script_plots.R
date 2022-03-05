@@ -29,7 +29,7 @@ library(xlsx)
 
 # DATA: OBS  ------------------------------------------------------------
 
-# data_model <- readRDS("data_model_for_plots.Rds")
+data_model <- readRDS("data_model_for_plots.Rds")
 
 
 #### Overview ####
@@ -93,8 +93,11 @@ sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff, LambdaParameter,
                      date = data_model$date,
                      week = data_model$week,
                      row.names = paste0("Rt", 1:12726))
+saveRDS(sum_rt, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/sum_", model_name, ".Rds"))
+
 sum_line <- data.frame(date = rep(Steps, times = 303),
                        Lambda = Lambda)
+saveRDS(sum_rt, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/sum_line_", model_name, ".Rds"))
 
 
 
