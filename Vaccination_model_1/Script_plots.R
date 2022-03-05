@@ -83,6 +83,7 @@ sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff,
                      Dose_3 = data_model$Third_Prop,
                      date = data_model$date,
                      row.names = paste0("Rt", 1:12726))
+saveRDS(sum_rt, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/sum_", model_name, ".Rds"))
 
 
 
@@ -899,9 +900,7 @@ Keep_4b <- ggarrange(Psum + rremove("xlab"),
                      Psum_2 + rremove("xlab") + rremove("ylab"),
                      Psum_3,
                      Psum_4 + rremove("ylab"),
-                     ncol = 2, nrow = 2,
-                     legend = "none")
-#                     common.legend = TRUE, legend = "right")
+                     ncol = 2, nrow = 2, legend = "none")
 Keep_4b
 
 saveRDS(Keep_4b, paste0("Figures/Combined_figures/Data/Keep_4", model_name, ".Rds"))
