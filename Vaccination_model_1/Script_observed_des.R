@@ -52,15 +52,15 @@ sum_data <- data.frame(Rt_data,
 
 # Vaccination over time
 
-png("Figures/Description/Vax_over_time_good.png", width = 10, height = 6, units = 'in', res = 600)
+png("Figures/Description/Vax_over_time_good.png", width = 12, height = 8, units = 'in', res = 600)
 
 Vax_Date <- ggplot(data = sum_data) +
-  geom_boxplot (mapping = aes(x = date, y = Dose_1, group = date,
-                              color = "Dose_1"), size = rel(0.5)) +
-  geom_boxplot (mapping = aes(x = date, y = Dose_2, group = date,
-                              color = "Dose_2"), size = rel(0.5)) +
-  geom_boxplot (mapping = aes(x = date, y = Dose_3, group = date,
-                              color = "Dose_3"), size = rel(0.5)) +
+  geom_boxplot (mapping = aes(x = date, y = Dose_1, group = date, color = "Dose_1"),
+                size = rel(0.5)) +
+  geom_boxplot (mapping = aes(x = date, y = Dose_2, group = date, color = "Dose_2"),
+                size = rel(0.5)) +
+  geom_boxplot (mapping = aes(x = date, y = Dose_3, group = date, color = "Dose_3"),
+                size = rel(0.5)) +
   scale_color_manual(name="Number of doses",
                      breaks = c("Dose_1", "Dose_2", "Dose_3"),
                      values = c("Dose_1"="navy", 
@@ -72,17 +72,17 @@ Vax_Date <- ggplot(data = sum_data) +
        x = "Date",
        y = "Total proportion of vaccinated population") +
   theme(
-    plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
-    axis.title.x = element_text(size = rel(0.9), face="bold"),
-    axis.title.y = element_text(size = rel(0.9), face="bold"),
-    axis.text = element_text(size=rel(0.7)),
-    legend.title = element_text(size = rel(0.9), face="bold"),
-    legend.text = element_text(size=rel(0.7)))
+    plot.title = element_text(size = rel(1.7), face="bold", hjust = 0.5),
+    axis.title.x = element_text(size = rel(1.5), face="bold"),
+    axis.title.y = element_text(size = rel(1.5), face="bold"),
+    axis.text = element_text(size=rel(1.2)),
+    legend.title = element_text(size = rel(1.5), face="bold"),
+    legend.text = element_text(size=rel(1.2)))
 Vax_Date
 
 dev.off()
 
-png("Figures/Description/Vax_over_time_line.png", width = 10, height = 6, units = 'in', res = 600)
+png("Figures/Description/Vax_over_time_line.png", width = 12, height = 8, units = 'in', res = 600)
 
 Vax_Date_line <- ggplot(data = sum_data) +
   geom_line (mapping = aes(x = date, y = Dose_1, group = LTLA,
@@ -102,12 +102,12 @@ Vax_Date_line <- ggplot(data = sum_data) +
        x = "Date",
        y = "Total proportion of vaccinated population") +
   theme(
-    plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
-    axis.title.x = element_text(size = rel(0.9), face="bold"),
-    axis.title.y = element_text(size = rel(0.9), face="bold"),
-    axis.text = element_text(size=rel(0.7)),
-    legend.title = element_text(size = rel(0.9), face="bold"),
-    legend.text = element_text(size=rel(0.7)))
+    plot.title = element_text(size = rel(1.7), face="bold", hjust = 0.5),
+    axis.title.x = element_text(size = rel(1.5), face="bold"),
+    axis.title.y = element_text(size = rel(1.5), face="bold"),
+    axis.text = element_text(size=rel(1.2)),
+    legend.title = element_text(size = rel(1.5), face="bold"),
+    legend.text = element_text(size=rel(1.2)))
 Vax_Date_line
 
 dev.off()
@@ -117,7 +117,7 @@ dev.off()
 
 # General
 
-png("Figures/Description/Observed_Rt.png", width = 10, height = 6, units = 'in', res = 600)
+png("Figures/Description/Observed_Rt.png", width = 12, height = 8, units = 'in', res = 600)
 
 Rt_Obs_Date <- ggplot(data = sum_data) +
   geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date), size = rel(0.5)) +
@@ -126,12 +126,12 @@ Rt_Obs_Date <- ggplot(data = sum_data) +
        x = "Date",
        y = "Rt Observed") +
   theme(
-    plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
-    axis.title.x = element_text(size = rel(0.9), face="bold"),
-    axis.title.y = element_text(size = rel(0.9), face="bold"),
-    axis.text = element_text(size=rel(0.7)),
-    legend.title = element_text(size = rel(0.9), face="bold"),
-    legend.text = element_text(size=rel(0.7)))
+    plot.title = element_text(size = rel(1.7), face="bold", hjust = 0.5),
+    axis.title.x = element_text(size = rel(1.5), face="bold"),
+    axis.title.y = element_text(size = rel(1.5), face="bold"),
+    axis.text = element_text(size=rel(1.2)),
+    legend.title = element_text(size = rel(1.5), face="bold"),
+    legend.text = element_text(size=rel(1.2)))
 Rt_Obs_Date
 
 dev.off()
@@ -175,7 +175,7 @@ data_age <- select(data_age, "ltla_name", "date", "week", "age_group",
 
 # Plot with age groups
 
-png("Figures/Description/Vax_over_time_with_age.png", width = 10, height = 6, units = 'in', res = 600)
+png("Figures/Description/Vax_over_time_with_age.png", width = 15, height = 10, units = 'in', res = 600)
 
 library(forcats)
 forcats::fct_relevel
@@ -198,16 +198,17 @@ Vax_Date_age <-  ggplot(data = data_age) +
        x = "Date",
        y = "Age-group proportion of vaccinated population") +
   theme(
-    plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
-    axis.title.x = element_text(size = rel(0.9), face="bold"),
-    axis.title.y = element_text(size = rel(0.9), face="bold"),
-    axis.text = element_text(size=rel(0.7)),
-    legend.title = element_text(size = rel(0.9), face="bold"),
-    legend.text = element_text(size=rel(0.7))) +
+    plot.title = element_text(size = rel(1.7), face="bold", hjust = 0.5),
+    axis.title.x = element_text(size = rel(1.5), face="bold"),
+    axis.title.y = element_text(size = rel(1.5), face="bold"),
+    axis.text = element_text(size=rel(1.2)),
+    legend.title = element_text(size = rel(1.5), face="bold"),
+    legend.text = element_text(size=rel(1.2))) +
   facet_wrap( ~ fct_relevel(age_group,"0-4", "5-9", "10-14", "15-19","20-24",
                             "25-29", "30-34", "35-39", "40-44",
                             "45-49", "50-54","55-59", "60-64", "65-69",
-                            "70-74", "75-79", "80-84", "85-89", "90-120"))
+                            "70-74", "75-79", "80-84", "85-89", "90-120")) +
+  theme(strip.text.x = element_text(size = rel(1.2)))
 Vax_Date_age
 
 dev.off()
