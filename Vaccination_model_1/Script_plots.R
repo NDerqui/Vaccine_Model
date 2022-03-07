@@ -93,11 +93,15 @@ sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff, LambdaParameter,
                      date = data_model$date,
                      week = data_model$week,
                      row.names = paste0("Rt", 1:12726))
-saveRDS(sum_rt, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/sum_", model_name, ".Rds"))
+
+saveRDS(sum_rt, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum.Rds"))
+saveRDS(Ran_Eff, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum_re.Rds"))
+saveRDS(Gamma, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum_g.Rds"))
 
 sum_line <- data.frame(date = rep(Steps, times = 303),
                        Lambda = Lambda)
-saveRDS(sum_rt, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/sum_line_", model_name, ".Rds"))
+
+saveRDS(sum_rt, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum_line.Rds"))
 
 
 
@@ -773,7 +777,7 @@ Psum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
                            color = "RtLogP"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Rt_data,
                            color = "RtData"), size =rel(1)) +
-  scale_color_manual(name = "Parameter",
+  scale_color_manual(name = "Estimate",
                      breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
                                 "RtLogP", "RtData"),
                      values = c("Lambda" = "navy",
@@ -786,14 +790,14 @@ Psum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
   theme_classic() +
   labs(title = "i",
        x = "Date",
-       y = "Parameter value") +
+       y = "Estimate value") +
   theme(
-    plot.title = element_text(size = rel(1), face="bold"),
-    axis.title.x = element_text(size = rel(0.9), face="bold"),
-    axis.title.y = element_text(size = rel(0.9), face="bold"),
-    axis.text = element_text(size=rel(0.7)),
-    legend.title = element_text(size = rel(0.9), face="bold"),
-    legend.text = element_text(size=rel(0.7)))
+    plot.title = element_text(size = rel(1.7), face="bold", colour = "grey"),
+    axis.title.x = element_text(size = rel(1.5), face="bold"),
+    axis.title.y = element_text(size = rel(1.5), face="bold"),
+    axis.text = element_text(size=rel(1.2)),
+    legend.title = element_text(size = rel(1.5), face="bold"),
+    legend.text = element_text(size=rel(1.2)))
 Psum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
   geom_line (mapping = aes(x = date, y = LambdaParameter, 
                            color = "Lambda"), size =rel(1)) +
@@ -805,7 +809,7 @@ Psum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
                            color = "RtLogP"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Rt_data,
                            color = "RtData"), size =rel(1)) +
-  scale_color_manual(name = "Parameter",
+  scale_color_manual(name = "Estimate",
                      breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
                                 "RtLogP", "RtData"),
                      values = c("Lambda" = "navy",
@@ -818,14 +822,14 @@ Psum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
   theme_classic() +
   labs(title = "ii",
        x = "Date",
-       y = "Parameter value") +
+       y = "Estimate value") +
   theme(
-    plot.title = element_text(size = rel(1), face="bold"),
-    axis.title.x = element_text(size = rel(0.9), face="bold"),
-    axis.title.y = element_text(size = rel(0.9), face="bold"),
-    axis.text = element_text(size=rel(0.7)),
-    legend.title = element_text(size = rel(0.9), face="bold"),
-    legend.text = element_text(size=rel(0.7)))
+    plot.title = element_text(size = rel(1.7), face="bold", colour = "grey"),
+    axis.title.x = element_text(size = rel(1.5), face="bold"),
+    axis.title.y = element_text(size = rel(1.5), face="bold"),
+    axis.text = element_text(size=rel(1.2)),
+    legend.title = element_text(size = rel(1.5), face="bold"),
+    legend.text = element_text(size=rel(1.2)))
 Psum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
   geom_line (mapping = aes(x = date, y = LambdaParameter, 
                            color = "Lambda"), size =rel(1)) +
@@ -837,7 +841,7 @@ Psum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
                            color = "RtLogP"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Rt_data,
                            color = "RtData"), size =rel(1)) +
-  scale_color_manual(name = "Parameter",
+  scale_color_manual(name = "Estimate",
                      breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
                                 "RtLogP", "RtData"),
                      values = c("Lambda" = "navy",
@@ -850,14 +854,14 @@ Psum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
   theme_classic() +
   labs(title = "iii",
        x = "Date",
-       y = "Parameter value") +
+       y = "Estimate value") +
   theme(
-    plot.title = element_text(size = rel(1), face="bold"),
-    axis.title.x = element_text(size = rel(0.9), face="bold"),
-    axis.title.y = element_text(size = rel(0.9), face="bold"),
-    axis.text = element_text(size=rel(0.7)),
-    legend.title = element_text(size = rel(0.9), face="bold"),
-    legend.text = element_text(size=rel(0.7)))
+    plot.title = element_text(size = rel(1.7), face="bold", colour = "grey"),
+    axis.title.x = element_text(size = rel(1.5), face="bold"),
+    axis.title.y = element_text(size = rel(1.5), face="bold"),
+    axis.text = element_text(size=rel(1.2)),
+    legend.title = element_text(size = rel(1.5), face="bold"),
+    legend.text = element_text(size=rel(1.2)))
 Psum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
   geom_line (mapping = aes(x = date, y = LambdaParameter, 
                            color = "Lambda"), size =rel(1)) +
@@ -869,7 +873,7 @@ Psum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
                            color = "RtLogP"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Rt_data,
                            color = "RtData"), size =rel(1)) +
-  scale_color_manual(name = "Parameter",
+  scale_color_manual(name = "Estimate",
                      breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
                                 "RtLogP", "RtData"),
                      values = c("Lambda" = "navy",
@@ -882,14 +886,14 @@ Psum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
   theme_classic() +
   labs(title = "iv",
        x = "Date",
-       y = "Parameter value") +
+       y = "Estimate value") +
   theme(
-    plot.title = element_text(size = rel(1), face="bold"),
-    axis.title.x = element_text(size = rel(0.9), face="bold"),
-    axis.title.y = element_text(size = rel(0.9), face="bold"),
-    axis.text = element_text(size=rel(0.7)),
-    legend.title = element_text(size = rel(0.9), face="bold"),
-    legend.text = element_text(size=rel(0.7)))
+    plot.title = element_text(size = rel(1.7), face="bold", colour = "grey"),
+    axis.title.x = element_text(size = rel(1.5), face="bold"),
+    axis.title.y = element_text(size = rel(1.5), face="bold"),
+    axis.text = element_text(size=rel(1.2)),
+    legend.title = element_text(size = rel(1.5), face="bold"),
+    legend.text = element_text(size=rel(1.2)))
 
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_all_abc.png"), width = 10, height = 6, units = 'in', res = 300)
 
@@ -910,15 +914,15 @@ Keep_1d <- ggplot(data = sum_rt) +
        x = "Rt Observed",
        y = "Rt Predicted") +
   theme(
-    plot.title = element_text(size = rel(1), face="bold"),
-    axis.title.x = element_text(size = rel(0.9), face="bold"),
-    axis.title.y = element_text(size = rel(0.9), face="bold"),
-    axis.text = element_text(size=rel(0.7)))
+    plot.title = element_text(size = rel(1.7), face="bold"),
+    axis.title.x = element_text(size = rel(1.5), face="bold"),
+    axis.title.y = element_text(size = rel(1.5), face="bold"),
+    axis.text = element_text(size=rel(1.2)))
 Keep_1d
 
 saveRDS(Keep_1d, paste0("Figures/Combined_figures/Data/Keep_1", model_name, ".Rds"))
 
-png("Figures/Combined_figures/4model_linear_Pre_Obs.png", width = 15, height = 15, units = 'in', res = 300)
+png("Figures/Combined_figures/4model_linear_Pre_Obs.png", width = 15, height = 10, units = 'in', res = 300)
 
 ggarrange(Keep_1a + rremove("xlab"),
           Keep_1b + rremove("xlab") + rremove("ylab"),
@@ -944,17 +948,17 @@ Keep_2d <- ggplot(data = sum_rt) +
        x = "Date",
        y = "Reproduction number") +
   theme(
-    plot.title = element_text(size = rel(1), face="bold"),
-    axis.title.x = element_text(size = rel(0.9), face="bold"),
-    axis.title.y = element_text(size = rel(0.9), face="bold"),
-    axis.text = element_text(size=rel(0.7)),
-    legend.title = element_text(size = rel(0.9), face="bold"),
-    legend.text = element_text(size=rel(0.7)))
+    plot.title = element_text(size = rel(1.7), face="bold"),
+    axis.title.x = element_text(size = rel(1.5), face="bold"),
+    axis.title.y = element_text(size = rel(1.5), face="bold"),
+    axis.text = element_text(size=rel(1.2)),
+    legend.title = element_text(size = rel(1.5), face="bold"),
+    legend.text = element_text(size=rel(1.2)))
 Keep_2d
 
 saveRDS(Keep_2d, paste0("Figures/Combined_figures/Data/Keep_2", model_name, ".Rds"))
 
-png("Figures/Combined_figures/4model_linear_Pre_Obs_time.png", width = 18, height = 12, units = 'in', res = 300)
+png("Figures/Combined_figures/4model_linear_Pre_Obs_time.png", width = 15, height = 8, units = 'in', res = 300)
 
 ggarrange(Keep_2a + rremove("xlab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta") ,
           Keep_2b + rremove("xlab") + rremove("ylab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta") ,
@@ -973,17 +977,17 @@ Keep_3d = SES + geom_point(
        x = "Date",
        y = "Secular Trend") +
   theme(
-    plot.title = element_text(size = rel(1), face="bold"),
-    axis.title.x = element_text(size = rel(0.9), face="bold"),
-    axis.title.y = element_text(size = rel(0.9), face="bold"),
-    axis.text = element_text(size=rel(0.7)),
-    legend.title = element_text(size = rel(0.9), face="bold"),
-    legend.text = element_text(size=rel(0.7)))
+    plot.title = element_text(size = rel(1.7), face="bold"),
+    axis.title.x = element_text(size = rel(1.5), face="bold"),
+    axis.title.y = element_text(size = rel(1.5), face="bold"),
+    axis.text = element_text(size=rel(1.2)),
+    legend.title = element_text(size = rel(1.5), face="bold"),
+    legend.text = element_text(size=rel(1.2)))
 Keep_3d
 
 saveRDS(Keep_3d, paste0("Figures/Combined_figures/Data/Keep_3", model_name, ".Rds"))
 
-png("Figures/Combined_figures/4model_linear_SES.png", width = 18, height = 12, units = 'in', res = 300)
+png("Figures/Combined_figures/4model_linear_SES.png", width = 15, height = 8, units = 'in', res = 300)
 
 ggarrange(Keep_3a + rremove("xlab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta"),
           Keep_3b + rremove("xlab") + rremove("ylab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta"),
@@ -1009,7 +1013,7 @@ legend <- ggplot(data = sum_rt, aes(x = date, y = LambdaParameter)) +
   geom_line (mapping = aes(color = "RanEffect")) +
   geom_line (mapping = aes(color = "RtLogP")) +
   geom_line (mapping = aes(color = "RtData")) +
-  scale_color_manual(name = "Parameter",
+  scale_color_manual(name = "Estimate",
                      breaks = c("Lambda", "Lambda*Gamma", "RanEffect",
                                 "RtLogP", "RtData"),
                      values = c("Lambda" = "navy",
@@ -1023,21 +1027,21 @@ legend <- ggplot(data = sum_rt, aes(x = date, y = LambdaParameter)) +
   theme_void() +
   theme(
     legend.position = c(0.5,0.5),
-    legend.title = element_text(size = rel(0.9), face="bold"),
-    legend.text = element_text(size=rel(0.7)))
+    legend.title = element_text(size = rel(1.5), face="bold"),
+    legend.text = element_text(size=rel(1.2)))
 legend
 
 png("Figures/Combined_figures/4model_linear_LTLA.png", width = 18, height = 10, units = 'in', res = 300)
 
 ggarrange(annotate_figure(Keep_4a, fig.lab = "a", fig.lab.pos = "top.left",
-                          fig.lab.size = 12, fig.lab.face = "bold"),
+                          fig.lab.size = 25, fig.lab.face = "bold"),
           annotate_figure(Keep_4b, fig.lab = "b", fig.lab.pos = "top.left",
-                          fig.lab.size =12, fig.lab.face = "bold"),
+                          fig.lab.size = 25, fig.lab.face = "bold"),
           legend,
           annotate_figure(Keep_4c, fig.lab = "c", fig.lab.pos = "top.left",
-                          fig.lab.size = 12, fig.lab.face = "bold"),
+                          fig.lab.size = 25, fig.lab.face = "bold"),
           annotate_figure(Keep_4d, fig.lab = "d", fig.lab.pos = "top.left",
-                          fig.lab.size = 12, fig.lab.face = "bold"),
+                          fig.lab.size = 25, fig.lab.face = "bold"),
           legend,
           ncol = 3, nrow = 2)
 dev.off()
