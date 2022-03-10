@@ -107,11 +107,14 @@ VEMean <- colMeans(model_matrix[, grep(
   "VaxEffect", colnames(model_matrix))])
 VEQuan <- colQuantiles(model_matrix[, grep(
   "VaxEffect", colnames(model_matrix))], probs=c(0.025,0.975))
+VEMean_exp <-(exp(-VEMean))
+VEQuan_exp <-(exp(-VEQuan))
 
-sum_ve <- round(data.frame(VEMean, VEQuan,
+sum_ve <- round(data.frame(VEMean, VEQuan, VEMean_exp, VEQuan_exp,
                            row.names = c("Dose 1", "Dose 2", "Dose 3")),
                 digits = 4)
-colnames(sum_ve) <- c("Mean Effect", "2.5% Q", "97.5% Q")
+colnames(sum_ve) <- c("Mean Effect", "2.5% Q", "97.5% Q",
+                      "Exp(Mean Effect)", "Exp(2.5% Q)", "Exp(97.5% Q)")
 View(sum_ve)
 
 write.xlsx(sum_ve, row.names = TRUE,
@@ -414,7 +417,7 @@ RE_uniq = RE_uniq/length(NamesLTLAs)
 SES <- ggplot()+
   geom_point(data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[1]],
                                y = Ran_Eff[data_model$ltla_name==NamesLTLAs[1]]),
-             aes(x=x,y=y), alpha=0.5, size = rel(0.8)) + 
+             aes(x=x,y=y), alpha=0.5, size = rel(1.2)) + 
   theme_classic() +
   labs(x = "Date",
        y = "Secular Effect Size") +
@@ -427,14 +430,14 @@ SES <- ggplot()+
 for(i in 2:length(NamesLTLAs)){
   SES <- SES + geom_point(data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
                                             y = Ran_Eff[data_model$ltla_name==NamesLTLAs[i]]),
-                          aes(x=x,y=y), alpha=0.5, size = rel(0.8))}
+                          aes(x=x,y=y), alpha=0.5, size = rel(1.2))}
 #This is the loop to do so
 
 png(paste0("Figures/", model_name, "/SES.png"), width = 10, height = 6, units = 'in', res = 600)
 
 SES = SES + geom_point(
   data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
-                    y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(0.8)) +
+                    y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(1.2)) +
   theme_classic() +
   labs(title = "Secular Trend across all LTLAs over time",
        x = "Date",
@@ -807,11 +810,11 @@ dev.off()
 
 # Obs vs Pre
 
-Keep_1d <- ggplot(data = sum_rt) +
+Keep_1c <- ggplot(data = sum_rt) +
   geom_point(mapping = aes(x = Rt_data, y = Rt_LogP), size = rel(0.8)) +
   geom_abline(x = 0, y = 1, col = "red") +
   theme_classic() +
-  labs(title = "d",
+  labs(title = "c",
        x = "Rt Observed",
        y = "Rt Predicted") +
   theme(
@@ -819,9 +822,9 @@ Keep_1d <- ggplot(data = sum_rt) +
     axis.title.x = element_text(size = rel(1.5), face="bold"),
     axis.title.y = element_text(size = rel(1.5), face="bold"),
     axis.text = element_text(size=rel(1.2)))
-Keep_1d
+Keep_1c
 
-saveRDS(Keep_1d, paste0("Figures/Combined_figures/Data/Keep_1", model_name, ".Rds"))
+saveRDS(Keep_1c, paste0("Figures/Combined_figures/Data/Keep_1", model_name, ".Rds"))
 
 png("Figures/Combined_figures/4model_check_Pre_Obs.png", width = 15, height = 10, units = 'in', res = 300)
 
@@ -834,7 +837,7 @@ dev.off()
 
 # Scatter
 
-Keep_2d <- ggplot(data = sum_rt) +
+Keep_2c <- ggplot(data = sum_rt) +
   geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date,
                               color = "Rt_data"), size = rel(0.5)) +
   geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date,
@@ -845,7 +848,7 @@ Keep_2d <- ggplot(data = sum_rt) +
                                 "Rt_LogP"="forestgreen"),
                      labels=c("Observed", "Predicted")) +
   theme_classic() +
-  labs(title = "d",
+  labs(title = "c",
        x = "Date",
        y = "Reproduction number") +
   theme(
@@ -855,9 +858,9 @@ Keep_2d <- ggplot(data = sum_rt) +
     axis.text = element_text(size=rel(1.2)),
     legend.title = element_text(size = rel(1.5), face="bold"),
     legend.text = element_text(size=rel(1.2)))
-Keep_2d
+Keep_2c
 
-saveRDS(Keep_2d, paste0("Figures/Combined_figures/Data/Keep_2", model_name, ".Rds"))
+saveRDS(Keep_2c, paste0("Figures/Combined_figures/Data/Keep_2", model_name, ".Rds"))
 
 png("Figures/Combined_figures/4model_check_Pre_Obs_time.png", width = 15, height = 8, units = 'in', res = 300)
 
@@ -873,7 +876,7 @@ dev.off()
 
 Keep_3d = SES + geom_point(
   data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
-                    y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(0.8)) +
+                    y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(1.2)) +
   theme_classic() +
   labs(title = "d",
        x = "Date",
