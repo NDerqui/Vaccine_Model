@@ -33,7 +33,6 @@ parameters {
   matrix[NumLTLAs,IntDim] 			gamma_nc; 	  	// Prev alpha, indexed by: i) LTLA; ii) factor 
   vector[NumLTLAs] 					intercept_nc;     	// indexed by: i) LTLA
   matrix[NumKnots,IntDim] 		lambda_raw_nc; // indexed by: i) Knots, ii) factor
-  matrix[NumTimepoints,IntDim] 		lambda_raw_nc_par; // indexed by: i) DataPoints, ii) factor
   vector<lower = 0>[NumDoses] 	VaxEffect_nc;
   real<lower = 0> 		phi_nc;
   real<lower = 0> 		sigma_nc;
@@ -61,7 +60,6 @@ transformed parameters{
   matrix[NumKnots-1, IntDim] origin; //intercept
   matrix[NumKnots-1, IntDim] slope;  //slope
 
-  matrix[NumTimepoints,IntDim] lambda_raw_par 	= rep_matrix(0, NumTimepoints, IntDim); // has NumTimepoints rows (not NumDatapoints)
   matrix[NumDatapoints, IntDim] lambda_parameters 		= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line
 
   // initialize
@@ -71,7 +69,7 @@ transformed parameters{
   sigma 		= sigma_nc			* 0.5;
   VaxEffect 	= VaxEffect_nc 	* phi;
   gamma 		= gamma_nc 			* phi2;
-  intercept 	= intercept 		* phi3;
+  intercept 	= intercept_nc 		* phi3;
   
   //Lambda for the LINE
   lambda_raw 	= lambda_raw_nc 	* phi3;
@@ -87,45 +85,37 @@ transformed parameters{
   }
   // line to fit the lambda
   for (i in 1:(NumKnots-1)){
-    slope[i] = (lambda[i+1] - lambda[i])/(Knots[i+1] - Knots[i]);
-    origin[i] = lambda[i] - slope[i]*Knots[i];
-  }
-
-  //Lambda for the MODEL LOGPred
-  lambda_raw_par 	= lambda_raw_nc_par 	* phi3;
-  {  
-    // initialise lambda_pars calcualted from line - save value for every LTLA
-  	int ind_2 = 0; // initialize index
-    for (i in 1:NumLTLAs){
-      for(j in 1:IntDim){
-        lambda_parameters[(ind_2 + 1):(ind_2 + NumTimepoints), j] = lambda_raw_par[1:NumTimepoints, j];
-      }
-      ind_2 = ind_2 + NumTimepoints; // update index
+    for (j in 1:IntDim) {
+     slope[i,j] = (lambda[i+1, j] - lambda[i, j])/(Knots[i+1] - Knots[i]);
+     origin[i,j] = lambda[i, j] - slope[i, j]*Knots[i]; 
     }
   }
+
   //Calculate lambda from the line ONLY IF we are doing knots
  if (DoKnots) {
     for (i in 1:NumDatapoints){
-    if(Timepoints[i] < 6) {
-      lambda_parameters[i] = origin[1] + slope[1]*Timepoints[i];
-    } else {
-      if (Timepoints[i] < 12) {
-        lambda_parameters[i] = origin[2] + slope[2]*Timepoints[i];
-      } else {
-        if (Timepoints[i] < 16) {
-          lambda_parameters[i] = origin[3] + slope[3]*Timepoints[i];
+      for (j in 1:IntDim) {
+        if(Timepoints[i] < 6) {
+          lambda_parameters[i,j] = origin[1,1] + slope[1,1]*Timepoints[i];
         } else {
-          if (Timepoints[i] < 25) {
-            lambda_parameters[i] = origin[4] + slope[4]*Timepoints[i];
+          if (Timepoints[i] < 12) {
+            lambda_parameters[i,j] = origin[2,1] + slope[2,1]*Timepoints[i];
           } else {
-            if (Timepoints[i] < 42) {
-              lambda_parameters[i] = origin[5] + slope[5]*Timepoints[i];
+            if (Timepoints[i] < 16) {
+              lambda_parameters[i,j] = origin[3,1] + slope[3,1]*Timepoints[i];
+            } else {
+              if (Timepoints[i] < 25) {
+                lambda_parameters[i,j] = origin[4,1] + slope[4,1]*Timepoints[i];
+              } else {
+                if (Timepoints[i] < 42) {
+                  lambda_parameters[i,j] = origin[5,1] + slope[5,1]*Timepoints[i];
+                }
+              }
             }
           }
         }
       }
-    }
-  } 
+    } 
  }
 
   // CONTINUE WITH LOG PRED MODEL WHETHER LAMBDA WAS FIT IN THE LINE OR NOT
@@ -162,9 +152,9 @@ model {
       gamma_nc[i,j] ~ std_normal();
     }
   }
-  for (i in 1:NumTimepoints){
+  for (i in 1:NumKnots){
     for(j in 1:IntDim){
-      lambda_raw_nc_par[i,j] ~ std_normal();
+      lambda_raw_nc[i,j] ~ std_normal();
     }
   }  
   intercept_nc 	~ std_normal();
