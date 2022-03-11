@@ -118,18 +118,22 @@ saveRDS(sum_rt, file = paste0("C:/Users/nd1316/OneDrive - Imperial College Londo
 #### VaxEffect ####
  
 VEMean <- colMeans(model_matrix[, grep(
- "VaxEffect", colnames(model_matrix))])
+   "VaxEffect", colnames(model_matrix))])
 VEQuan <- colQuantiles(model_matrix[, grep(
- "VaxEffect", colnames(model_matrix))], probs=c(0.025,0.975))
+   "VaxEffect", colnames(model_matrix))], probs=c(0.025,0.975))
+
+VEMean_exp <-(exp(-VEMean))
+VEQuan_exp <-(exp(-VEQuan))
  
-sum_ve <- round(data.frame(VEMean, VEQuan,
-                          row.names = c("Dose 1", "Dose 2", "Dose 3")),
-               digits = 4)
-colnames(sum_ve) <- c("Mean Effect", "2.5% Q", "97.5% Q")
+sum_ve <- round(data.frame(VEMean, VEQuan, VEMean_exp, VEQuan_exp,
+                            row.names = c("Dose 1", "Dose 2", "Dose 3")),
+                 digits = 4)
+colnames(sum_ve) <- c("Mean Effect", "2.5% Q", "97.5% Q",
+                       "Exp(Mean Effect)", "Exp(2.5% Q)", "Exp(97.5% Q)")
 View(sum_ve)
  
 write.xlsx(sum_ve, row.names = TRUE,
-          paste0("Results/", model_name, "/Vax_VE_table.xlsx"))
+            paste0("Results/", model_name, "/Vax_VE_table.xlsx"))
 
  
  
@@ -434,7 +438,7 @@ RE_uniq = RE_uniq/length(NamesLTLAs)
 SES <- ggplot()+
    geom_point(data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[1]],
                                 y = Ran_Eff[data_model$ltla_name==NamesLTLAs[1]]),
-              aes(x=x,y=y), alpha=0.5, size = rel(0.8)) + 
+              aes(x=x,y=y), alpha=0.5, size = rel(1.2)) + 
    theme_classic() +
    labs(x = "Date",
         y = "Secular Effect Size") +
@@ -447,14 +451,14 @@ SES <- ggplot()+
 for(i in 2:length(NamesLTLAs)){
    SES <- SES + geom_point(data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
                                              y = Ran_Eff[data_model$ltla_name==NamesLTLAs[i]]),
-                           aes(x=x,y=y), alpha=0.5, size = rel(0.8))}
+                           aes(x=x,y=y), alpha=0.5, size = rel(1.2))}
 #This is the loop to do so
  
 png(paste0("Figures/", model_name, "/SES.png"), width = 10, height = 6, units = 'in', res = 600)
  
 SES = SES + geom_point(
   data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
-                     y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(0.8)) +
+                     y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(1.2)) +
   geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021",
                                     "19/07/2021"), format = "%d/%m/%Y"),
              color = "darkmagenta") +
@@ -971,7 +975,7 @@ dev.off()
 
 Keep_3d = SES + geom_point(
   data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
-                    y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(0.8)) +
+                    y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(1.2)) +
   theme_classic() +
   labs(title = "d",
        x = "Date",
