@@ -33,11 +33,13 @@ parameters {
   matrix[NumLTLAs,IntDim] 			gamma_nc; 	  	// Prev alpha, indexed by: i) LTLA; ii) factor 
   vector[NumLTLAs] 					intercept_nc;     	// indexed by: i) LTLA
   matrix[NumKnots,IntDim] 		lambda_raw_nc; // indexed by: i) Knots, ii) factor
+  matrix[NumTimepoints,IntDim] 		lambda_raw_nc_par; // indexed by: i) Timepoint, ii) factor
   vector<lower = 0>[NumDoses] 	VaxEffect_nc;
+  real<lower = 0> 		sigma_nc; 
   real<lower = 0> 		phi_nc;
-  real<lower = 0> 		sigma_nc;
   real<lower = 0> 		phi2_nc;
   real<lower = 0> 		phi3_nc;
+  real<lower = 0> 		phi4_nc;
   
 }
 
@@ -47,10 +49,11 @@ transformed parameters{
   vector[NumLTLAs] 			intercept 	= rep_vector(0, NumLTLAs); 
   matrix[NumLTLAs,IntDim] 	gamma 		= rep_matrix(0, NumLTLAs, IntDim); 
   vector[NumDoses] 	VaxEffect = rep_vector(0, NumDoses);
-  real phi 		= 0;
   real sigma 	= 0;
+  real phi 		= 0;
   real phi2 	= 0;
   real phi3 	= 0;
+  real phi4 	= 0;
   vector[NumDatapoints] random_effects 		= rep_vector(0, NumDatapoints);
   vector[NumDatapoints] fixed_effects 		= rep_vector(0, NumDatapoints);
   vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
@@ -60,19 +63,21 @@ transformed parameters{
   matrix[NumKnots-1, IntDim] origin; //intercept
   matrix[NumKnots-1, IntDim] slope;  //slope
 
+  matrix[NumTimepoints,IntDim] lambda_raw_par 	= rep_matrix(0, NumTimepoints, IntDim); // has NumTimepoint rows (not NumDatapoints)
   matrix[NumDatapoints, IntDim] lambda_parameters 		= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line
 
   // initialize
   phi  			= phi_nc			* 2.0;
   phi2 			= phi2_nc			* 0.5;
   phi3 			= phi3_nc			* 0.5;
+  phi4 			= phi4_nc			* 0.5;
   sigma 		= sigma_nc			* 0.5;
   VaxEffect 	= VaxEffect_nc 	* phi;
   gamma 		= gamma_nc 			* phi2;
   intercept 	= intercept_nc 		* phi3;
   
   //Lambda for the LINE
-  lambda_raw 	= lambda_raw_nc 	* phi3;
+  lambda_raw 	= lambda_raw_nc 	* phi4;
   {  
   	// initialize lambda matrix to have same values for every LTLA - calculate line
     int ind = 0; // initialize index
@@ -116,6 +121,19 @@ transformed parameters{
         }
       }
     } 
+ } else {
+   // Initialise lambda if we are not doing knots
+  lambda_raw_par 	= lambda_raw_nc_par 	* phi4;
+  {  
+  	// initialize lambda matrix to have same values for every LTLA - calculate line
+    int ind_par = 0; // initialize index
+    for (i in 1:NumLTLAs){
+      for(j in 1:IntDim){
+        lambda_parameters[(ind_par + 1):(ind_par + NumTimepoints), j] = lambda_raw_par[1:NumTimepoints, j];
+      }
+      ind_par = ind_par + NumTimepoints; // update index
+    }
+  }
  }
 
   // CONTINUE WITH LOG PRED MODEL WHETHER LAMBDA WAS FIT IN THE LINE OR NOT
@@ -146,21 +164,31 @@ transformed parameters{
 }
 
 model {
+  
   VaxEffect_nc ~ std_normal();
+  
   for (i in 1:NumLTLAs){
     for(j in 1:IntDim){
       gamma_nc[i,j] ~ std_normal();
     }
   }
+  
   for (i in 1:NumKnots){
-    for(j in 1:IntDim){
-      lambda_raw_nc[i,j] ~ std_normal();
-    }
-  }  
+   for(j in 1:IntDim){
+    lambda_raw_nc[i,j] ~ std_normal();
+   }
+  }
+  for (i in 1:NumTimepoints){
+   for(j in 1:IntDim){
+    lambda_raw_nc_par[i,j] ~ std_normal();
+   }
+  }
+  
   intercept_nc 	~ std_normal();
   phi_nc 		~ std_normal();
   phi2_nc 		~ std_normal();
   phi3_nc 		~ std_normal();
+  phi4_nc 		~ std_normal();
   sigma_nc 		~ std_normal();
   RtVals 		~ normal(LogPredictions, sigma);
   
