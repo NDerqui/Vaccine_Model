@@ -101,6 +101,9 @@ Nested_Char <- ""
 
 lockdown_steps <- as.Date(c("05/01/2021", "08/03/2021", "19/04/2021",
                             "17/05/2021", "19/07/2021"), format = "%d/%m/%Y")
+# lockdown_steps <- as.Date(c("05/01/2021", "05/03/2021", "07/05/2021", "02/07/2021",
+#                             "16/07/2021", "06/08/2021", "03/09/2021", "01/10/2021"),
+#                           format = "%d/%m/%Y")
 lockdown__pseudosteps <- as.Date(c("05/01/2021", "08/03/2021", "01/04/2021",
                                    "19/04/2021", "17/05/2021", "21/06/2021",
                                    "03/07/2021", "11/07/2021", "19/07/2021"),
@@ -213,7 +216,6 @@ data_model <- select(data_merge, "ltla_name", "date", "week",
 
 
 
-
 # DATA FOR STAN MODEL ---------------------------------------------------------
 
 
@@ -263,6 +265,9 @@ NumWeeksByLTLA
 
 # No of Knots
 
+Knots
+Knots_weeks
+
 NumKnots <- length(Knots)
 NumKnots
 
@@ -284,7 +289,7 @@ IncludeScaling <- 1
 
 # Analyses by steps of lockdown
 
-DoKnots <- 0
+DoKnots <- 1
 
 
 #### Stan Data ####
@@ -394,10 +399,10 @@ cat(paste0("Model compilation done\n"))
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 2000 #Increase
-ModelMetaData$warmup 		= 500 #Increase
+ModelMetaData$iter 			= 100 #Increase
+ModelMetaData$warmup 		= 25 #Increase
 ModelMetaData$thin 			= 1
-ModelMetaData$chains 		= 8 #Increase
+ModelMetaData$chains 		= 1 #Increase
 ModelMetaData$adapt_delta 	= 0.9
 ModelMetaData$max_treedepth = 15
 ModelMetaData$ModelChar 	= ModelChar
@@ -411,18 +416,18 @@ colnames(ModelMetaData_dummy) = NULL
 #### Run ####
 
 memory.limit(size = 100000000)
-
-fit = sampling(StanModel, data = data_stan, 
-               iter 	= ModelMetaData$iter, 
-               warmup 	= ModelMetaData$warmup, 
-               thin 	= ModelMetaData$thin, 
-               chains 	= ModelMetaData$chains, 
-               pars 	= c("VaxEffect", "LogPredictions", "random_effects",
-                         "lambda_parameters", "gamma", "intercept", "log_lik", 
-                         "origin", "slope", "lambda"), 
-               control = list(adapt_delta = ModelMetaData$adapt_delta,
-                              max_treedepth = ModelMetaData$max_treedepth))
-
+  
+  fit = sampling(StanModel, data = data_stan, 
+                 iter 	= ModelMetaData$iter, 
+                 warmup 	= ModelMetaData$warmup, 
+                 thin 	= ModelMetaData$thin, 
+                 chains 	= ModelMetaData$chains, 
+                 pars 	= c("VaxEffect", "LogPredictions", "random_effects",
+                           "lambda_parameters", "gamma", "intercept", "log_lik", 
+                           "lambda"), 
+                 control = list(adapt_delta = ModelMetaData$adapt_delta,
+                                max_treedepth = ModelMetaData$max_treedepth))
+  
 
 
 # MODEL RESULTS -----------------------------------------------------------

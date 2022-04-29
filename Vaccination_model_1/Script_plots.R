@@ -94,14 +94,14 @@ sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff, LambdaParameter,
                      week = data_model$week,
                      row.names = paste0("Rt", 1:12726))
 
-saveRDS(sum_rt, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum.Rds"))
-saveRDS(Ran_Eff, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum_re.Rds"))
-saveRDS(Gamma, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum_g.Rds"))
+# saveRDS(sum_rt, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum.Rds"))
+# saveRDS(Ran_Eff, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum_re.Rds"))
+# saveRDS(Gamma, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum_g.Rds"))
 
 sum_line <- data.frame(date = rep(Steps, times = 303),
                        Lambda = Lambda)
 
-saveRDS(sum_rt, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum_line.Rds"))
+# saveRDS(sum_rt, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum_line.Rds"))
 
 
 
@@ -127,7 +127,10 @@ VEQuan_exp <-(exp(-VEQuan))
  
 sum_ve <- round(data.frame(VEMean, VEQuan, VEMean_exp, VEQuan_exp,
                             row.names = c("Dose 1", "Dose 2", "Dose 3")),
-                 digits = 4)
+                 digits = 2)
+sum_ve <- sum_ve %>%
+  select("VEMean", "X2.5.", "X97.5.",
+         "VEMean_exp", "X97.5..1", "X2.5..1")
 colnames(sum_ve) <- c("Mean Effect", "2.5% Q", "97.5% Q",
                        "Exp(Mean Effect)", "Exp(2.5% Q)", "Exp(97.5% Q)")
 View(sum_ve)
@@ -696,24 +699,6 @@ dev.off()
 
 #### Playing with linear intercept ####
 
-Lambda_dummy <- ggplot() +
-  geom_point (data = sum_line,
-              mapping = aes(x = date, y = Lambda, group = date), 
-                size = rel(1.2), color = "red") +
-  geom_line (data = sum_line,
-              mapping = aes(x = date, y = Lambda), 
-              color = "red") +
-  theme_classic() +
-  labs(title = "Lambda over time in all LTLAs",
-       x = "Date",
-       y = "Lambda") +
-  theme(
-    plot.title = element_text(size = rel(1.2), face="bold"),
-    axis.title.x = element_text(size = rel(1), face="bold"),
-    axis.title.y = element_text(size = rel(1), face="bold"),
-    axis.text=element_text(size=rel(0.9), face="bold"))
-Lambda_dummy
-
 png(paste0("Figures/", model_name, "/Lambda_linear.png"), width = 10, height = 6, units = 'in', res = 300)
 
 Lambda_dummy_2 <- ggplot() +
@@ -740,28 +725,6 @@ Lambda_dummy_2 <- ggplot() +
 Lambda_dummy_2
 
 dev.off()
-
-Lambda_dummy <- ggplot() +
-  geom_point (data = sum_line,
-              mapping = aes(x = date, y = Lambda, group = date), 
-              size = rel(1.2), color = "red") +
-  geom_line (data = sum_line,
-             mapping = aes(x = date, y = Lambda), 
-             color = "red") +
-  geom_abline(slope = Slope[1], intercept = Origin[1], color = "blue") +
-  geom_abline(slope = Slope[2], intercept = Origin[2], color = "green") +
-  geom_abline(slope = Slope[3], intercept = Origin[3], color = "gray") +
-  geom_abline(slope = Slope[4], intercept = Origin[4], color = "black") +
-  theme_classic() +
-  labs(title = "Lambda over time in all LTLAs",
-       x = "Week",
-       y = "Lambda") +
-  theme(
-    plot.title = element_text(size = rel(1.2), face="bold"),
-    axis.title.x = element_text(size = rel(1), face="bold"),
-    axis.title.y = element_text(size = rel(1), face="bold"),
-    axis.text=element_text(size=rel(0.9), face="bold"))
-Lambda_dummy
 
 
 

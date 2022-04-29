@@ -100,27 +100,16 @@ transformed parameters{
  if (DoKnots) {
     for (i in 1:NumDatapoints){
       for (j in 1:IntDim) {
-        if(Timepoints[i] < 6) {
-          lambda_parameters[i,j] = origin[1,1] + slope[1,1]*Timepoints[i];
-        } else {
-          if (Timepoints[i] < 12) {
-            lambda_parameters[i,j] = origin[2,1] + slope[2,1]*Timepoints[i];
-          } else {
-            if (Timepoints[i] < 16) {
-              lambda_parameters[i,j] = origin[3,1] + slope[3,1]*Timepoints[i];
-            } else {
-              if (Timepoints[i] < 25) {
-                lambda_parameters[i,j] = origin[4,1] + slope[4,1]*Timepoints[i];
-              } else {
-                if (Timepoints[i] < 42) {
-                  lambda_parameters[i,j] = origin[5,1] + slope[5,1]*Timepoints[i];
-                }
-              }
-            }
+        for (k in 1:(NumKnots-1)) {
+
+            if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1]){
+              
+              lambda_parameters[i,j] = origin[k,j] + slope[k,j]*Timepoints[i];
+            
           }
         }
-      }
-    } 
+       }  
+     }    
  } else {
    // Initialise lambda if we are not doing knots
   lambda_raw_par 	= lambda_raw_nc_par 	* phi4;
