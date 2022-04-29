@@ -187,7 +187,7 @@ data_merge <- data_merge[complete.cases(data_merge),]
 lockdown_steps %in% data_merge$date
 min(data_merge$date)
 
-Steps <- c(min(data_merge$date), lockdown_steps[2:5], max(data_merge$date))
+Steps <- c(min(data_merge$date), lockdown_steps[2:length(lockdown_steps)], max(data_merge$date))
 Steps %in% data_merge$date
 
 # Define knots with a day and week time scale
@@ -417,7 +417,7 @@ colnames(ModelMetaData_dummy) = NULL
 
 memory.limit(size = 100000000)
   
-  fit = sampling(StanModel, data = data_stan, 
+fit = sampling(StanModel, data = data_stan, 
                  iter 	= ModelMetaData$iter, 
                  warmup 	= ModelMetaData$warmup, 
                  thin 	= ModelMetaData$thin, 
