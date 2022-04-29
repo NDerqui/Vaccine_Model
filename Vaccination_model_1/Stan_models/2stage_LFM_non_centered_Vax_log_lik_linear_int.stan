@@ -2,7 +2,8 @@
 data {
   int <lower = 0, upper = 1>					IncludeIntercept; 	// Boolean for intercept
   int <lower = 0, upper = 1>					IncludeScaling; 	// Boolean for scaling
-  int <lower = 0, upper = 1>          DoKnots;        // Boolean for linear 
+  int <lower = 0, upper = 1>          DoKnots;        // Boolean for spline
+  int <lower = 0, upper = 1>          Quadratic;        // Boolean for quadratic (If 1, quadratic spline, if 0, linear)
 
   int<lower = 1> 							NumDatapoints; 	// Number of Rt values (all timepoints x regions) 
   int<lower = 1> 							NumDoses; 			// Number of parameters: Vax doses
@@ -62,6 +63,10 @@ transformed parameters{
   matrix[NumPointsLine,IntDim] lambda 		= rep_matrix(0, NumPointsLine, IntDim); // has NumKnots*NumLTLAs rows (not NumTimepoints)
   matrix[NumKnots-1, IntDim] origin; //intercept
   matrix[NumKnots-1, IntDim] slope;  //slope
+  matrix[NumKnots-2, IntDim] a; //Coeff a for quadratic eq
+  matrix[NumKnots-2, IntDim] b; //Coeff b for quadratic eq
+  matrix[NumKnots-2, IntDim] c; //Coeff c for quadratic eq
+
 
   matrix[NumTimepoints,IntDim] lambda_raw_par 	= rep_matrix(0, NumTimepoints, IntDim); // has NumTimepoint rows (not NumDatapoints)
   matrix[NumDatapoints, IntDim] lambda_parameters 		= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line
@@ -76,10 +81,10 @@ transformed parameters{
   gamma 		= gamma_nc 			* phi2;
   intercept 	= intercept_nc 		* phi3;
   
-  //Lambda for the LINE
+  //Lambda for the SPLINE
   lambda_raw 	= lambda_raw_nc 	* phi4;
   {  
-  	// initialize lambda matrix to have same values for every LTLA - calculate line
+  	// initialize lambda matrix to have same values for every LTLA
     int ind = 0; // initialize index
     for (i in 1:NumLTLAs){
       for(j in 1:IntDim){
@@ -88,33 +93,66 @@ transformed parameters{
       ind = ind + NumKnots; // update index
     }
   }
-  // line to fit the lambda
-  for (i in 1:(NumKnots-1)){
-    for (j in 1:IntDim) {
-     slope[i,j] = (lambda[i+1, j] - lambda[i, j])/(Knots[i+1] - Knots[i]);
-     origin[i,j] = lambda[i, j] - slope[i, j]*Knots[i]; 
+  // spline to fit the lambda
+  if (Quadratic) {
+    for (i in 1:(NumKnots-2)){
+      for (j in 1:IntDim) {
+        a[i,j] = (lambda[i+2, j] - lambda[i+1, j] - ((Knots[i+2] - Knots[i+1]) * (lambda[i, j] - lambda[i+1, j]) / (Knots[i] - Knots[i+1]))) / ((Knots[i+2]*Knots[i+2]) - (Knots[i+1]*Knots[i+1]) - (Knots[i] + Knots[i+1])*(Knots[i+2] - Knots[i+1]));
+        b[i,j] = ((lambda[i, j] - lambda[i+1, j]) / (Knots[i] - Knots[i+1])) - (Knots[i] + Knots[i+1])*a[i,j];
+        c[i,j] = lambda[i, j] - (b[i,j] * Knots[i]) - (a[i,j] * (Knots[i]*Knots[i]));
+      }
+    }
+  } else {
+    for (i in 1:(NumKnots-1)){
+      for (j in 1:IntDim) {
+        slope[i,j] = (lambda[i+1, j] - lambda[i, j])/(Knots[i+1] - Knots[i]);
+        origin[i,j] = lambda[i, j] - slope[i, j]*Knots[i]; 
+      }
     }
   }
+  
 
-  //Calculate lambda from the line ONLY IF we are doing knots
+  //Calculate lambda from the spline ONLY IF we are doing knots
  if (DoKnots) {
-    for (i in 1:NumDatapoints){
+   if (Quadratic){
+     for (i in 1:NumDatapoints){
+      for (j in 1:IntDim) {
+        for (k in 1:(NumKnots-2)) {
+
+            if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1]){
+              lambda_parameters[i,j] = a[k,j]*(Timepoints[i])^2 + b[k,j]*Timepoints[i] + c[k,j];
+            
+            }
+         }
+       }  
+     }
+     for (i in 1:NumDatapoints){
+      for (j in 1:IntDim) {
+          if (Timepoints[i] >= Knots[NumKnots-1] && Timepoints[i] < Knots[NumKnots]){
+              lambda_parameters[i,j] = a[NumKnots-2,1]*(Timepoints[i])^2 + b[NumKnots-2,1]*Timepoints[i] + c[NumKnots-2,1];
+            
+          }
+       }  
+     }
+   } else {
+     for (i in 1:NumDatapoints){
       for (j in 1:IntDim) {
         for (k in 1:(NumKnots-1)) {
 
             if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1]){
-              
               lambda_parameters[i,j] = origin[k,j] + slope[k,j]*Timepoints[i];
             
-          }
-        }
+            }
+         }
        }  
-     }    
+     }
+   }
+        
  } else {
-   // Initialise lambda if we are not doing knots
+   // Initialise lambda if we are not doing knots: free parameters allowed
   lambda_raw_par 	= lambda_raw_nc_par 	* phi4;
   {  
-  	// initialize lambda matrix to have same values for every LTLA - calculate line
+  	// initialize lambda matrix to have same values for every LTLA 
     int ind_par = 0; // initialize index
     for (i in 1:NumLTLAs){
       for(j in 1:IntDim){

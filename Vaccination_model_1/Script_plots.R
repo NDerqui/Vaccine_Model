@@ -306,8 +306,7 @@ Obs_Pre_Date <- ggplot(data = sum_rt) +
                                color = "Rt_data"), size = rel(0.5)) +
    geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date,
                                color = "Rt_LogP"), size = rel(0.5)) +
-  geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021",
-                                    "19/07/2021"), format = "%d/%m/%Y"),
+  geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
              color = "darkmagenta") +
    scale_color_manual(name="Reproduction number",
                       breaks = c("Rt_data", "Rt_LogP"),
@@ -367,8 +366,7 @@ png(paste0("Figures/", model_name, "/Pre_Rt_time.png"), width = 10, height = 6, 
  
 Rt_Pre_Date <- ggplot(data = sum_rt) +
   geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date), size = rel(0.5)) +
-  geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021",
-                                    "19/07/2021"), format = "%d/%m/%Y"),
+  geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
              color = "darkmagenta") +
    theme_classic() +
    labs(title = "Predicted Rt across LTLAs over time",
@@ -462,8 +460,7 @@ png(paste0("Figures/", model_name, "/SES.png"), width = 10, height = 6, units = 
 SES = SES + geom_point(
   data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
                      y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(1.2)) +
-  geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021",
-                                    "19/07/2021"), format = "%d/%m/%Y"),
+  geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
              color = "darkmagenta") +
    theme_classic() +
    labs(title = "Secular Trend across all LTLAs over time",
@@ -488,8 +485,7 @@ png(paste0("Figures/", model_name, "/RanEffect.png"), width = 10, height = 6, un
 RanEff_time <- ggplot(data = sum_rt) +
    geom_boxplot (mapping = aes(x = date, y = Ran_Eff, group = date), 
                  size = rel(0.5)) +
-  geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021",
-                                    "19/07/2021"), format = "%d/%m/%Y"),
+  geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
              color = "darkmagenta") +
    theme_classic() +
    labs(title = "Secular Trend across all LTLAs over time",
@@ -514,8 +510,7 @@ png(paste0("Figures/", model_name, "/Lambda.png"), width = 10, height = 6, units
 Lambda_time <- ggplot(data = sum_rt) +
    geom_boxplot (mapping = aes(x = date, y = LambdaParameter, group = date), 
                  size = rel(0.5)) +
-  geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021",
-                                    "19/07/2021"), format = "%d/%m/%Y"),
+  geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
              color = "darkmagenta") +
    theme_classic() +
    labs(title = "National Trend over time",
@@ -927,10 +922,10 @@ saveRDS(Keep_2d, paste0("Figures/Combined_figures/Data/Keep_2", model_name, ".Rd
 
 png("Figures/Combined_figures/4model_linear_Pre_Obs_time.png", width = 15, height = 8, units = 'in', res = 300)
 
-ggarrange(Keep_2a + rremove("xlab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta") ,
-          Keep_2b + rremove("xlab") + rremove("ylab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta") ,
-          Keep_2c + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta") ,
-          Keep_2d + rremove("ylab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta") ,
+ggarrange(Keep_2a + rremove("xlab") + geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"), color = "darkmagenta") ,
+          Keep_2b + rremove("xlab") + rremove("ylab") + geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"), color = "darkmagenta") ,
+          Keep_2c + geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"), color = "darkmagenta") ,
+          Keep_2d + rremove("ylab") + geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"), color = "darkmagenta") ,
           common.legend = TRUE, legend = "bottom", ncol = 2, nrow = 2)
 dev.off()
 
@@ -956,10 +951,10 @@ saveRDS(Keep_3d, paste0("Figures/Combined_figures/Data/Keep_3", model_name, ".Rd
 
 png("Figures/Combined_figures/4model_linear_SES.png", width = 15, height = 8, units = 'in', res = 300)
 
-ggarrange(Keep_3a + rremove("xlab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta"),
-          Keep_3b + rremove("xlab") + rremove("ylab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta"),
-          Keep_3c + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta"),
-          Keep_3d + rremove("ylab") + geom_vline(xintercept = as.Date(c("08/03/2021","19/04/2021","17/05/2021", "19/07/2021"), format = "%d/%m/%Y"), color = "darkmagenta"),
+ggarrange(Keep_3a + rremove("xlab") + geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"), color = "darkmagenta"),
+          Keep_3b + rremove("xlab") + rremove("ylab") + geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"), color = "darkmagenta"),
+          Keep_3c + geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"), color = "darkmagenta"),
+          Keep_3d + rremove("ylab") + geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"), color = "darkmagenta"),
           ncol = 2, nrow = 2)
 dev.off()
 

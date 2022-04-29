@@ -290,6 +290,7 @@ IncludeScaling <- 1
 # Analyses by steps of lockdown
 
 DoKnots <- 1
+Quadratic <- 1
 
 
 #### Stan Data ####
@@ -309,6 +310,7 @@ data_stan <- list(
           IncludeIntercept = IncludeIntercept,
           IncludeScaling = IncludeScaling,
           DoKnots = DoKnots,
+          Quadratic = Quadratic,
           NumKnots = NumKnots,
           Knots = Knots_weeks,
           NumPointsLine = NumPointsLine,
