@@ -11,6 +11,8 @@
 
 rm(list = ls())
 
+memory.limit(100000000)
+
 # Packages
 
 library(dplyr)
@@ -328,34 +330,34 @@ Obs_Pre_Date
  
 dev.off()
  
-# Compared to Vaccination proportion
- 
-p1 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
-   geom_point(mapping = aes(colour = Dose_1), size = rel(0.8)) +
-   scale_colour_gradient(low = "white", high = "navy", limits = c(0,1)) +
-   xlab("Rt Observed") + ylab("Rt Predicted") +
-   xlim(0.5, 2)+ ylim(0.5, 2) + theme_classic()
-p1
-p2 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
-   geom_point(mapping = aes(colour = Dose_2), size = rel(0.8)) +
-   scale_colour_gradient(low = "white", high = "cyan3", limits = c(0,1)) +
-   xlab("Rt Observed") + ylab("Rt Predicted") +
-   xlim(0.5, 2)+ ylim(0.5, 2) + theme_classic()
-p2
-p3 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
-  geom_point(mapping = aes(colour = Dose_3), size = rel(0.8)) +
-   scale_colour_gradient(low = "white", high = "lightgreen", limits = c(0,1)) +
-   xlab("Rt Observed") + ylab("Rt Predicted") +
-   xlim(0.5, 2)+ ylim(0.5, 2) + theme_classic()
-p3
- 
-#png(paste0("Figures/", model_name, "/Obs_Pre_Rt_Vax.png"), width = 6, height = 4, units = 'in', res = 300)
- 
-Rts_VaxProp <- ggarrange(p1, p2, p3,
-                          ncol = 3, nrow = 1)
-Rts_VaxProp
- 
-dev.off()
+# # Compared to Vaccination proportion
+#  
+# p1 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
+#    geom_point(mapping = aes(colour = Dose_1), size = rel(0.8)) +
+#    scale_colour_gradient(low = "white", high = "navy", limits = c(0,1)) +
+#    xlab("Rt Observed") + ylab("Rt Predicted") +
+#    xlim(0.5, 2)+ ylim(0.5, 2) + theme_classic()
+# p1
+# p2 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
+#    geom_point(mapping = aes(colour = Dose_2), size = rel(0.8)) +
+#    scale_colour_gradient(low = "white", high = "cyan3", limits = c(0,1)) +
+#    xlab("Rt Observed") + ylab("Rt Predicted") +
+#    xlim(0.5, 2)+ ylim(0.5, 2) + theme_classic()
+# p2
+# p3 <- ggplot(data = sum_rt, mapping = aes(x = Rt_data, y = Rt_LogP)) +
+#   geom_point(mapping = aes(colour = Dose_3), size = rel(0.8)) +
+#    scale_colour_gradient(low = "white", high = "lightgreen", limits = c(0,1)) +
+#    xlab("Rt Observed") + ylab("Rt Predicted") +
+#    xlim(0.5, 2)+ ylim(0.5, 2) + theme_classic()
+# p3
+#  
+# #png(paste0("Figures/", model_name, "/Obs_Pre_Rt_Vax.png"), width = 6, height = 4, units = 'in', res = 300)
+#  
+# Rts_VaxProp <- ggarrange(p1, p2, p3,
+#                           ncol = 3, nrow = 1)
+# Rts_VaxProp
+#  
+# dev.off()
  
  
 #### LogPred vs Time ####
@@ -385,47 +387,47 @@ dev.off()
  
 # With vaccination proportion
  
-p7 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
-   geom_point(mapping = aes(colour = Dose_1), size = rel(0.8)) +
-   scale_colour_gradient(low = "white", high = "navy", limits = c(0,1)) +
-   xlab("Date") + ylab("Rt Predicted") +
-   ylim(0.5, 2) + 
-   theme_classic() +
-   theme(
-     axis.title.x = element_text(size = rel(1), face="bold"),
-     axis.title.y = element_text(size = rel(1), face="bold"),
-     axis.text=element_text(size=rel(0.9), face="bold"))
-p7
-p8 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
-  geom_point(mapping = aes(colour = Dose_2), size = rel(0.8)) +
-   scale_colour_gradient(low = "white", high = "cyan3", limits = c(0,1)) +
-   xlab("Date") + ylab("Rt Predicted") +
-   ylim(0.5, 2) + 
-   theme_classic() +
-   theme(
-     axis.title.x = element_text(size = rel(1), face="bold"),
-     axis.title.y = element_text(size = rel(1), face="bold"),
-     axis.text=element_text(size=rel(0.9), face="bold"))
-p8
-p9 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
-   geom_point(mapping = aes(colour = Dose_3), size = rel(0.8)) +
-   scale_colour_gradient(low = "white", high = "palegreen", limits = c(0,1)) +
-   xlab("Date") + ylab("Rt Predicted") +
-   ylim(0.5, 2) +
-   theme_classic() +
-   theme(
-     axis.title.x = element_text(size = rel(1), face="bold"),
-     axis.title.y = element_text(size = rel(1), face="bold"),
-     axis.text=element_text(size=rel(0.9), face="bold"))
-p9
- 
-#png(paste0("Figures/", model_name, "/Pre_Rt_time_Vax.png"), width = 6, height = 6, units = 'in', res = 300)
-
-PreRts_Date <- ggarrange(p7, p8, p9,
-                          ncol = 1, nrow = 3)
-PreRts_Date
- 
-dev.off()
+# p7 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
+#    geom_point(mapping = aes(colour = Dose_1), size = rel(0.8)) +
+#    scale_colour_gradient(low = "white", high = "navy", limits = c(0,1)) +
+#    xlab("Date") + ylab("Rt Predicted") +
+#    ylim(0.5, 2) + 
+#    theme_classic() +
+#    theme(
+#      axis.title.x = element_text(size = rel(1), face="bold"),
+#      axis.title.y = element_text(size = rel(1), face="bold"),
+#      axis.text=element_text(size=rel(0.9), face="bold"))
+# p7
+# p8 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
+#   geom_point(mapping = aes(colour = Dose_2), size = rel(0.8)) +
+#    scale_colour_gradient(low = "white", high = "cyan3", limits = c(0,1)) +
+#    xlab("Date") + ylab("Rt Predicted") +
+#    ylim(0.5, 2) + 
+#    theme_classic() +
+#    theme(
+#      axis.title.x = element_text(size = rel(1), face="bold"),
+#      axis.title.y = element_text(size = rel(1), face="bold"),
+#      axis.text=element_text(size=rel(0.9), face="bold"))
+# p8
+# p9 <- ggplot(data = sum_rt, mapping = aes(x = date, y = Rt_LogP)) +
+#    geom_point(mapping = aes(colour = Dose_3), size = rel(0.8)) +
+#    scale_colour_gradient(low = "white", high = "palegreen", limits = c(0,1)) +
+#    xlab("Date") + ylab("Rt Predicted") +
+#    ylim(0.5, 2) +
+#    theme_classic() +
+#    theme(
+#      axis.title.x = element_text(size = rel(1), face="bold"),
+#      axis.title.y = element_text(size = rel(1), face="bold"),
+#      axis.text=element_text(size=rel(0.9), face="bold"))
+# p9
+#  
+# #png(paste0("Figures/", model_name, "/Pre_Rt_time_Vax.png"), width = 6, height = 6, units = 'in', res = 300)
+# 
+# PreRts_Date <- ggarrange(p7, p8, p9,
+#                           ncol = 1, nrow = 3)
+# PreRts_Date
+#  
+# dev.off()
  
  
 ####Trend####
