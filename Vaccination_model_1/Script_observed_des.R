@@ -1,7 +1,7 @@
 ###SARS-CoV-2 Rt Model for Vaccination and Variants###
 
-    ###Model update exploratory script###
-  ##Proposal 2: Multiple doses, one variant##
+      ###Model update exploratory script###
+    ##Proposal 2: Multiple doses, one variant##
 
 #MRes Biomedical Research - EECID stream - Project 1#
 
@@ -414,6 +414,5 @@ rt_table <- round(data.frame(rt_mean, rt_sd,
                              rt_min, rt_iqr, rt_max), digits = 4)
 write.xlsx(rt_table, row.names = TRUE,
            "Results/Description/Rt_time.xlsx")
-
 
 
