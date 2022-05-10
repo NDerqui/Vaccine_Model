@@ -99,11 +99,11 @@ Nested_Char <- ""
 
 # Sets of easing lockdown
 
-# lockdown_steps <- as.Date(c("05/01/2021", "08/03/2021", "19/04/2021",
-#                             "17/05/2021", "19/07/2021"), format = "%d/%m/%Y")
-lockdown_steps <- as.Date(c("05/01/2021", "05/03/2021", "07/05/2021", "02/07/2021",
-                            "16/07/2021", "06/08/2021", "03/09/2021", "01/10/2021"),
-                          format = "%d/%m/%Y")
+lockdown_steps <- as.Date(c("05/01/2021", "08/03/2021", "19/04/2021",
+                            "17/05/2021", "19/07/2021"), format = "%d/%m/%Y")
+# lockdown_steps <- as.Date(c("05/01/2021", "05/03/2021", "07/05/2021", "02/07/2021",
+#                             "16/07/2021", "06/08/2021", "03/09/2021", "01/10/2021"),
+#                           format = "%d/%m/%Y")
 lockdown__pseudosteps <- as.Date(c("05/01/2021", "08/03/2021", "01/04/2021",
                                    "19/04/2021", "17/05/2021", "21/06/2021",
                                    "03/07/2021", "11/07/2021", "19/07/2021"),
@@ -391,7 +391,7 @@ Rt_Obs_Date
 library(here)
 
 #ModelChar <- "2stage_LFM_non_centered_Vax"
-ModelChar <- "2stage_LFM_non_centered_Vax_log_lik_linear_int"
+ModelChar <- "2stage_LFM_non_centered_Vax_consolidated"
 StanModel <- stan_model(here(paste0("Stan_models/",ModelChar, ".stan")))
 cat(paste0("Model compilation done\n"))
 
