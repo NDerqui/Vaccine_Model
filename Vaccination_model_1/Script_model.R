@@ -142,7 +142,7 @@ drt <- rename(drt, ltla_name = area)
 # Select the vars of interest
 
 dvax <- select(dvax, "ltla_name", "date",
-                "First_Prop", "Second_Prop", "Third_Prop")
+               "First_Prop", "Second_Prop", "Third_Prop")
 drt <- select(drt, "ltla_name", "date", "Rt")
 
 # Data from Rt has now more obs
@@ -179,7 +179,6 @@ names(data_merge)
 
 data_merge <- data_merge[complete.cases(data_merge),]
 
-
 # Steps
 
 # First lockdown step is not in the data: take the initial date
@@ -196,7 +195,6 @@ Knots <- round(as.numeric(floor((Steps - Steps[1]))), digits = 0)
 Knots_weeks <- round(as.numeric(floor((Steps - Steps[1])/7)), digits = 0)
 #Match the weeks of the Knots to the ones in the data (start on week 4)
 
-
 # Weekly dates: var for no. of weeks & only one obs per week
 
 #Var for the number of weeks
@@ -207,7 +205,6 @@ data_merge <- mutate(data_merge, combi = paste0(data_merge$week, data_merge$ltla
 
 #Remove the duplicates
 data_merge <- filter(data_merge, !duplicated(data_merge$combi))
-
 
 # Select cols
 
@@ -315,7 +312,7 @@ data_stan <- list(
           Knots = Knots_weeks,
           NumPointsLine = NumPointsLine,
           Timepoints = Timepoints
-   )
+ )
 
 
 
@@ -401,10 +398,10 @@ cat(paste0("Model compilation done\n"))
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 100 #Increase
-ModelMetaData$warmup 		= 25 #Increase
+ModelMetaData$iter 			= 2000 #Increase
+ModelMetaData$warmup 		= 500 #Increase
 ModelMetaData$thin 			= 1
-ModelMetaData$chains 		= 1 #Increase
+ModelMetaData$chains 		= 8 #Increase
 ModelMetaData$adapt_delta 	= 0.9
 ModelMetaData$max_treedepth = 15
 ModelMetaData$ModelChar 	= ModelChar
@@ -425,11 +422,9 @@ fit = sampling(StanModel, data = data_stan,
                  thin 	= ModelMetaData$thin, 
                  chains 	= ModelMetaData$chains, 
                  pars 	= c("VaxEffect", "LogPredictions", "random_effects",
-                           "lambda_parameters", "gamma", "intercept", "log_lik", 
-                           "lambda"), 
+                           "lambda_parameters", "gamma", "intercept", "log_lik", "lambda"), 
                  control = list(adapt_delta = ModelMetaData$adapt_delta,
                                 max_treedepth = ModelMetaData$max_treedepth))
-  
 
 
 # MODEL RESULTS -----------------------------------------------------------

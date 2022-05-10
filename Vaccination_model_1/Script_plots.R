@@ -96,14 +96,8 @@ sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff, LambdaParameter,
                      week = data_model$week,
                      row.names = paste0("Rt", 1:12726))
 
-# saveRDS(sum_rt, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum.Rds"))
-# saveRDS(Ran_Eff, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum_re.Rds"))
-# saveRDS(Gamma, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum_g.Rds"))
-
 sum_line <- data.frame(date = rep(Steps, times = 303),
                        Lambda = Lambda)
-
-# saveRDS(sum_rt, file = paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Vaccine_Model/Vaccination_model_1/Results/DATA/", model_name, "_sum_line.Rds"))
 
 
 
@@ -1009,10 +1003,9 @@ ggarrange(annotate_figure(Keep_4a, fig.lab = "a", fig.lab.pos = "top.left",
           legend,
           ncol = 3, nrow = 2)
 dev.off()
-          
-          
 
 
+          
 # ARCHIVE PLOTS -----------------------------------------------------------
 
 
