@@ -87,6 +87,7 @@ transformed parameters{
       ind = ind + NumKnots; // update index
     }
   }
+  
   // spline to fit the lambda
   if (Quadratic) {
   
@@ -119,13 +120,13 @@ transformed parameters{
        		if (LTLAs[i] == 1) {
  		        
  		        if (Timepoints[i] >= Knots[NumKnots-1] && Timepoints[i] < Knots[NumKnots]) {
-		              lambda_parameters[i,j] = a[NumKnots-2,1]*(Timepoints[i])^2 + b[NumKnots-2,1]*Timepoints[i] + c[NumKnots-2,1]; 
+		              lambda_parameters[i,j] = a[NumKnots-2,1]*(Timepoints[i] * Timepoints[i]) + b[NumKnots-2,1]*Timepoints[i] + c[NumKnots-2,1]; 
 		        
 		        } else for (k in 1:(NumKnots-2))
 		            if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
-		              lambda_parameters[i,j] = a[k,j]*(Timepoints[i])^2 + b[k,j]*Timepoints[i] + c[k,j];
+		              lambda_parameters[i,j] = a[k,j]*(Timepoints[i] * Timepoints[i]) + b[k,j]*Timepoints[i] + c[k,j];
      	
-       		} else lambda_parameters[i,j] = lambda_parameters[(i - NumTimepoints),j]; 
+       		} else lambda_parameters[i,j] = lambda_parameters[(i - NumTimepoints),j]; // i.e. make equal to previous LTLA's lambda_parameters 
        
    } else { // i.e. doing knots, linear spline 
    
@@ -138,7 +139,7 @@ transformed parameters{
             if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
               lambda_parameters[i,j] = origin[k,j] + slope[k,j] * Timepoints[i];
         
-        } else lambda_parameters[i,j] = lambda_parameters[(i - NumTimepoints),j]; 
+        } else lambda_parameters[i,j] = lambda_parameters[(i - NumTimepoints),j]; // i.e. make equal to previous LTLA's lambda_parameters 
    }
         
  } else { // i.e. step function (each week a free parameter)
