@@ -1,29 +1,24 @@
 
 data {
-  int <lower = 0, upper = 1>					IncludeIntercept; 	// Boolean for intercept
-  int <lower = 0, upper = 1>					IncludeScaling; 	// Boolean for scaling
-  int <lower = 0, upper = 1>          DoKnots;        // Boolean for spline
-  int <lower = 0, upper = 1>          Quadratic;        // Boolean for quadratic (If 1, quadratic spline, if 0, linear)
+  int <lower = 0, upper = 1>		IncludeIntercept; 	// Boolean for intercept
+  int <lower = 0, upper = 1>		IncludeScaling; 	// Boolean for scaling
+  int <lower = 0, upper = 1>		DoKnots;        	// Boolean for spline
+  int <lower = 0, upper = 1>		Quadratic;        	// Boolean for quadratic (If 1, quadratic spline, if 0, linear)
 
-  int<lower = 1> 							NumDatapoints; 	// Number of Rt values (all timepoints x regions) 
-  int<lower = 1> 							NumDoses; 			// Number of parameters: Vax doses
-  int<lower = 1> 							NumLTLAs;				// Number of regions / LTLAs
-  int<lower = 1> 							NumTimepoints;	// Number of timepoints (weeks)
-  int<lower = 1>              NumKnots;       // Number of knots
-  int<lower = 1>              NumPointsLine;  // Number of line-lambdas (knots x regions)
+  int<lower = 1> 		NumDatapoints; 	// Number of Rt values (all timepoints x regions) 
+  int<lower = 1> 		NumDoses; 		// Number of parameters: Vax doses
+  int<lower = 1> 		NumLTLAs;		// Number of regions / LTLAs
+  int<lower = 1> 		NumTimepoints;	// Number of timepoints (weeks)
+  int<lower = 1>        NumKnots;       // Number of knots
+  int<lower = 1>        NumPointsLine;  // Number of line-lambdas (knots x regions)
   
-  vector[NumDatapoints] 				RtVals; 				
-      // y: Rt values across all time points and regions (expressed as giant vector) 
-  matrix[NumDatapoints,NumDoses] 	VaxProp; 			
-      // x predictor: Binary design matrix. Each row is a region and date combination.
+  vector[NumDatapoints] 			RtVals; 	// y: Rt values across all time points and regions (expressed as giant vector) 
+  matrix[NumDatapoints,NumDoses] 	VaxProp;	// x predictor: Binary design matrix. Each row is a region and date combination.
       // Each column has the proportion of vax at that time/LTLA with 1, 2, 3 doses
-  int 									LTLAs[NumDatapoints]; 	
-      // vector giving LTLA number for each Rt-region combination.
+  int 								LTLAs[NumDatapoints];  // vector giving LTLA number for each Rt-region combination.
       
-  vector[NumKnots]            Knots;
-      // Sequence of knots
-  vector[NumDatapoints]       Timepoints;
-      // Sequence of timepoints
+  vector[NumKnots]            Knots;	 // Sequence of knots
+  vector[NumDatapoints]       Timepoints;// Sequence of timepoints
 }
 
 transformed data{
@@ -31,17 +26,16 @@ transformed data{
 }
 
 parameters {
-  matrix[NumLTLAs,IntDim] 			gamma_nc; 	  	// Prev alpha, indexed by: i) LTLA; ii) factor 
-  vector[NumLTLAs] 					intercept_nc;     	// indexed by: i) LTLA
-  matrix[NumKnots,IntDim] 		lambda_raw_nc; // indexed by: i) Knots, ii) factor
-  matrix[NumTimepoints,IntDim] 		lambda_raw_nc_par; // indexed by: i) Timepoint, ii) factor
+  matrix[NumLTLAs,IntDim] 		gamma_nc; 	  		// Prev alpha, indexed by: i) LTLA; ii) factor 
+  vector[NumLTLAs] 				intercept_nc;     	// indexed by: i) LTLA
+  matrix[NumKnots,IntDim] 		lambda_raw_nc; 		// indexed by: i) Knots, ii) factor
+  matrix[NumTimepoints,IntDim] 	lambda_raw_nc_par; 	// indexed by: i) Timepoint, ii) factor
   vector<lower = 0>[NumDoses] 	VaxEffect_nc;
   real<lower = 0> 		sigma_nc; 
   real<lower = 0> 		phi_nc;
   real<lower = 0> 		phi2_nc;
   real<lower = 0> 		phi3_nc;
   real<lower = 0> 		phi4_nc;
-  
 }
 
 transformed parameters{
@@ -49,7 +43,7 @@ transformed parameters{
   // allocate
   vector[NumLTLAs] 			intercept 	= rep_vector(0, NumLTLAs); 
   matrix[NumLTLAs,IntDim] 	gamma 		= rep_matrix(0, NumLTLAs, IntDim); 
-  vector[NumDoses] 	VaxEffect = rep_vector(0, NumDoses);
+  vector[NumDoses] 			VaxEffect 	= rep_vector(0, NumDoses);
   real sigma 	= 0;
   real phi 		= 0;
   real phi2 	= 0;
@@ -59,17 +53,17 @@ transformed parameters{
   vector[NumDatapoints] fixed_effects 		= rep_vector(0, NumDatapoints);
   vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
 
-  matrix[NumKnots,IntDim] lambda_raw 	= rep_matrix(0, NumKnots, IntDim); // has NumKnots rows (not NumDatapoints)
+  matrix[NumKnots,IntDim] lambda_raw 		= rep_matrix(0, NumKnots, IntDim); 		// has NumKnots rows (not NumDatapoints)
   matrix[NumPointsLine,IntDim] lambda 		= rep_matrix(0, NumPointsLine, IntDim); // has NumKnots*NumLTLAs rows (not NumTimepoints)
-  matrix[NumKnots-1, IntDim] origin; //intercept
-  matrix[NumKnots-1, IntDim] slope;  //slope
-  matrix[NumKnots-2, IntDim] a; //Coeff a for quadratic eq
-  matrix[NumKnots-2, IntDim] b; //Coeff b for quadratic eq
-  matrix[NumKnots-2, IntDim] c; //Coeff c for quadratic eq
+  matrix[NumKnots-1, IntDim] origin; 						//intercept
+  matrix[NumKnots-1, IntDim] slope;  						//slope
+  matrix[NumKnots-2, IntDim] a; 							//Coeff a for quadratic eq
+  matrix[NumKnots-2, IntDim] b; 							//Coeff b for quadratic eq
+  matrix[NumKnots-2, IntDim] c; 							//Coeff c for quadratic eq
 
 
-  matrix[NumTimepoints,IntDim] lambda_raw_par 	= rep_matrix(0, NumTimepoints, IntDim); // has NumTimepoint rows (not NumDatapoints)
-  matrix[NumDatapoints, IntDim] lambda_parameters 		= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line
+  matrix[NumTimepoints,IntDim] 	lambda_raw_par 		= rep_matrix(0, NumTimepoints, IntDim); // has NumTimepoint rows (not NumDatapoints)
+  matrix[NumDatapoints, IntDim] lambda_parameters 	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line
 
   // initialize
   phi  			= phi_nc			* 2.0;
@@ -78,8 +72,8 @@ transformed parameters{
   phi4 			= phi4_nc			* 0.5;
   sigma 		= sigma_nc			* 0.5;
   VaxEffect 	= VaxEffect_nc 	* phi;
-  gamma 		= gamma_nc 			* phi2;
-  intercept 	= intercept_nc 		* phi3;
+  gamma 		= gamma_nc 		* phi2;
+  intercept 	= intercept_nc	* phi3;
   
   //Lambda for the SPLINE
   lambda_raw 	= lambda_raw_nc 	* phi4;
