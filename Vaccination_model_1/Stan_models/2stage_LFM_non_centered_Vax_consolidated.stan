@@ -28,8 +28,11 @@ transformed data{
 parameters {
   matrix[NumLTLAs,IntDim] 		gamma_nc; 	  		// Prev alpha, indexed by: i) LTLA; ii) factor 
   vector[NumLTLAs] 				intercept_nc;     	// indexed by: i) LTLA
+
+  //// looks wrong to have two things here - your parameters are only the knots - not two versions of the knots.
   matrix[NumKnots,IntDim] 		lambda_raw_nc; 		// indexed by: i) Knots, ii) factor
   matrix[NumTimepoints,IntDim] 	lambda_raw_nc_par; 	// indexed by: i) Timepoint, ii) factor
+
   vector<lower = 0>[NumDoses] 	VaxEffect_nc;
   real<lower = 0> 		sigma_nc; 
   real<lower = 0> 		phi_nc;
@@ -65,7 +68,7 @@ transformed parameters{
   matrix[NumTimepoints,IntDim] 	lambda_raw_par 		= rep_matrix(0, NumTimepoints, IntDim); // has NumTimepoint rows (not NumDatapoints)
   matrix[NumDatapoints, IntDim] lambda_parameters 	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line
 
-  // initialize
+  // initialize - get centered parameter values from their non-centered equivalents.
   phi  			= phi_nc			* 2.0;
   phi2 			= phi2_nc			* 0.5;
   phi3 			= phi3_nc			* 0.5;
@@ -88,6 +91,7 @@ transformed parameters{
     }
   }
   
+ if (DoKnots) {  
   // spline to fit the lambda
   if (Quadratic) {
   
@@ -107,6 +111,7 @@ transformed parameters{
       }
   }
   
+  }
 
   //Calculate lambda from the spline ONLY IF we are doing knots
  if (DoKnots) {
