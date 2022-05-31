@@ -165,12 +165,12 @@ transformed parameters{
  }
 
   // CONTINUE WITH LOG PRED MODEL WHETHER LAMBDA WAS FIT IN THE LINE OR NOT
-  // VacEffects_Regional[1:NumDatapoints] = VaxProp * - VaxEffect; // x * -beta in manuscript
+  // VacEffects_Regional[1:NumDatapoints] = VaxProp * VaxEffect; // x * -beta in manuscript
   for (i in 1:NumDatapoints)
   {
   	VacEffects_Regional[i] = 0; // initialize to zero for each timepoint 
   	for (j in 1:NumDoses)
-  		VacEffects_Regional[i] += VaxProp[i,j] * -VaxEffect[j];
+  		VacEffects_Regional[i] += VaxProp[i,j] * VaxEffect[j];
   }
   
   for (i in 1:NumDatapoints){
@@ -193,7 +193,7 @@ transformed parameters{
 
         }
       }
-  LogPredictions[1:NumDatapoints] = VacEffects_Regional[1:NumDatapoints] + RegionalTrends[1:NumDatapoints];
+  LogPredictions[1:NumDatapoints] = RegionalTrends[1:NumDatapoints] - VacEffects_Regional[1:NumDatapoints];
 
 }
 
