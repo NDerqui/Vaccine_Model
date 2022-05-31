@@ -66,7 +66,7 @@ transformed parameters{
 
 
   matrix[NumTimepoints,IntDim] 	lambda_raw_par 		= rep_matrix(0, NumTimepoints, IntDim); // has NumTimepoint rows (not NumDatapoints)
-  matrix[NumDatapoints, IntDim] lambda_parameters 	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line
+  matrix[NumDatapoints, IntDim] NationalTrend 	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line
 
   // initialize - get centered parameter values from their non-centered equivalents.
   phi  			= phi_nc			* 2.0;
@@ -125,13 +125,13 @@ transformed parameters{
        		if (LTLAs[i] == 1) {
  		        
  		        if (Timepoints[i] >= Knots[NumKnots-1] && Timepoints[i] < Knots[NumKnots]) {
-		              lambda_parameters[i,j] = a[NumKnots-2,1]*(Timepoints[i] * Timepoints[i]) + b[NumKnots-2,1]*Timepoints[i] + c[NumKnots-2,1]; 
+		              NationalTrend[i,j] = a[NumKnots-2,1]*(Timepoints[i] * Timepoints[i]) + b[NumKnots-2,1]*Timepoints[i] + c[NumKnots-2,1]; 
 		        
 		        } else for (k in 1:(NumKnots-2))
 		            if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
-		              lambda_parameters[i,j] = a[k,j]*(Timepoints[i] * Timepoints[i]) + b[k,j]*Timepoints[i] + c[k,j];
+		              NationalTrend[i,j] = a[k,j]*(Timepoints[i] * Timepoints[i]) + b[k,j]*Timepoints[i] + c[k,j];
      	
-       		} else lambda_parameters[i,j] = lambda_parameters[(i - NumTimepoints),j]; // i.e. make equal to previous LTLA's lambda_parameters 
+       		} else NationalTrend[i,j] = NationalTrend[(i - NumTimepoints),j]; // i.e. make equal to previous LTLA's NationalTrend 
        
    } else { // i.e. doing knots, linear spline 
    
@@ -142,9 +142,9 @@ transformed parameters{
 		if (LTLAs[i] == 1) {     
         for (k in 1:(NumKnots-1)) 
             if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
-              lambda_parameters[i,j] = origin[k,j] + slope[k,j] * Timepoints[i];
+              NationalTrend[i,j] = origin[k,j] + slope[k,j] * Timepoints[i];
         
-        } else lambda_parameters[i,j] = lambda_parameters[(i - NumTimepoints),j]; // i.e. make equal to previous LTLA's lambda_parameters 
+        } else NationalTrend[i,j] = NationalTrend[(i - NumTimepoints),j]; // i.e. make equal to previous LTLA's NationalTrend 
    }
         
  } else { // i.e. step function (each week a free parameter)
@@ -157,7 +157,7 @@ transformed parameters{
     for (i in 1:NumLTLAs){
       
       for(j in 1:IntDim)
-        lambda_parameters[(ind_par + 1):(ind_par + NumTimepoints), j] = lambda_raw_par[1:NumTimepoints, j];
+        NationalTrend[(ind_par + 1):(ind_par + NumTimepoints), j] = lambda_raw_par[1:NumTimepoints, j];
      
       ind_par = ind_par + NumTimepoints; // update index
     }
@@ -173,16 +173,16 @@ transformed parameters{
       if (IncludeIntercept) {
        
         if (IncludeScaling) {
-          RegionalTrends[i] += lambda_parameters[i,j] * gamma[LTLAs[i],j] + intercept[LTLAs[i]]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
+          RegionalTrends[i] += NationalTrend[i,j] * gamma[LTLAs[i],j] + intercept[LTLAs[i]]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
         } else {
-          RegionalTrends[i] += lambda_parameters[i,j] + intercept[LTLAs[i]]; }
+          RegionalTrends[i] += NationalTrend[i,j] + intercept[LTLAs[i]]; }
         
         } else {
           
         if (IncludeScaling) {
-          RegionalTrends[i] += lambda_parameters[i,j] * gamma[LTLAs[i],j]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
+          RegionalTrends[i] += NationalTrend[i,j] * gamma[LTLAs[i],j]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
 	      } else {
-          RegionalTrends[i] += lambda_parameters[i,j]; }
+          RegionalTrends[i] += NationalTrend[i,j]; }
         }
 
         }

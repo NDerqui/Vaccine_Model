@@ -73,7 +73,7 @@ Lambda <- exp(colMeans(model_matrix[, grep(
   '^lambda\\[', colnames(model_matrix))]))
 
 LambdaParameter <- exp(colMeans(model_matrix[, grep(
-  '^lambda_parameters\\[', colnames(model_matrix))]))
+  '^NationalTrend\\[', colnames(model_matrix))]))
 
 Gamma <- exp(colMeans(model_matrix[, grep(
   '^gamma\\[', colnames(model_matrix))]))
