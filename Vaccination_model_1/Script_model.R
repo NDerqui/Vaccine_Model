@@ -392,7 +392,9 @@ library(here)
 
 #ModelChar <- "2stage_LFM_non_centered_Vax"
 ModelChar <- "2stage_LFM_non_centered_Vax_consolidated"
-StanModel <- stan_model(here(paste0("Stan_models/",ModelChar, ".stan")))
+#StanModel <- stan_model(here(paste0("Stan_models/",ModelChar, ".stan")))
+StanModel <- stan_model(here(paste0("Vaccination_model_1/Stan_models/", ModelChar, ".stan"))) ## added this as my here() package playing up and loads to root directory. Switch back to previous line as required.
+
 cat(paste0("Model compilation done\n"))
 
 # Create and write meta data

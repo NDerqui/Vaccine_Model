@@ -89,60 +89,50 @@ transformed parameters{
   }
   // spline to fit the lambda
   if (Quadratic) {
-    for (i in 1:(NumKnots-2)){
+    for (i in 1:(NumKnots-2))
       for (j in 1:IntDim) {
         a[i,j] = (lambda[i+2, j] - lambda[i+1, j] - ((Knots[i+2] - Knots[i+1]) * (lambda[i, j] - lambda[i+1, j]) / (Knots[i] - Knots[i+1]))) / ((Knots[i+2]*Knots[i+2]) - (Knots[i+1]*Knots[i+1]) - (Knots[i] + Knots[i+1])*(Knots[i+2] - Knots[i+1]));
         b[i,j] = ((lambda[i, j] - lambda[i+1, j]) / (Knots[i] - Knots[i+1])) - (Knots[i] + Knots[i+1])*a[i,j];
         c[i,j] = lambda[i, j] - (b[i,j] * Knots[i]) - (a[i,j] * (Knots[i]*Knots[i]));
       }
-    }
+      
   } else {
-    for (i in 1:(NumKnots-1)){
+  
+    for (i in 1:(NumKnots-1))
       for (j in 1:IntDim) {
         slope[i,j] = (lambda[i+1, j] - lambda[i, j])/(Knots[i+1] - Knots[i]);
         origin[i,j] = lambda[i, j] - slope[i, j]*Knots[i]; 
       }
-    }
   }
   
 
   //Calculate lambda from the spline ONLY IF we are doing knots
  if (DoKnots) {
-   if (Quadratic){
-     for (i in 1:NumDatapoints){
-      for (j in 1:IntDim) {
-        for (k in 1:(NumKnots-2)) {
-
-            if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1]){
+ 
+   if (Quadratic) {
+     
+     for (i in 1:NumDatapoints)
+      for (j in 1:IntDim)
+        for (k in 1:(NumKnots-2))
+            if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
               lambda_parameters[i,j] = a[k,j]*(Timepoints[i])^2 + b[k,j]*Timepoints[i] + c[k,j];
-            
-            }
-         }
-       }  
-     }
-     for (i in 1:NumDatapoints){
-      for (j in 1:IntDim) {
-          if (Timepoints[i] >= Knots[NumKnots-1] && Timepoints[i] < Knots[NumKnots]){
-              lambda_parameters[i,j] = a[NumKnots-2,1]*(Timepoints[i])^2 + b[NumKnots-2,1]*Timepoints[i] + c[NumKnots-2,1];
-            
-          }
-       }  
-     }
-   } else {
-     for (i in 1:NumDatapoints){
-      for (j in 1:IntDim) {
-        for (k in 1:(NumKnots-1)) {
 
-            if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1]){
+     for (i in 1:NumDatapoints)
+      for (j in 1:IntDim)
+          if (Timepoints[i] >= Knots[NumKnots-1] && Timepoints[i] < Knots[NumKnots])
+              lambda_parameters[i,j] = a[NumKnots-2,1]*(Timepoints[i])^2 + b[NumKnots-2,1]*Timepoints[i] + c[NumKnots-2,1];
+     
+   } else { // i.e. doing knots, linear spline 
+   
+     for (i in 1:NumDatapoints)
+      for (j in 1:IntDim)
+        for (k in 1:(NumKnots-1)) 
+            if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
               lambda_parameters[i,j] = origin[k,j] + slope[k,j]*Timepoints[i];
-            
-            }
-         }
-       }  
-     }
    }
         
- } else {
+ } else { // i.e. step function (each week a free parameter)
+ 
    // Initialise lambda if we are not doing knots: free parameters allowed
   lambda_raw_par 	= lambda_raw_nc_par 	* phi4;
   {  
