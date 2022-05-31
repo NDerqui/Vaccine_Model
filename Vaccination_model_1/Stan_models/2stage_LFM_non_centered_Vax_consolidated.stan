@@ -113,14 +113,12 @@ transformed parameters{
      
      for (i in 1:NumDatapoints)
       for (j in 1:IntDim)
-        for (k in 1:(NumKnots-2))
+        if (Timepoints[i] >= Knots[NumKnots-1] && Timepoints[i] < Knots[NumKnots]) {
+              lambda_parameters[i,j] = a[NumKnots-2,1]*(Timepoints[i])^2 + b[NumKnots-2,1]*Timepoints[i] + c[NumKnots-2,1]; 
+        
+        } else for (k in 1:(NumKnots-2))
             if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
               lambda_parameters[i,j] = a[k,j]*(Timepoints[i])^2 + b[k,j]*Timepoints[i] + c[k,j];
-
-     for (i in 1:NumDatapoints)
-      for (j in 1:IntDim)
-          if (Timepoints[i] >= Knots[NumKnots-1] && Timepoints[i] < Knots[NumKnots])
-              lambda_parameters[i,j] = a[NumKnots-2,1]*(Timepoints[i])^2 + b[NumKnots-2,1]*Timepoints[i] + c[NumKnots-2,1];
      
    } else { // i.e. doing knots, linear spline 
    
