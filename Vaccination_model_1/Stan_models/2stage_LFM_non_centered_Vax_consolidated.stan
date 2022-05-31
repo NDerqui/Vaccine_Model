@@ -53,7 +53,7 @@ transformed parameters{
   real phi3 	= 0;
   real phi4 	= 0;
   vector[NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
-  vector[NumDatapoints] VacEffects_Regional 		= rep_vector(0, NumDatapoints);
+  vector[NumDatapoints] VacEffects_Regional = rep_vector(0, NumDatapoints);
   vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
 
   matrix[NumKnots,IntDim] lambda_raw 		= rep_matrix(0, NumKnots, IntDim); 		// has NumKnots rows (not NumDatapoints)
@@ -165,7 +165,13 @@ transformed parameters{
  }
 
   // CONTINUE WITH LOG PRED MODEL WHETHER LAMBDA WAS FIT IN THE LINE OR NOT
-  VacEffects_Regional[1:NumDatapoints] = VaxProp * - VaxEffect; // x * -beta in manuscript
+  // VacEffects_Regional[1:NumDatapoints] = VaxProp * - VaxEffect; // x * -beta in manuscript
+  for (i in 1:NumDatapoints)
+  {
+  	VacEffects_Regional[i] = 0; // initialize to zero for each timepoint 
+  	for (j in 1:NumDoses)
+  		VacEffects_Regional[i] += VaxProp[i,j] * -VaxEffect[j];
+  }
   
   for (i in 1:NumDatapoints){
     for(j in 1:IntDim){
