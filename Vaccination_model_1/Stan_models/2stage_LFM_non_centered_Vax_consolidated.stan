@@ -17,8 +17,8 @@ data {
       // Each column has the proportion of vax at that time/LTLA with 1, 2, 3 doses
   int 								LTLAs[NumDatapoints];  // vector giving LTLA number for each Rt-region combination.
       
-  vector[NumKnots]            Knots;	 // Sequence of knots
-  vector[NumDatapoints]       Timepoints;// Sequence of timepoints
+  vector[NumKnots]            Knots;	  // Sequence of knots
+  vector[NumDatapoints]       Timepoints; // Sequence of timepoints
 }
 
 transformed data{
@@ -89,6 +89,7 @@ transformed parameters{
   }
   // spline to fit the lambda
   if (Quadratic) {
+  
     for (i in 1:(NumKnots-2))
       for (j in 1:IntDim) {
         a[i,j] = (lambda[i+2, j] - lambda[i+1, j] - ((Knots[i+2] - Knots[i+1]) * (lambda[i, j] - lambda[i+1, j]) / (Knots[i] - Knots[i+1]))) / ((Knots[i+2]*Knots[i+2]) - (Knots[i+1]*Knots[i+1]) - (Knots[i] + Knots[i+1])*(Knots[i+2] - Knots[i+1]));
@@ -110,23 +111,34 @@ transformed parameters{
  if (DoKnots) {
  
    if (Quadratic) {
-     
-     for (i in 1:NumDatapoints)
-      for (j in 1:IntDim)
-        if (Timepoints[i] >= Knots[NumKnots-1] && Timepoints[i] < Knots[NumKnots]) {
-              lambda_parameters[i,j] = a[NumKnots-2,1]*(Timepoints[i])^2 + b[NumKnots-2,1]*Timepoints[i] + c[NumKnots-2,1]; 
-        
-        } else for (k in 1:(NumKnots-2))
-            if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
-              lambda_parameters[i,j] = a[k,j]*(Timepoints[i])^2 + b[k,j]*Timepoints[i] + c[k,j];
-     
+
+     // very inefficient, in that you're calculating x and y coordinates for spline for every LTLA, when before vaccination they are all the same. 
+     // Make the calculation once for the spline, then populate for every LTLA. See (and check) below 
+     for (i in 1:NumDatapoints) 
+     	for (j in 1:IntDim)
+       		if (LTLAs[i] == 1) {
+ 		        
+ 		        if (Timepoints[i] >= Knots[NumKnots-1] && Timepoints[i] < Knots[NumKnots]) {
+		              lambda_parameters[i,j] = a[NumKnots-2,1]*(Timepoints[i])^2 + b[NumKnots-2,1]*Timepoints[i] + c[NumKnots-2,1]; 
+		        
+		        } else for (k in 1:(NumKnots-2))
+		            if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
+		              lambda_parameters[i,j] = a[k,j]*(Timepoints[i])^2 + b[k,j]*Timepoints[i] + c[k,j];
+     	
+       		} else lambda_parameters[i,j] = lambda_parameters[(i - NumTimepoints),j]; 
+       
    } else { // i.e. doing knots, linear spline 
    
+     // very inefficient, in that you're calculating x and y coordinates for spline for every LTLA, when before vaccination they are all the same. 
+     // Make the calculation once for the spline, then populate for every LTLA. See (and check) below 
      for (i in 1:NumDatapoints)
       for (j in 1:IntDim)
+		if (LTLAs[i] == 1) {     
         for (k in 1:(NumKnots-1)) 
             if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
-              lambda_parameters[i,j] = origin[k,j] + slope[k,j]*Timepoints[i];
+              lambda_parameters[i,j] = origin[k,j] + slope[k,j] * Timepoints[i];
+        
+        } else lambda_parameters[i,j] = lambda_parameters[(i - NumTimepoints),j]; 
    }
         
  } else { // i.e. step function (each week a free parameter)
@@ -137,9 +149,10 @@ transformed parameters{
   	// initialize lambda matrix to have same values for every LTLA 
     int ind_par = 0; // initialize index
     for (i in 1:NumLTLAs){
-      for(j in 1:IntDim){
+      
+      for(j in 1:IntDim)
         lambda_parameters[(ind_par + 1):(ind_par + NumTimepoints), j] = lambda_raw_par[1:NumTimepoints, j];
-      }
+     
       ind_par = ind_par + NumTimepoints; // update index
     }
   }
