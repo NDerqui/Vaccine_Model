@@ -34,136 +34,133 @@ parameters {
   matrix[NumTimepoints,IntDim] 	lambda_raw_nc_par; 	// indexed by: i) Timepoint, ii) factor
 
   vector<lower = 0>[NumDoses] 	VaxEffect_nc;
-  real<lower = 0> 		sigma_nc; 
-  real<lower = 0> 		phi_nc;
-  real<lower = 0> 		phi2_nc;
-  real<lower = 0> 		phi3_nc;
-  real<lower = 0> 		phi4_nc;
+  real<lower = 0> 				sigma_nc; 
+  real<lower = 0> 				phi_nc;
+  real<lower = 0> 				phi2_nc;
+  real<lower = 0> 				phi3_nc;
+  real<lower = 0> 				phi4_nc;
 }
 
 transformed parameters{
 
-  // allocate
-  vector[NumLTLAs] 			intercept 	= rep_vector(0, NumLTLAs); 
-  matrix[NumLTLAs,IntDim] 	gamma 		= rep_matrix(0, NumLTLAs, IntDim); 
-  vector[NumDoses] 			VaxEffect 	= rep_vector(0, NumDoses);
-  real sigma 	= 0;
-  real phi 		= 0;
-  real phi2 	= 0;
-  real phi3 	= 0;
-  real phi4 	= 0;
-  vector[NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
-  vector[NumDatapoints] VacEffects_Regional = rep_vector(0, NumDatapoints);
-  vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
-
-  matrix[NumKnots,IntDim] lambda_raw 		= rep_matrix(0, NumKnots, IntDim); 		// has NumKnots rows (not NumDatapoints)
-  matrix[NumPointsLine,IntDim] lambda 		= rep_matrix(0, NumPointsLine, IntDim); // has NumKnots*NumLTLAs rows (not NumTimepoints)
-  matrix[NumKnots-1, IntDim] origin; 						//intercept
-  matrix[NumKnots-1, IntDim] slope;  						//slope
-  matrix[NumKnots-2, IntDim] a; 							//Coeff a for quadratic eq
-  matrix[NumKnots-2, IntDim] b; 							//Coeff b for quadratic eq
-  matrix[NumKnots-2, IntDim] c; 							//Coeff c for quadratic eq
-
-
-  matrix[NumTimepoints,IntDim] 	lambda_raw_par 		= rep_matrix(0, NumTimepoints, IntDim); // has NumTimepoint rows (not NumDatapoints)
-  matrix[NumDatapoints, IntDim] NationalTrend 	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line
-
-  // initialize - get centered parameter values from their non-centered equivalents.
-  phi  			= phi_nc			* 2.0;
-  phi2 			= phi2_nc			* 0.5;
-  phi3 			= phi3_nc			* 0.5;
-  phi4 			= phi4_nc			* 0.5;
-  sigma 		= sigma_nc			* 0.5;
-  VaxEffect 	= VaxEffect_nc 	* phi;
-  gamma 		= gamma_nc 		* phi2;
-  intercept 	= intercept_nc	* phi3;
-  
-  //Lambda for the SPLINE
-  lambda_raw 	= lambda_raw_nc 	* phi4;
-  {  
-  	// initialize lambda matrix to have same values for every LTLA
-    int ind = 0; // initialize index
-    for (i in 1:NumLTLAs){
-      for(j in 1:IntDim){
-        lambda[(ind + 1):(ind + NumKnots), j] = lambda_raw[1:NumKnots, j];
-      }
-      ind = ind + NumKnots; // update index
-    }
-  }
-  
- if (DoKnots) {  
-  // spline to fit the lambda
-  if (Quadratic) {
-  
-    for (i in 1:(NumKnots-2))
-      for (j in 1:IntDim) {
-        a[i,j] = (lambda[i+2, j] - lambda[i+1, j] - ((Knots[i+2] - Knots[i+1]) * (lambda[i, j] - lambda[i+1, j]) / (Knots[i] - Knots[i+1]))) / ((Knots[i+2]*Knots[i+2]) - (Knots[i+1]*Knots[i+1]) - (Knots[i] + Knots[i+1])*(Knots[i+2] - Knots[i+1]));
-        b[i,j] = ((lambda[i, j] - lambda[i+1, j]) / (Knots[i] - Knots[i+1])) - (Knots[i] + Knots[i+1])*a[i,j];
-        c[i,j] = lambda[i, j] - (b[i,j] * Knots[i]) - (a[i,j] * (Knots[i]*Knots[i]));
-      }
-      
-  } else {
-  
-    for (i in 1:(NumKnots-1))
-      for (j in 1:IntDim) {
-        slope[i,j] = (lambda[i+1, j] - lambda[i, j])/(Knots[i+1] - Knots[i]);
-        origin[i,j] = lambda[i, j] - slope[i, j]*Knots[i]; 
-      }
-  }
-  
-  }
-
-  //Calculate lambda from the spline ONLY IF we are doing knots
- if (DoKnots) {
- 
-   if (Quadratic) {
-
-     // very inefficient, in that you're calculating x and y coordinates for spline for every LTLA, when before vaccination they are all the same. 
-     // Make the calculation once for the spline, then populate for every LTLA. See (and check) below 
-     for (i in 1:NumDatapoints) 
-     	for (j in 1:IntDim)
-       		if (LTLAs[i] == 1) {
- 		        
- 		        if (Timepoints[i] >= Knots[NumKnots-1] && Timepoints[i] < Knots[NumKnots]) {
-		              NationalTrend[i,j] = a[NumKnots-2,1]*(Timepoints[i] * Timepoints[i]) + b[NumKnots-2,1]*Timepoints[i] + c[NumKnots-2,1]; 
-		        
-		        } else for (k in 1:(NumKnots-2))
-		            if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
-		              NationalTrend[i,j] = a[k,j]*(Timepoints[i] * Timepoints[i]) + b[k,j]*Timepoints[i] + c[k,j];
-     	
-       		} else NationalTrend[i,j] = NationalTrend[(i - NumTimepoints),j]; // i.e. make equal to previous LTLA's NationalTrend 
-       
-   } else { // i.e. doing knots, linear spline 
+	// allocate
+	vector[NumLTLAs] 			intercept 	= rep_vector(0, NumLTLAs); 
+	matrix[NumLTLAs,IntDim] 	gamma 		= rep_matrix(0, NumLTLAs, IntDim); 
+	vector[NumDoses] 			VaxEffect 	= rep_vector(0, NumDoses);
+	real sigma 	= 0;
+	real phi 		= 0;
+	real phi2 	= 0;
+	real phi3 	= 0;
+	real phi4 	= 0;
+	vector[NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
+	vector[NumDatapoints] VacEffects_Regional = rep_vector(0, NumDatapoints);
+	vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
+	
+	matrix[NumKnots,IntDim] lambda_raw 		= rep_matrix(0, NumKnots, IntDim); 		// has NumKnots rows (not NumDatapoints)
+	matrix[NumPointsLine,IntDim] lambda 		= rep_matrix(0, NumPointsLine, IntDim); // has NumKnots*NumLTLAs rows (not NumTimepoints)
+	matrix[NumKnots-1, IntDim] origin; 						// intercept
+	matrix[NumKnots-1, IntDim] slope;  						// slope
+	matrix[NumKnots-2, IntDim] a; 							// Coeff a for quadratic eq
+	matrix[NumKnots-2, IntDim] b; 							// Coeff b for quadratic eq
+	matrix[NumKnots-2, IntDim] c; 							// Coeff c for quadratic eq
+	
+	matrix[NumTimepoints,IntDim] 	lambda_raw_par 		= rep_matrix(0, NumTimepoints, IntDim); // has NumTimepoint rows (not NumDatapoints)
+	matrix[NumDatapoints, IntDim] NationalTrend 	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line
+	
+	// initialize - get centered parameter values from their non-centered equivalents.
+	phi  			= phi_nc			* 2.0;
+	phi2 			= phi2_nc			* 0.5;
+	phi3 			= phi3_nc			* 0.5;
+	phi4 			= phi4_nc			* 0.5;
+	sigma 		= sigma_nc			* 0.5;
+	VaxEffect 	= VaxEffect_nc 	* phi;
+	gamma 		= gamma_nc 		* phi2;
+	intercept 	= intercept_nc	* phi3;
+	
+	if (DoKnots) {  
+	 
+		// Lambda for the SPLINE
+		lambda_raw 	= lambda_raw_nc 	* phi4;
+		{  
+			// initialize lambda matrix to have same values for every LTLA
+		  int ind = 0; // initialize index
+		  for (i in 1:NumLTLAs){
+		  	for(j in 1:IntDim)
+		    	lambda[(ind + 1):(ind + NumKnots), j] = lambda_raw[1:NumKnots, j];
+		    ind = ind + NumKnots; // update index
+		  }
+		}
+		
+		// spline to fit the lambda
+		if (Quadratic) {
+		
+		  for (i in 1:(NumKnots-2))
+		    for (j in 1:IntDim) {
+		      a[i,j] = (lambda[i+2, j] - lambda[i+1, j] - ((Knots[i+2] - Knots[i+1]) * (lambda[i, j] - lambda[i+1, j]) / (Knots[i] - Knots[i+1]))) / ((Knots[i+2]*Knots[i+2]) - (Knots[i+1]*Knots[i+1]) - (Knots[i] + Knots[i+1])*(Knots[i+2] - Knots[i+1]));
+		      b[i,j] = ((lambda[i, j] - lambda[i+1, j]) / (Knots[i] - Knots[i+1])) - (Knots[i] + Knots[i+1])*a[i,j];
+		      c[i,j] = lambda[i, j] - (b[i,j] * Knots[i]) - (a[i,j] * (Knots[i]*Knots[i]));
+		    }
+		    
+		} else {
+		
+		  for (i in 1:(NumKnots-1))
+		    for (j in 1:IntDim) {
+		      slope[i,j] = (lambda[i+1, j] - lambda[i, j])/(Knots[i+1] - Knots[i]);
+		      origin[i,j] = lambda[i, j] - slope[i, j]*Knots[i]; 
+		    }
+		}
+		
+		// Calculate lambda from the spline ONLY IF we are doing knots
+		if (Quadratic) {
+		
+		// very inefficient, in that you're calculating x and y coordinates for spline for every LTLA, when before vaccination they are all the same. 
+		// Make the calculation once for the spline, then populate for every LTLA. See (and check) below 
+		for (i in 1:NumDatapoints) 
+			for (j in 1:IntDim)
+		  		if (LTLAs[i] == 1) {
+			        
+			        if (Timepoints[i] >= Knots[NumKnots-1] && Timepoints[i] < Knots[NumKnots]) {
+			              NationalTrend[i,j] = a[NumKnots-2,1]*(Timepoints[i] * Timepoints[i]) + b[NumKnots-2,1]*Timepoints[i] + c[NumKnots-2,1]; 
+			        
+			        } else for (k in 1:(NumKnots-2))
+			            if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
+			              NationalTrend[i,j] = a[k,j]*(Timepoints[i] * Timepoints[i]) + b[k,j]*Timepoints[i] + c[k,j];
+			
+		  		} else NationalTrend[i,j] = NationalTrend[(i - NumTimepoints),j]; // i.e. make equal to previous LTLA's NationalTrend 
+		  
+		} else { // i.e. doing knots, linear spline 
    
-     // very inefficient, in that you're calculating x and y coordinates for spline for every LTLA, when before vaccination they are all the same. 
-     // Make the calculation once for the spline, then populate for every LTLA. See (and check) below 
-     for (i in 1:NumDatapoints)
-      for (j in 1:IntDim)
-		if (LTLAs[i] == 1) {     
-        for (k in 1:(NumKnots-1)) 
-            if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
-              NationalTrend[i,j] = origin[k,j] + slope[k,j] * Timepoints[i];
-        
-        } else NationalTrend[i,j] = NationalTrend[(i - NumTimepoints),j]; // i.e. make equal to previous LTLA's NationalTrend 
-   }
-        
- } else { // i.e. step function (each week a free parameter)
+			// very inefficient, in that you're calculating x and y coordinates for spline for every LTLA, when before vaccination they are all the same. 
+			// Make the calculation once for the spline, then populate for every LTLA. See (and check) below 
+			for (i in 1:NumDatapoints)
+				for (j in 1:IntDim)
+					if (LTLAs[i] == 1) {     
+						for (k in 1:(NumKnots-1)) 
+							if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
+								NationalTrend[i,j] = origin[k,j] + slope[k,j] * Timepoints[i];
+   
+					} else NationalTrend[i,j] = NationalTrend[(i - NumTimepoints),j]; // i.e. make equal to previous LTLA's NationalTrend 
+		}
+
+	} else { // i.e. step function (each week a free parameter)
  
-   // Initialise lambda if we are not doing knots: free parameters allowed
-  lambda_raw_par 	= lambda_raw_nc_par 	* phi4;
-  {  
-  	// initialize lambda matrix to have same values for every LTLA 
-    int ind_par = 0; // initialize index
-    for (i in 1:NumLTLAs){
-      
-      for(j in 1:IntDim)
-        NationalTrend[(ind_par + 1):(ind_par + NumTimepoints), j] = lambda_raw_par[1:NumTimepoints, j];
-     
-      ind_par = ind_par + NumTimepoints; // update index
-    }
-  }
+	// Initialise lambda if we are not doing knots: free parameters allowed
+	lambda_raw_par 	= lambda_raw_nc_par 	* phi4;
+	{  
+		// initialize lambda matrix to have same values for every LTLA 
+	  int ind_par = 0; // initialize index
+	  for (i in 1:NumLTLAs){
+	    
+	    for(j in 1:IntDim)
+	      NationalTrend[(ind_par + 1):(ind_par + NumTimepoints), j] = lambda_raw_par[1:NumTimepoints, j];
+	   
+	    ind_par = ind_par + NumTimepoints; // update index
+	  }
+	}
  }
 
+  
+  
   // CONTINUE WITH LOG PRED MODEL WHETHER LAMBDA WAS FIT IN THE LINE OR NOT
   // VacEffects_Regional[1:NumDatapoints] = VaxProp * VaxEffect; // x * -beta in manuscript
   for (i in 1:NumDatapoints)
