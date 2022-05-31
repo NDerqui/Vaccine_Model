@@ -1,16 +1,16 @@
 
 data {
-	int <lower = 0, upper = 1>		IncludeIntercept; 	// Boolean for intercept
-	int <lower = 0, upper = 1>		IncludeScaling; 	// Boolean for scaling
-	int <lower = 0, upper = 1>		DoKnots;        	// Boolean for spline
-	int <lower = 0, upper = 1>		Quadratic;        	// Boolean for quadratic (If 1, quadratic spline, if 0, linear)
+	int <lower = 0, upper = 1>	IncludeIntercept; 	// Boolean for intercept
+	int <lower = 0, upper = 1>	IncludeScaling; 	// Boolean for scaling
+	int <lower = 0, upper = 1>	DoKnots;        	// Boolean for spline
+	int <lower = 0, upper = 1>	Quadratic;        	// Boolean for quadratic (If 1, quadratic spline, if 0, linear)
 	
-	int<lower = 1> 		NumDatapoints; 	// Number of Rt values (all timepoints x regions) 
-	int<lower = 1> 		NumDoses; 		// Number of parameters: Vax doses
-	int<lower = 1> 		NumLTLAs;		// Number of regions / LTLAs
-	int<lower = 1> 		NumTimepoints;	// Number of timepoints (weeks)
-	int<lower = 1>        NumKnots;       // Number of knots
-	int<lower = 1>        NumPointsLine;  // Number of line-lambdas (knots x regions)
+	int<lower = 1>	NumDatapoints; 	// Number of Rt values (all timepoints x regions) 
+	int<lower = 1>	NumDoses; 		// Number of parameters: Vax doses
+	int<lower = 1>	NumLTLAs;		// Number of regions / LTLAs
+	int<lower = 1>	NumTimepoints;	// Number of timepoints (weeks)
+	int<lower = 1>	NumKnots;       // Number of knots
+	int<lower = 1>	NumPointsLine;  // Number of line-lambdas (knots x regions)
 	
 	vector[NumDatapoints] 			RtVals; 	// y: Rt values across all time points and regions (expressed as giant vector) 
 	matrix[NumDatapoints,NumDoses] 	VaxProp;	// x predictor: Binary design matrix. Each row is a region and date combination.
@@ -68,12 +68,12 @@ transformed parameters{
 	matrix[NumDatapoints, IntDim]	NationalTrend	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line
 	
 	// initialize - get centered parameter values from their non-centered equivalents.
-	phi  			= phi_nc			* 2.0;
-	phi2 			= phi2_nc			* 0.5;
-	phi3 			= phi3_nc			* 0.5;
-	phi4 			= phi4_nc			* 0.5;
+	phi  		= phi_nc		* 2.0;
+	phi2 		= phi2_nc		* 0.5;
+	phi3 		= phi3_nc		* 0.5;
+	phi4 		= phi4_nc		* 0.5;
 	
-	sigma 		= sigma_nc			* 0.5;
+	sigma 		= sigma_nc		* 0.5;
 	VaxEffect 	= VaxEffect_nc 	* phi;
 	gamma 		= gamma_nc 		* phi2;
 	intercept 	= intercept_nc	* phi3;
@@ -198,22 +198,17 @@ model {
 	
 	VaxEffect_nc ~ std_normal();
 	
-	for (i in 1:NumLTLAs){
-		for(j in 1:IntDim){
+	for (i in 1:NumLTLAs)
+		for(j in 1:IntDim)
 			gamma_nc[i,j] ~ std_normal();
-		}
-	}
 	
-	for (i in 1:NumKnots){
-		for(j in 1:IntDim){
+	for (i in 1:NumKnots)
+		for(j in 1:IntDim)
 			lambda_raw_nc[i,j] ~ std_normal();
-		}
-	}
-	for (i in 1:NumTimepoints){
-		for(j in 1:IntDim){
+
+	for (i in 1:NumTimepoints)
+		for(j in 1:IntDim)
 			lambda_raw_nc_par[i,j] ~ std_normal();
-		}
-	}
 	
 	intercept_nc 	~ std_normal();
 	phi_nc 			~ std_normal();
@@ -226,6 +221,7 @@ model {
 
 generated quantities {
 	vector[NumDatapoints] log_lik;
+	
 	for (i in 1:NumDatapoints) {
 		log_lik[i] = normal_lpdf(RtVals[i] | LogPredictions[i], sigma); // NOTES: Log of normal function: real normal_lpdf(reals y | reals mu, reals sigma)
 	}
