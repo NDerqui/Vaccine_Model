@@ -17,8 +17,8 @@ data {
 	    // Each column has the proportion of vax at that time/LTLA with 1, 2, 3 doses
 	int 							LTLAs[NumDatapoints];  // vector giving LTLA number for each Rt-region combination.
 	    
-	vector[NumKnots]            Knots;	  // Sequence of knots
-	vector[NumDatapoints]       Timepoints; // Sequence of timepoints
+	vector[NumKnots]		Knots;	  // Sequence of knots
+	vector[NumDatapoints]   Timepoints; // Sequence of timepoints
 }
 
 transformed data{
@@ -176,12 +176,14 @@ transformed parameters{
 	for (i in 1:NumDatapoints){
 		for(j in 1:IntDim){
 			if (IncludeIntercept) {
+			
 				if (IncludeScaling) {
 					RegionalTrends[i] += NationalTrend[i,j] * gamma[LTLAs[i],j] + intercept[LTLAs[i]]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
 				} else {
 					RegionalTrends[i] += NationalTrend[i,j] + intercept[LTLAs[i]]; }
 			
 			} else {
+			
 				if (IncludeScaling) {
 					RegionalTrends[i] += NationalTrend[i,j] * gamma[LTLAs[i],j]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
 				} else {
