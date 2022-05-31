@@ -67,7 +67,7 @@ Rt_LogP <- exp(colMeans(model_matrix[, grep(
   "LogPredictions", colnames(model_matrix))]))
 
 Ran_Eff <- exp(colMeans(model_matrix[, grep(
-  "random_effects", colnames(model_matrix))]))
+  "RegionalTrends", colnames(model_matrix))]))
 
 Lambda <- exp(colMeans(model_matrix[, grep(
   '^lambda\\[', colnames(model_matrix))]))

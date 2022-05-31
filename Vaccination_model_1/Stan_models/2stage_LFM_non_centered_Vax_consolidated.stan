@@ -52,7 +52,7 @@ transformed parameters{
   real phi2 	= 0;
   real phi3 	= 0;
   real phi4 	= 0;
-  vector[NumDatapoints] random_effects 		= rep_vector(0, NumDatapoints);
+  vector[NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
   vector[NumDatapoints] fixed_effects 		= rep_vector(0, NumDatapoints);
   vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
 
@@ -173,21 +173,21 @@ transformed parameters{
       if (IncludeIntercept) {
        
         if (IncludeScaling) {
-          random_effects[i] += lambda_parameters[i,j] * gamma[LTLAs[i],j] + intercept[LTLAs[i]]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
+          RegionalTrends[i] += lambda_parameters[i,j] * gamma[LTLAs[i],j] + intercept[LTLAs[i]]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
         } else {
-          random_effects[i] += lambda_parameters[i,j] + intercept[LTLAs[i]]; }
+          RegionalTrends[i] += lambda_parameters[i,j] + intercept[LTLAs[i]]; }
         
         } else {
           
         if (IncludeScaling) {
-          random_effects[i] += lambda_parameters[i,j] * gamma[LTLAs[i],j]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
+          RegionalTrends[i] += lambda_parameters[i,j] * gamma[LTLAs[i],j]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
 	      } else {
-          random_effects[i] += lambda_parameters[i,j]; }
+          RegionalTrends[i] += lambda_parameters[i,j]; }
         }
 
         }
       }
-  LogPredictions[1:NumDatapoints] = fixed_effects[1:NumDatapoints] + random_effects[1:NumDatapoints];
+  LogPredictions[1:NumDatapoints] = fixed_effects[1:NumDatapoints] + RegionalTrends[1:NumDatapoints];
 
 }
 
