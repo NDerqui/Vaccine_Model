@@ -25,7 +25,7 @@ library(ggpubr)
 library(here)
 library(tidyr)
 library(sjmisc)
-library(xlsx)
+library(openxlsx)
 
 
 
@@ -122,7 +122,7 @@ VEMean_exp <-(exp(-VEMean))
 VEQuan_exp <-(exp(-VEQuan))
  
 sum_ve <- round(data.frame(VEMean, VEQuan, VEMean_exp, VEQuan_exp,
-                            row.names = c("Dose 1", "Dose 2", "Dose 3")),
+                            rowNames = c("Dose 1", "Dose 2", "Dose 3")),
                  digits = 2)
 sum_ve <- sum_ve %>%
   select("VEMean", "X2.5.", "X97.5.",
@@ -131,7 +131,7 @@ colnames(sum_ve) <- c("Mean Effect", "2.5% Q", "97.5% Q",
                        "Exp(Mean Effect)", "Exp(2.5% Q)", "Exp(97.5% Q)")
 View(sum_ve)
  
-write.xlsx(sum_ve, row.names = TRUE,
+write.xlsx(sum_ve, rowNames = TRUE,
             paste0("Results/", model_name, "/Vax_VE_table.xlsx"))
 
  
@@ -182,7 +182,7 @@ rt_iqr <- sum_rt %>%
 
 rt_table <- round(data.frame(rt_mean, rt_sd,
                           rt_min, rt_iqr, rt_max), digits = 4)
-write.xlsx(rt_table, row.names = TRUE,
+write.xlsx(rt_table, rowNames = TRUE,
           paste0("Results/", model_name, "/Rt_LogP.xlsx"))
 
  
@@ -229,7 +229,7 @@ ref_iqr <- sum_rt %>%
  
 ref_table <- round(data.frame(ref_mean, ref_sd,
                              ref_min, ref_iqr, ref_max), digits = 4)
-write.xlsx(ref_table, row.names = TRUE,
+write.xlsx(ref_table, rowNames = TRUE,
           paste0("Results/", model_name, "/Ran_Eff.xlsx"))
  
  
@@ -243,27 +243,27 @@ lam_table <- sum_rt %>%
  rename(lambda = ".")%>%
  slice(-1)
  
-write.xlsx(lam_table, row.names = TRUE,
+write.xlsx(lam_table, rowNames = TRUE,
           paste0("Results/", model_name, "/Lambda.xlsx"))
  
  
 #### Gamma ####
  
 gamma_table <- Gamma %>%
- as.data.frame(row.names = paste0("LTLA", 1:303)) %>%
+ as.data.frame(rowNames = paste0("LTLA", 1:303)) %>%
  rename(gamma = ".")
 
-write.xlsx(gamma_table, row.names = TRUE,
+write.xlsx(gamma_table, rowNames = TRUE,
           paste0("Results/", model_name, "/Gamma.xlsx"))
  
  
 #### Intercept ####
  
 intercept_table <- Intercept %>%
- as.data.frame(row.names = paste0("LTLA", 1:303)) %>%
+ as.data.frame(rowNames = paste0("LTLA", 1:303)) %>%
  rename(intercept = ".")
  
-write.xlsx(intercept_table, row.names = TRUE,
+write.xlsx(intercept_table, rowNames = TRUE,
           paste0("Results/", model_name, "/Intercept.xlsx"))
 
  

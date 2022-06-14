@@ -287,7 +287,7 @@ IncludeScaling <- 1
 # Analyses by steps of lockdown
 
 DoKnots <- 1
-Quadratic <- 1
+Quadratic <- 0
 
 
 #### Stan Data ####
@@ -392,18 +392,18 @@ library(here)
 
 #ModelChar <- "2stage_LFM_non_centered_Vax"
 ModelChar <- "2stage_LFM_non_centered_Vax_consolidated"
-#StanModel <- stan_model(here(paste0("Stan_models/",ModelChar, ".stan")))
-StanModel <- stan_model(here(paste0("Vaccination_model_1/Stan_models/", ModelChar, ".stan"))) ## added this as my here() package playing up and loads to root directory. Switch back to previous line as required.
+StanModel <- stan_model(here(paste0("Stan_models/",ModelChar, ".stan")))
+#StanModel <- stan_model(here(paste0("Vaccination_model_1/Stan_models/", ModelChar, ".stan"))) ## added this as my here() package playing up and loads to root directory. Switch back to previous line as required.
 
 cat(paste0("Model compilation done\n"))
 
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 2000 #Increase
-ModelMetaData$warmup 		= 500 #Increase
+ModelMetaData$iter 			= 200 #Increase
+ModelMetaData$warmup 		= 50 #Increase
 ModelMetaData$thin 			= 1
-ModelMetaData$chains 		= 8 #Increase
+ModelMetaData$chains 		= 1 #Increase
 ModelMetaData$adapt_delta 	= 0.9
 ModelMetaData$max_treedepth = 15
 ModelMetaData$ModelChar 	= ModelChar
