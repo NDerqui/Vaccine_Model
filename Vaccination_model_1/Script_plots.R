@@ -122,7 +122,7 @@ VEMean_exp <-(exp(-VEMean))
 VEQuan_exp <-(exp(-VEQuan))
  
 sum_ve <- round(data.frame(VEMean, VEQuan, VEMean_exp, VEQuan_exp,
-                            rowNames = c("Dose 1", "Dose 2", "Dose 3")),
+                            row.names = c("Dose 1", "Dose 2", "Dose 3")),
                  digits = 2)
 sum_ve <- sum_ve %>%
   select("VEMean", "X2.5.", "X97.5.",
