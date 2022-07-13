@@ -289,6 +289,12 @@ IncludeScaling <- 1
 DoKnots <- 1
 Quadratic <- 0
 
+if (DoKnots == 1) {
+  NumTrendPar <- NumKnots
+} else {
+  NumTrendPar <- NumTimepoints
+}
+
 
 #### Stan Data ####
 
@@ -297,22 +303,23 @@ data_model <- select(data_model,
 # saveRDS(data_model, "data_model_for_plots.Rds")
 
 data_stan <- list(
-          RtVals = data_model$Rt,
-          VaxProp = data_model[,covar_vax],
-          NumLTLAs = NumLTLAs,
-          NumDoses = length(covar_vax),
-          NumDatapoints = NumDatapoints,
-          LTLAs = data_model$LTLAs,
-          NumTimepoints = NumTimepoints,
           IncludeIntercept = IncludeIntercept,
           IncludeScaling = IncludeScaling,
           DoKnots = DoKnots,
           Quadratic = Quadratic,
+          NumDatapoints = NumDatapoints,
+          NumLTLAs = NumLTLAs,
+          NumDoses = length(covar_vax),
+          NumTimepoints = NumTimepoints,
           NumKnots = NumKnots,
-          Knots = Knots_weeks,
           NumPointsLine = NumPointsLine,
-          Timepoints = Timepoints
- )
+          NumTrendPar = NumTrendPar,
+          Knots = Knots_weeks,
+          Timepoints = Timepoints,
+          LTLAs = data_model$LTLAs,
+          RtVals = data_model$Rt,
+          VaxProp = data_model[,covar_vax]
+)
 
 
 
