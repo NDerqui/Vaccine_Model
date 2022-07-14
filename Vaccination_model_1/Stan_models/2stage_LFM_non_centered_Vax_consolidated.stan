@@ -52,20 +52,21 @@ transformed parameters{
 	real phi2 	= 0;
 	real phi3 	= 0;
 	real phi4 	= 0;
-	vector[NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
-	vector[NumDatapoints] VacEffects_Regional 	= rep_vector(0, NumDatapoints);
-	vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
+	matrix[NumDatapoints, IntDim]	NationalTrend		= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line
+	vector[NumDatapoints] 			RegionalTrends 		= rep_vector(0, NumDatapoints);
+	vector[NumDatapoints] 			VacEffects_Regional = rep_vector(0, NumDatapoints);
+	vector[NumDatapoints] 			LogPredictions 		= rep_vector(0, NumDatapoints);
 	
-	matrix[NumKnots,IntDim] lambda_raw 		= rep_matrix(0, NumKnots, IntDim); 		// has NumKnots rows (not NumDatapoints)
-	matrix[NumPointsLine,IntDim] lambda 	= rep_matrix(0, NumPointsLine, IntDim); // has NumKnots*NumLTLAs rows (not NumTimepoints)
-	matrix[NumKnots-1, IntDim] origin; 	// intercept
-	matrix[NumKnots-1, IntDim] slope;  	// slope
-	matrix[NumKnots-2, IntDim] a; 		// Coeff a for quadratic eq
-	matrix[NumKnots-2, IntDim] b; 		// Coeff b for quadratic eq
-	matrix[NumKnots-2, IntDim] c; 		// Coeff c for quadratic eq
-	
+	matrix[NumKnots,IntDim] 		lambda_raw 		= rep_matrix(0, NumKnots, IntDim); 		// has NumKnots rows (not NumDatapoints)
 	matrix[NumTimepoints,IntDim]	lambda_raw_par	= rep_matrix(0, NumTimepoints, IntDim); // has NumTimepoint rows (not NumDatapoints)
-	matrix[NumDatapoints, IntDim]	NationalTrend	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line
+	matrix[NumPointsLine,IntDim] 	lambda 			= rep_matrix(0, NumPointsLine, IntDim); // has NumKnots*NumLTLAs rows (not NumTimepoints)
+	
+	matrix[NumKnots-1, IntDim] 		origin; 	// intercept
+	matrix[NumKnots-1, IntDim] 		slope;  	// slope
+	matrix[NumKnots-2, IntDim] 		a; 		// Coeff a for quadratic eq
+	matrix[NumKnots-2, IntDim] 		b; 		// Coeff b for quadratic eq
+	matrix[NumKnots-2, IntDim] 		c; 		// Coeff c for quadratic eq
+	
 	
 	// initialize - get centered parameter values from their non-centered equivalents.
 	phi  		= phi_nc		* 2.0;
@@ -165,6 +166,7 @@ transformed parameters{
 
 	// CONTINUE WITH LOG PRED MODEL WHETHER LAMBDA WAS FIT IN THE LINE OR NOT
 	// VacEffects_Regional[1:NumDatapoints] = VaxProp * VaxEffect; // x * -beta in manuscript
+	
 	for (i in 1:NumDatapoints)
 	{
 		VacEffects_Regional[i] = 0; // initialize to zero for each timepoint 
@@ -193,12 +195,17 @@ transformed parameters{
 	}
 
 	// final (logged) regional Rt predictions are regional trends minus regional vaccine effects
-	LogPredictions[1:NumDatapoints] = RegionalTrends[1:NumDatapoints] - VacEffects_Regional[1:NumDatapoints];
+	// LogPredictions[1:NumDatapoints] = RegionalTrends[1:NumDatapoints] - VacEffects_Regional[1:NumDatapoints];
+	for (i in 1:NumDatapoints)
+		LogPredictions[i] = RegionalTrends[i] - VacEffects_Regional[i];
+	
 }
 
 model {
 	
-	VaxEffect_nc ~ std_normal();
+	// VaxEffect_nc ~ std_normal();
+	for (i in 1:NumDoses)
+		VaxEffect_nc[i] ~ std_normal();
 	
 	for (i in 1:NumLTLAs)
 		for(j in 1:IntDim)

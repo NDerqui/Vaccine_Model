@@ -297,21 +297,21 @@ data_model <- select(data_model,
 # saveRDS(data_model, "data_model_for_plots.Rds")
 
 data_stan <- list(
-          RtVals = data_model$Rt,
-          VaxProp = data_model[,covar_vax],
-          NumLTLAs = NumLTLAs,
-          NumDoses = length(covar_vax),
-          NumDatapoints = NumDatapoints,
-          LTLAs = data_model$LTLAs,
-          NumTimepoints = NumTimepoints,
-          IncludeIntercept = IncludeIntercept,
-          IncludeScaling = IncludeScaling,
-          DoKnots = DoKnots,
-          Quadratic = Quadratic,
-          NumKnots = NumKnots,
-          Knots = Knots_weeks,
-          NumPointsLine = NumPointsLine,
-          Timepoints = Timepoints
+          RtVals 			= data_model$Rt,
+          VaxProp 			= data_model[,covar_vax],
+          NumLTLAs 			= NumLTLAs,
+          NumDoses 			= length(covar_vax),
+          NumDatapoints 	= NumDatapoints,
+          LTLAs 			= data_model$LTLAs,
+          NumTimepoints 	= NumTimepoints,
+          IncludeIntercept 	= IncludeIntercept,
+          IncludeScaling 	= IncludeScaling,
+          DoKnots 			= DoKnots,
+          Quadratic 		= Quadratic,
+          NumKnots 			= NumKnots,
+          Knots 			= Knots_weeks,
+          NumPointsLine 	= NumPointsLine,
+          Timepoints 		= Timepoints
  )
 
 
@@ -423,7 +423,7 @@ fit = sampling(StanModel, data = data_stan,
                  warmup 	= ModelMetaData$warmup, 
                  thin 	= ModelMetaData$thin, 
                  chains 	= ModelMetaData$chains, 
-                 pars 	= c("VaxEffect", "LogPredictions", "RegionalTrends",
+                 pars 	= c("VaxEffect", "LogPredictions", "RegionalTrends", "VacEffects_Regional",
                            "NationalTrend", "gamma", "intercept", "log_lik", "lambda"), 
                  control = list(adapt_delta = ModelMetaData$adapt_delta,
                                 max_treedepth = ModelMetaData$max_treedepth))
