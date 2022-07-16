@@ -430,7 +430,7 @@ fit = sampling(StanModel, data = data_stan,
                  warmup 	= ModelMetaData$warmup, 
                  thin 	= ModelMetaData$thin, 
                  chains 	= ModelMetaData$chains, 
-                 pars 	= c("VaxEffect", "LogPredictions", "RegionalTrends",
+                 pars 	= c("VaxEffect", "LogPredictions", "RegionalTrends", "VacEffects_Regional",
                            "NationalTrend", "gamma", "intercept", "log_lik", "lambda"), 
                  control = list(adapt_delta = ModelMetaData$adapt_delta,
                                 max_treedepth = ModelMetaData$max_treedepth))

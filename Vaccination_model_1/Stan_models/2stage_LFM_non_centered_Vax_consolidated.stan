@@ -160,7 +160,7 @@ transformed parameters{
 		}
  	}
 
-  // Calculate regional trend from national trend
+ // Calculate regional trend from national trend
 	for (i in 1:NumDatapoints){
 		for(j in 1:IntDim){
 			if (IncludeIntercept) {
@@ -191,7 +191,10 @@ transformed parameters{
 	}
 	
 	// final (logged) regional Rt predictions are regional trends minus regional vaccine effects
-	LogPredictions[1:NumDatapoints] = RegionalTrends[1:NumDatapoints] - VacEffects_Regional[1:NumDatapoints];
+	// LogPredictions[1:NumDatapoints] = RegionalTrends[1:NumDatapoints] - VacEffects_Regional[1:NumDatapoints];
+	for (i in 1:NumDatapoints)
+		LogPredictions[i] = RegionalTrends[i] - VacEffects_Regional[i];
+	
 }
 
 model {
@@ -212,7 +215,8 @@ model {
 	phi4_nc 		~ std_normal();
 	sigma_nc 		~ std_normal();
 	
-	VaxEffect_nc ~ std_normal();
+	for (i in 1:NumDoses)
+		VaxEffect_nc[i] ~ std_normal();
 	RtVals 			~ normal(LogPredictions, sigma);
 }
 

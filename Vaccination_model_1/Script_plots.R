@@ -47,9 +47,10 @@ dim(data_model)
 
 #### Load data ####
 
-model_name <- "fit_2000_8_linear_noscaling_nointercept"
+#model_name <- "fit_2000_8_linear_noscaling_nointercept"
+model_name <- "Fits/fit_2000_8_linear"
 
-# fit <- readRDS(paste0(model_name, ".Rds"))
+ fit <- readRDS(paste0(model_name, ".Rds"))
   
 # loo_run <- readRDS(paste0("loo_", model_name, ".Rds"))
 
@@ -57,6 +58,8 @@ model_name <- "fit_2000_8_linear_noscaling_nointercept"
 #### Substract parameters ####
 
 model_matrix <- as.matrix(fit)
+rm(fit)
+gc()
 
 #dim(model_matrix)
 #View(model_matrix)
@@ -66,13 +69,13 @@ Rt_data <- exp(data_model$Rt)
 Rt_LogP <- exp(colMeans(model_matrix[, grep(
   "LogPredictions", colnames(model_matrix))]))
 
-Ran_Eff <- exp(colMeans(model_matrix[, grep(
+RegionalTrends <- exp(colMeans(model_matrix[, grep(
   "RegionalTrends", colnames(model_matrix))]))
 
 Lambda <- exp(colMeans(model_matrix[, grep(
   '^lambda\\[', colnames(model_matrix))]))
 
-LambdaParameter <- exp(colMeans(model_matrix[, grep(
+NationalTrend <- exp(colMeans(model_matrix[, grep(
   '^NationalTrend\\[', colnames(model_matrix))]))
 
 Gamma <- exp(colMeans(model_matrix[, grep(
@@ -87,7 +90,7 @@ Origin <- (colMeans(model_matrix[, grep(
 Slope <- (colMeans(model_matrix[, grep(
   "slope", colnames(model_matrix))]))
 
-sum_rt <- data.frame(Rt_data, Rt_LogP, Ran_Eff, LambdaParameter,
+sum_rt <- data.frame(Rt_data, Rt_LogP, RegionalTrends, NationalTrend,
                      LTLA = data_model$LTLAs,
                      Dose_1 = data_model$First_Prop,
                      Dose_2 = data_model$Second_Prop,
@@ -189,39 +192,39 @@ write.xlsx(rt_table, rowNames = TRUE,
 #### RanEffects ####
  
 ref_mean <- sum_rt %>%
- select("LTLA", "date", "Ran_Eff") %>%
- pivot_wider(names_from = date, values_from = Ran_Eff) %>%
+ select("LTLA", "date", "RegionalTrends") %>%
+ pivot_wider(names_from = date, values_from = RegionalTrends) %>%
  colMeans() %>%
  as.data.frame() %>%
  rename(mean = ".")%>%
  slice(-1)
 ref_max <- sum_rt %>%
- select("LTLA", "date", "Ran_Eff") %>%
- pivot_wider(names_from = date, values_from = Ran_Eff) %>%
+ select("LTLA", "date", "RegionalTrends") %>%
+ pivot_wider(names_from = date, values_from = RegionalTrends) %>%
  as.matrix() %>%
  colMaxs () %>%
  as.data.frame() %>%
  rename(max = ".") %>%
  slice(-1)
 ref_min <- sum_rt %>%
- select("LTLA", "date", "Ran_Eff") %>%
- pivot_wider(names_from = date, values_from = Ran_Eff) %>%
+ select("LTLA", "date", "RegionalTrends") %>%
+ pivot_wider(names_from = date, values_from = RegionalTrends) %>%
  as.matrix() %>%
  colMins() %>%
  as.data.frame() %>%
  rename(min = ".") %>%
  slice(-1)
 ref_sd <- sum_rt %>%
- select("LTLA", "date", "Ran_Eff") %>%
- pivot_wider(names_from = date, values_from = Ran_Eff) %>%
+ select("LTLA", "date", "RegionalTrends") %>%
+ pivot_wider(names_from = date, values_from = RegionalTrends) %>%
  as.matrix() %>%
  colSds() %>%
  as.data.frame() %>%
  rename(sd = ".") %>%
  slice(-1)
 ref_iqr <- sum_rt %>%
- select("LTLA", "date", "Ran_Eff") %>%
- pivot_wider(names_from = date, values_from = Ran_Eff) %>%
+ select("LTLA", "date", "RegionalTrends") %>%
+ pivot_wider(names_from = date, values_from = RegionalTrends) %>%
  as.matrix() %>%
  colQuantiles(probs = seq(from = 0, to = 1, by = 0.25)) %>%
  as.data.frame() %>%
@@ -230,14 +233,14 @@ ref_iqr <- sum_rt %>%
 ref_table <- round(data.frame(ref_mean, ref_sd,
                              ref_min, ref_iqr, ref_max), digits = 4)
 write.xlsx(ref_table, rowNames = TRUE,
-          paste0("Results/", model_name, "/Ran_Eff.xlsx"))
+          paste0("Results/", model_name, "/RegionalTrends.xlsx"))
  
  
 #### Lambda ####
  
 lam_table <- sum_rt %>%
- select("LTLA", "date", "LambdaParameter") %>%
- pivot_wider(names_from = date, values_from = LambdaParameter) %>%
+ select("LTLA", "date", "NationalTrend") %>%
+ pivot_wider(names_from = date, values_from = NationalTrend) %>%
  colMeans() %>%
  as.data.frame() %>%
  rename(lambda = ".")%>%
@@ -426,15 +429,15 @@ dev.off()
  
 ####Trend####
  
-RE_uniq <- Ran_Eff[data_model$ltla_name == NamesLTLAs[1]]
+RE_uniq <- RegionalTrends[data_model$ltla_name == NamesLTLAs[1]]
  for(i in 2:length(NamesLTLAs))	{
-   RE_uniq = RE_uniq + Ran_Eff[data_model$ltla_name == NamesLTLAs[i]]}
+   RE_uniq = RE_uniq + RegionalTrends[data_model$ltla_name == NamesLTLAs[i]]}
 RE_uniq = RE_uniq/length(NamesLTLAs)
 #Random Effects normalised to the number of LTLAs
  
 SES <- ggplot()+
    geom_point(data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[1]],
-                                y = Ran_Eff[data_model$ltla_name==NamesLTLAs[1]]),
+                                y = RegionalTrends[data_model$ltla_name==NamesLTLAs[1]]),
               aes(x=x,y=y), alpha=0.5, size = rel(1.2)) + 
    theme_classic() +
    labs(x = "Date",
@@ -447,7 +450,7 @@ SES <- ggplot()+
  
 for(i in 2:length(NamesLTLAs)){
    SES <- SES + geom_point(data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
-                                             y = Ran_Eff[data_model$ltla_name==NamesLTLAs[i]]),
+                                             y = RegionalTrends[data_model$ltla_name==NamesLTLAs[i]]),
                            aes(x=x,y=y), alpha=0.5, size = rel(1.2))}
 #This is the loop to do so
  
@@ -479,7 +482,7 @@ dev.off()
 png(paste0("Figures/", model_name, "/RanEffect.png"), width = 10, height = 6, units = 'in', res = 600)
  
 RanEff_time <- ggplot(data = sum_rt) +
-   geom_boxplot (mapping = aes(x = date, y = Ran_Eff, group = date), 
+   geom_boxplot (mapping = aes(x = date, y = RegionalTrends, group = date), 
                  size = rel(0.5)) +
   geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
              color = "darkmagenta") +
@@ -504,7 +507,7 @@ dev.off()
 png(paste0("Figures/", model_name, "/Lambda.png"), width = 10, height = 6, units = 'in', res = 600)
  
 Lambda_time <- ggplot(data = sum_rt) +
-   geom_boxplot (mapping = aes(x = date, y = LambdaParameter, group = date), 
+   geom_boxplot (mapping = aes(x = date, y = NationalTrend, group = date), 
                  size = rel(0.5)) +
   geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
              color = "darkmagenta") +
@@ -529,14 +532,14 @@ dev.off()
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_1.png"), width = 10, height = 6, units = 'in', res = 300)
  
 Plot_sum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
-   geom_line (mapping = aes(x = date, y = LambdaParameter, 
+   geom_line (mapping = aes(x = date, y = NationalTrend, 
                             color = "Lambda"), size =rel(1)) +
-   geom_line (mapping = aes(x = date, y = LambdaParameter*(Gamma[1]),
+   geom_line (mapping = aes(x = date, y = NationalTrend*(Gamma[1]),
                             color = "Lambda*Gamma"), size =rel(1)) +
-   geom_line (mapping = aes(x = date, y = Ran_Eff,
+   geom_line (mapping = aes(x = date, y = RegionalTrends,
                             color = "RanEffect"), size =rel(1)) +
-   geom_line (mapping = aes(x = date, y = Rt_LogP,
-                            color = "RtLogP"), size =rel(1)) +
+#   geom_line (mapping = aes(x = date, y = Rt_LogP,
+#                            color = "RtLogP"), size =rel(1)) +
    geom_line (mapping = aes(x = date, y = Rt_data,
                             color = "RtData"), size =rel(1)) +
    scale_color_manual(name = "Parameter",
@@ -567,11 +570,11 @@ dev.off()
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_2.png"), width = 10, height = 6, units = 'in', res = 300)
  
 Plot_sum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
-   geom_line (mapping = aes(x = date, y = LambdaParameter, 
+   geom_line (mapping = aes(x = date, y = NationalTrend, 
                             color = "Lambda"), size =rel(1)) +
-   geom_line (mapping = aes(x = date, y = LambdaParameter*(Gamma[147]),
+   geom_line (mapping = aes(x = date, y = NationalTrend*(Gamma[147]),
                             color = "Lambda*Gamma"), size =rel(1)) +
-   geom_line (mapping = aes(x = date, y = Ran_Eff,
+   geom_line (mapping = aes(x = date, y = RegionalTrends,
                             color = "RanEffect"), size =rel(1)) +
    geom_line (mapping = aes(x = date, y = Rt_LogP,
                             color = "RtLogP"), size =rel(1)) +
@@ -605,11 +608,11 @@ dev.off()
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_3.png"), width = 10, height = 6, units = 'in', res = 300)
  
 Plot_sum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
-   geom_line (mapping = aes(x = date, y = LambdaParameter, 
+   geom_line (mapping = aes(x = date, y = NationalTrend, 
                             color = "Lambda"), size =rel(1)) +
-   geom_line (mapping = aes(x = date, y = LambdaParameter*(Gamma[208]),
+   geom_line (mapping = aes(x = date, y = NationalTrend*(Gamma[208]),
                             color = "Lambda*Gamma"), size =rel(1)) +
-   geom_line (mapping = aes(x = date, y = Ran_Eff,
+   geom_line (mapping = aes(x = date, y = RegionalTrends,
                             color = "RanEffect"), size =rel(1)) +
    geom_line (mapping = aes(x = date, y = Rt_LogP,
                             color = "RtLogP"), size =rel(1)) +
@@ -643,11 +646,11 @@ dev.off()
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_4.png"), width = 10, height = 6, units = 'in', res = 300)
  
 Plot_sum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
-   geom_line (mapping = aes(x = date, y = LambdaParameter, 
+   geom_line (mapping = aes(x = date, y = NationalTrend, 
                             color = "Lambda"), size =rel(1)) +
-   geom_line (mapping = aes(x = date, y = LambdaParameter*(Gamma[299]),
+   geom_line (mapping = aes(x = date, y = NationalTrend*(Gamma[299]),
                             color = "Lambda*Gamma"), size =rel(1)) +
-   geom_line (mapping = aes(x = date, y = Ran_Eff,
+   geom_line (mapping = aes(x = date, y = RegionalTrends,
                             color = "RanEffect"), size =rel(1)) +
    geom_line (mapping = aes(x = date, y = Rt_LogP,
                             color = "RtLogP"), size =rel(1)) +
@@ -700,7 +703,7 @@ Lambda_dummy_2 <- ggplot() +
              mapping = aes(x = date, y = Lambda), 
              color = "red") +
   geom_point (data = sum_rt,
-              mapping = aes(x = date, y = LambdaParameter, group = date), 
+              mapping = aes(x = date, y = NationalTrend, group = date), 
               size = rel(0.8), color = "black") +
   theme_classic() +
   labs(title = "National Trend over time in all LTLAs",
@@ -725,11 +728,11 @@ dev.off()
 #### Renaming 4LTLA plot ####
 
 Psum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
-  geom_line (mapping = aes(x = date, y = LambdaParameter, 
+  geom_line (mapping = aes(x = date, y = NationalTrend, 
                            color = "Lambda"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = LambdaParameter*(Gamma[1]),
+  geom_line (mapping = aes(x = date, y = NationalTrend*(Gamma[1]),
                            color = "Lambda*Gamma"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Ran_Eff,
+  geom_line (mapping = aes(x = date, y = RegionalTrends,
                            color = "RanEffect"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Rt_LogP,
                            color = "RtLogP"), size =rel(1)) +
@@ -757,11 +760,11 @@ Psum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
     legend.title = element_text(size = rel(1.5), face="bold"),
     legend.text = element_text(size=rel(1.2)))
 Psum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
-  geom_line (mapping = aes(x = date, y = LambdaParameter, 
+  geom_line (mapping = aes(x = date, y = NationalTrend, 
                            color = "Lambda"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = LambdaParameter*(Gamma[147]),
+  geom_line (mapping = aes(x = date, y = NationalTrend*(Gamma[147]),
                            color = "Lambda*Gamma"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Ran_Eff,
+  geom_line (mapping = aes(x = date, y = RegionalTrends,
                            color = "RanEffect"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Rt_LogP,
                            color = "RtLogP"), size =rel(1)) +
@@ -789,11 +792,11 @@ Psum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
     legend.title = element_text(size = rel(1.5), face="bold"),
     legend.text = element_text(size=rel(1.2)))
 Psum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
-  geom_line (mapping = aes(x = date, y = LambdaParameter, 
+  geom_line (mapping = aes(x = date, y = NationalTrend, 
                            color = "Lambda"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = LambdaParameter*(Gamma[208]),
+  geom_line (mapping = aes(x = date, y = NationalTrend*(Gamma[208]),
                            color = "Lambda*Gamma"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Ran_Eff,
+  geom_line (mapping = aes(x = date, y = RegionalTrends,
                            color = "RanEffect"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Rt_LogP,
                            color = "RtLogP"), size =rel(1)) +
@@ -821,11 +824,11 @@ Psum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
     legend.title = element_text(size = rel(1.5), face="bold"),
     legend.text = element_text(size=rel(1.2)))
 Psum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
-  geom_line (mapping = aes(x = date, y = LambdaParameter, 
+  geom_line (mapping = aes(x = date, y = NationalTrend, 
                            color = "Lambda"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = LambdaParameter*(Gamma[299]),
+  geom_line (mapping = aes(x = date, y = NationalTrend*(Gamma[299]),
                            color = "Lambda*Gamma"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Ran_Eff,
+  geom_line (mapping = aes(x = date, y = RegionalTrends,
                            color = "RanEffect"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = Rt_LogP,
                            color = "RtLogP"), size =rel(1)) +
@@ -965,7 +968,7 @@ Keep_4d
 
 saveRDS(Keep_4d, paste0("Figures/Combined_figures/Data/Keep_4", model_name, ".Rds"))
 
-legend <- ggplot(data = sum_rt, aes(x = date, y = LambdaParameter)) +
+legend <- ggplot(data = sum_rt, aes(x = date, y = NationalTrend)) +
   geom_line (mapping = aes(color = "Lambda")) +
   geom_line (mapping = aes(color = "Lambda*Gamma")) +
   geom_line (mapping = aes(color = "RanEffect")) +
@@ -1113,7 +1116,7 @@ data_model_20 <- data_model[1:820,]
 
 Names20LTLAs <- unique(data_model_20$ltla_name)
 
-Ran_Eff_20 <- Ran_Eff[1:820]
+Ran_Eff_20 <- RegionalTrends[1:820]
 
 RE_uniq_20 <- Ran_Eff_20[data_model_20$ltla_name == Names20LTLAs[1]]
 for(i in 2:length(Names20LTLAs))	{
