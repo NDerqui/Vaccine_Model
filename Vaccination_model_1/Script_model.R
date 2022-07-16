@@ -263,7 +263,7 @@ IncludeScaling <- 1
 # Analyses by steps of lockdown
 
 DoKnots <- 1
-Quadratic <- 0
+Quadratic <- 1
 
 if (DoKnots == 1) {
   NumTrendPar <- NumKnots
@@ -338,9 +338,9 @@ fit = sampling(StanModel, data = data_stan,
                  thin 	= ModelMetaData$thin, 
                  chains 	= ModelMetaData$chains, 
                  pars 	= c("VaxEffect", "VacEffects_Regional",
-                           "LogPredictions", "RegionalTrends", 
+                           "LogPredictions", "RegionalTrends",
                            "NationalTrend", "gamma", "intercept", "lambda",
-                           "log_lik",), 
+                           "log_lik"), 
                  control = list(adapt_delta = ModelMetaData$adapt_delta,
                                 max_treedepth = ModelMetaData$max_treedepth))
 
