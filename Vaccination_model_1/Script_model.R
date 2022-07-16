@@ -249,6 +249,12 @@ NumKnots
 NumPointsLine <- NumLTLAs*NumKnots
 NumPointsLine
 
+# Dummy variants data
+
+VarProp <- data.frame(runif(NumDatapoints),
+                      (1 - VarProp[,1]))
+colnames(VarProp) <- covar_var
+
 
 #### Rt log ####
 
@@ -283,18 +289,23 @@ data_stan <- list(
           IncludeScaling = IncludeScaling,
           DoKnots = DoKnots,
           Quadratic = Quadratic,
+          
           NumDatapoints = NumDatapoints,
           NumLTLAs = NumLTLAs,
           NumDoses = length(covar_vax),
+          NumVar = length(covar_var),
           NumTimepoints = NumTimepoints,
           NumKnots = NumKnots,
           NumPointsLine = NumPointsLine,
           NumTrendPar = NumTrendPar,
+          
           Knots = Knots_weeks,
           Timepoints = Timepoints,
           LTLAs = data_model$LTLAs,
+          
           RtVals = data_model$Rt,
-          VaxProp = data_model[,covar_vax]
+          VaxProp = data_model[,covar_vax],
+          VarProp = VarProp
 )
 
 
