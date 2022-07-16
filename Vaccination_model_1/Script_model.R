@@ -101,13 +101,6 @@ Nested_Char <- ""
 
 lockdown_steps <- as.Date(c("05/01/2021", "08/03/2021", "19/04/2021",
                             "17/05/2021", "19/07/2021"), format = "%d/%m/%Y")
-# lockdown_steps <- as.Date(c("05/01/2021", "05/03/2021", "07/05/2021", "02/07/2021",
-#                             "16/07/2021", "06/08/2021", "03/09/2021", "01/10/2021"),
-#                           format = "%d/%m/%Y")
-lockdown__pseudosteps <- as.Date(c("05/01/2021", "08/03/2021", "01/04/2021",
-                                   "19/04/2021", "17/05/2021", "21/06/2021",
-                                   "03/07/2021", "11/07/2021", "19/07/2021"),
-                                 format = "%d/%m/%Y")
 
 
 
@@ -144,23 +137,6 @@ drt <- rename(drt, ltla_name = area)
 dvax <- select(dvax, "ltla_name", "date",
                "First_Prop", "Second_Prop", "Third_Prop")
 drt <- select(drt, "ltla_name", "date", "Rt")
-
-# Data from Rt has now more obs
-
-names(dvax)
-dim(dvax)
-names(drt)
-dim(drt)
-
-min(dvax$date)
-min(drt$date)
-max(dvax$date)
-max(drt$date)
-#Vax data earlier (January in), but Rt data later (December in)
-
-length(unique(dvax$ltla_name))
-length(unique(drt$ltla_name))
-#Rt has data on more LTLAs
 
 
 #### Merge ####
@@ -323,73 +299,6 @@ data_stan <- list(
 
 
 
-# DESCRIPTION -------------------------------------------------------------
-
-
-## A more detailed description  of data is on the description-workspace ##
-
-Rt_data <- exp(data_model$Rt)
-
-sum_data <- data.frame(Rt_data, 
-                     Dose_1 = data_model$First_Prop,
-                     Dose_2 = data_model$Second_Prop,
-                     Dose_3 = data_model$Third_Prop,
-                     date = data_model$date,
-                     row.names = paste0("Rt", 1:12423))
-
-
-#### Vax Description ####
-
-# Vaccination over time
-
-Vax_Date <- ggplot(data = sum_data) +
-  geom_boxplot (mapping = aes(x = date, y = Dose_1, group = date,
-                              color = "Dose_1"), size = rel(0.5)) +
-  geom_boxplot (mapping = aes(x = date, y = Dose_2, group = date,
-                              color = "Dose_2"), size = rel(0.5)) +
-  geom_boxplot (mapping = aes(x = date, y = Dose_3, group = date,
-                              color = "Dose_3"), size = rel(0.5)) +
-  scale_color_manual(name="Number of doses",
-                     breaks = c("Dose_1", "Dose_2", "Dose_3"),
-                     values = c("Dose_1"="lightskyblue", 
-                                "Dose_2"="palegreen",
-                                "Dose_3"="salmon"),
-                     labels=c("1 dose", "2 doses", "3 doses")) +
-  theme_classic() +
-  labs(title = "Distribution of vaccinated individuals proportion across all LTLAs over time",
-       x = "Date",
-       y = "Total proportion of vaccinated population") +
-  theme(
-    plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
-    axis.title.x = element_text(size = rel(0.9), face="bold"),
-    axis.title.y = element_text(size = rel(0.9), face="bold"),
-    axis.text = element_text(size=rel(0.7)),
-    legend.title = element_text(size = rel(0.9), face="bold"),
-    legend.text = element_text(size=rel(0.7)))
-Vax_Date
-
-
-#### Rt over time ####
-
-# General
-
-Rt_Obs_Date <- ggplot(data = sum_data) +
-  geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date), size = rel(0.5)) +
-  theme_classic() +
-  labs(title = "Observed Rt over time",
-       x = "Date",
-       y = "Rt Observed") +
-  theme(
-    plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
-    axis.title.x = element_text(size = rel(0.9), face="bold"),
-    axis.title.y = element_text(size = rel(0.9), face="bold"),
-    axis.text = element_text(size=rel(0.7)),
-    legend.title = element_text(size = rel(0.9), face="bold"),
-    legend.text = element_text(size=rel(0.7)))
-Rt_Obs_Date
-
-
-
 # STAN MODEL --------------------------------------------------------------
 
 
@@ -423,15 +332,15 @@ colnames(ModelMetaData_dummy) = NULL
 
 #### Run ####
 
-memory.limit(size = 100000000)
-  
 fit = sampling(StanModel, data = data_stan, 
                  iter 	= ModelMetaData$iter, 
                  warmup 	= ModelMetaData$warmup, 
                  thin 	= ModelMetaData$thin, 
                  chains 	= ModelMetaData$chains, 
-                 pars 	= c("VaxEffect", "LogPredictions", "RegionalTrends", "VacEffects_Regional",
-                           "NationalTrend", "gamma", "intercept", "log_lik", "lambda"), 
+                 pars 	= c("VaxEffect", "VacEffects_Regional",
+                           "LogPredictions", "RegionalTrends", 
+                           "NationalTrend", "gamma", "intercept", "lambda",
+                           "log_lik",), 
                  control = list(adapt_delta = ModelMetaData$adapt_delta,
                                 max_treedepth = ModelMetaData$max_treedepth))
 
