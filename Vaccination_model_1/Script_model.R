@@ -1,7 +1,7 @@
 ###SARS-CoV-2 Rt Model for Vaccination and Variants###
 
         ###Model update exploratory script###
-     ##Proposal 2: Multiple doses, one variant##
+     ##Proposal: Multiple doses, Two variants##
 
 #MRes Biomedical Research - EECID stream - Project 1#
 
