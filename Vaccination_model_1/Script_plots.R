@@ -83,8 +83,8 @@ sum_rt <- data.frame(Rt_data, Rt_LogP, RegionalTrends, NationalTrend,
                      Dose_3 = data_model$Third_Prop,
                      date = data_model$date,
                      week = data_model$week,
-                     row.names = paste0("Rt", 1:12726))
-sum_line <- data.frame(date = rep(Steps, times = 303),
+                     row.names = paste0("Rt", 1:9282))
+sum_line <- data.frame(date = rep(Steps, times = 221),
                        Lambda = Lambda)
 
 

@@ -15,6 +15,7 @@ rm(list = ls())
 
 data_vax <- read.csv("rtm_incoming_vaccination_20211116-173218-f36a1245_vacc_coverage_ltla.csv")
 data_rt <- read.csv("UK_hotspot_Rt_estimates.csv")
+data_var <- read.csv("vam_by_ltla.csv")
 
 # Packages
 
@@ -78,6 +79,21 @@ l_name*l_date_2
 data_rt$date <- as.Date(data_rt$date)
 
 
+#### Var Data ####
+
+names(data_var)
+dim(data_var)
+
+# Data on 314 LTLA and 871 dates
+
+l_code2 <- length(unique(data_var$ltlacode))
+
+l_date3 <- length(unique(data_var$date))
+
+dim(data_var)
+l_code2*l_date3
+
+
 
 # SET PARAMETERS ----------------------------------------------------------
 
@@ -111,9 +127,10 @@ lockdown_steps <- as.Date(c("05/01/2021", "08/03/2021", "19/04/2021",
 
 dvax <- data_vax
 drt <- data_rt
+dvar <- data_var
 
 
-#### Making Vax/Rt Data comparable ####
+#### Making Vax/Var/Rt Data comparable ####
 
 # No age groups
 
@@ -128,20 +145,27 @@ dvax <- filter(dvax, date <= Date_End)
 drt <- filter(drt, date >= Date_Start)
 drt <- filter(drt, date <= Date_End)
 
+dvar <- filter(dvar, date >= Date_Start)
+dvar <- filter(dvar, date <= Date_End)
+
 # LTLA names
 
 drt <- rename(drt, ltla_name = area)
+dvar <- rename(dvar, ltla_code = ltlacode)
 
 # Select the vars of interest
 
-dvax <- select(dvax, "ltla_name", "date",
+dvax <- select(dvax, "ltla_code", "ltla_name", "date",
                "First_Prop", "Second_Prop", "Third_Prop")
 drt <- select(drt, "ltla_name", "date", "Rt")
+dvar <- select(dvar, "ltla_code", "date",
+               "n_all_alpha_variant", "n_all_delta_variant")
 
 
 #### Merge ####
 
 data_merge <- merge(dvax, drt, by = c("ltla_name", "date"), all = TRUE)
+data_merge <- merge(data_merge, dvar, by = c("ltla_code", "date"), all = TRUE)
 
 # Checks
 
@@ -169,7 +193,6 @@ Steps %in% data_merge$date
 
 Knots <- round(as.numeric(floor((Steps - Steps[1]))), digits = 0)
 Knots_weeks <- round(as.numeric(floor((Steps - Steps[1])/7)), digits = 0)
-#Match the weeks of the Knots to the ones in the data (start on week 4)
 
 # Weekly dates: var for no. of weeks & only one obs per week
 
@@ -182,10 +205,27 @@ data_merge <- mutate(data_merge, combi = paste0(data_merge$week, data_merge$ltla
 #Remove the duplicates
 data_merge <- filter(data_merge, !duplicated(data_merge$combi))
 
+# Create vars for the proportion of alpha vs delta
+
+data_merge <- data_merge %>%
+  mutate(total = (n_all_alpha_variant + n_all_delta_variant)) %>%
+  mutate(Var_Alpha = case_when(total == 0 ~ 0,
+                               total != 0 ~ n_all_alpha_variant/total)) %>%
+  mutate(Var_Delta = case_when(total == 0 ~ 0,
+                               total != 0 ~ n_all_delta_variant/total))
+
+# Select only the ltla with max no of weeks
+
+data_merge <- data_merge %>%
+  group_by(ltla_name) %>%
+  mutate(max_week = length(unique(week))) %>%
+  ungroup() %>%
+  filter(max_week == length(unique(week)))
+
 # Select cols
 
-data_model <- select(data_merge, "ltla_name", "date", "week",
-                     "First_Prop", "Second_Prop", "Third_Prop", "Rt")
+data_model <- select(data_merge, "ltla_name", "date", "week", "Rt",
+                     "First_Prop", "Second_Prop", "Third_Prop", "Var_Alpha", "Var_Delta")
 
 
 
@@ -203,9 +243,8 @@ NumLTLAs
 
 # No of weeks
 
-NumTimepoints <- length(unique(data_model$date))
+NumTimepoints <- length(unique(data_model$week))
 NumTimepoints
-length(unique(data_model$week))
 
 Timepoints <- data_model$week
 Timepoints
@@ -214,6 +253,7 @@ Timepoints
 
 NumDatapoints <- NumLTLAs * NumTimepoints
 NumDatapoints
+
 nrow(data_model)
 
 # No of LTLAs in the data
@@ -249,12 +289,6 @@ NumKnots
 NumPointsLine <- NumLTLAs*NumKnots
 NumPointsLine
 
-# Dummy variants data
-
-VarProp <- data.frame(runif(NumDatapoints),
-                      (1 - VarProp[,1]))
-colnames(VarProp) <- covar_var
-
 
 #### Rt log ####
 
@@ -268,8 +302,8 @@ IncludeScaling <- 1
 
 # Analyses by steps of lockdown
 
-DoKnots <- 1
-Quadratic <- 1
+DoKnots <- 0
+Quadratic <- 0
 
 if (DoKnots == 1) {
   NumTrendPar <- NumKnots
@@ -279,10 +313,6 @@ if (DoKnots == 1) {
 
 
 #### Stan Data ####
-
-data_model <- select(data_model,
-                     "ltla_name", "LTLAs", "date", "week", covar_vax, "Rt")
-# saveRDS(data_model, "data_model_for_plots.Rds")
 
 data_stan <- list(
           IncludeIntercept = IncludeIntercept,
@@ -305,7 +335,7 @@ data_stan <- list(
           
           RtVals = data_model$Rt,
           VaxProp = data_model[,covar_vax],
-          VarProp = VarProp
+          VarProp = data_model[,covar_var]
 )
 
 
