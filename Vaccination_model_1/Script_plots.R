@@ -552,7 +552,7 @@ dev.off()
  
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_4.png"), width = 10, height = 6, units = 'in', res = 300)
  
-Plot_sum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
+Plot_sum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 38,]) +
   geom_line (mapping = aes(x = date, y = NationalTrend, 
                            color = "Lambda"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = RegionalTrends,
