@@ -11,6 +11,13 @@ Vax_model*
 /Vaccination_model_1/Figures/
 /Vaccination_model_1/Results/
 
+# Old Stan files
+
+2stage_LFM_non_centered_Vax_log_lik.stan
+2stage_LFM_non_centered_Vax_no_intercept.stan
+2stage_LFM_non_centered_Vax_no_scaling.stan
+
+
 # R Files
 
 .RData
@@ -25,5 +32,7 @@ Vaccination_model_1.Rproj
 data_model_for_plots.Rds
 
 UK_hotspot_Rt_estimates.csv
+
 rtm_incoming_vaccination_20211116-173218-f36a1245_vacc_coverage_ltla.csv
-.project
+
+vam_by_ltla.csv
