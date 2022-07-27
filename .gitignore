@@ -5,7 +5,7 @@
 Vax_model*
 
 
-## Vaccination_model_1 folder
+## Vaccination_model folder
 
 # Folders to ignore
 /Vaccination_model/Data/
@@ -17,7 +17,6 @@ Vax_model*
 2stage_LFM_non_centered_Vax_log_lik.stan
 2stage_LFM_non_centered_Vax_no_intercept.stan
 2stage_LFM_non_centered_Vax_no_scaling.stan
-
 
 # R Files
 
