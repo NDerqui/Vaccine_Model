@@ -13,9 +13,9 @@ rm(list = ls())
 
 # Data
 
-data_vax <- read.csv("rtm_incoming_vaccination_20211116-173218-f36a1245_vacc_coverage_ltla.csv")
-data_rt <- read.csv("UK_hotspot_Rt_estimates.csv")
-data_var <- read.csv("vam_by_ltla.csv")
+data_vax <- read.csv("Data/rtm_incoming_vaccination_20211116-173218-f36a1245_vacc_coverage_ltla.csv")
+data_rt <- read.csv("Data/UK_hotspot_Rt_estimates.csv")
+data_var <- read.csv("Data/vam_by_ltla.csv")
 
 # Packages
 
