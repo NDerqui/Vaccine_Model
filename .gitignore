@@ -34,5 +34,9 @@ data_model_for_plots.Rds
 UK_hotspot_Rt_estimates.csv
 
 rtm_incoming_vaccination_20211116-173218-f36a1245_vacc_coverage_ltla.csv
+<<<<<<< HEAD
 
+=======
+.project
+>>>>>>> 1ecfeeab36254bda0140ba5a17f5a9df7c51add4
 vam_by_ltla.csv

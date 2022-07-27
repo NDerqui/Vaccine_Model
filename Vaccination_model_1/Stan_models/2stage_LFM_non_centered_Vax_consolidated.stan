@@ -7,6 +7,7 @@ data {
 	
 	int<lower = 1>	NumDatapoints; 	// Number of Rt values (all timepoints x regions) 
 	int<lower = 1>	NumDoses; 		  // Number of parameters: Vax doses
+	int<lower = 1>  NumVar;
 	int<lower = 1>	NumLTLAs;		    // Number of regions / LTLAs
 	int<lower = 1>	NumTimepoints;	// Number of timepoints (weeks)
 	int<lower = 1>	NumKnots;       // Number of knots
@@ -21,6 +22,7 @@ data {
 	vector[NumDatapoints] 			RtVals; 	    // y: Rt values across all time points and regions (expressed as giant vector) 
 	matrix[NumDatapoints,NumDoses] 	VaxProp;	// x predictor: Binary design matrix. Each row is a region and date combination.
 	    // Each column has the proportion of vax at that time/LTLA with 1, 2, 3 doses
+	matrix[NumDatapoints, NumVar] VarProp;
 }
 
 transformed data{
@@ -39,7 +41,7 @@ parameters {
 	
   matrix[NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
   
-	vector<lower = 0>[NumDoses] 	VaxEffect_nc;	
+	matrix<lower = 0>[NumDoses, NumVar] 	VaxEffect_nc;	
 }
 
 transformed parameters{
@@ -65,8 +67,8 @@ transformed parameters{
 	matrix[NumDatapoints, IntDim]	NationalTrend	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line or free
 	vector[NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
 	
-	vector[NumDatapoints] VacEffects_Regional 	= rep_vector(0, NumDatapoints);
-	vector[NumDoses] 			VaxEffect 	= rep_vector(0, NumDoses);
+	matrix[NumDatapoints, NumVar] VacEffects_Regional 	= rep_matrix(0, NumDatapoints, NumVar);
+	matrix[NumDoses, NumVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVar);
 	
 	vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
 	
@@ -184,16 +186,18 @@ transformed parameters{
 	// CONTINUE WITH LOG PRED MODEL WHETHER LAMBDA WAS FIT IN THE LINE OR NOT
 	// VacEffects_Regional[1:NumDatapoints] = VaxProp * VaxEffect; // x * -beta in manuscript
 	for (i in 1:NumDatapoints)
-	{
-		VacEffects_Regional[i] = 0; // initialize to zero for each timepoint 
-		for (j in 1:NumDoses)
-			VacEffects_Regional[i] += VaxProp[i,j] * VaxEffect[j];
-	}
+	  for(l in 1:NumVar)
+	    {
+		    VacEffects_Regional[i, l] = 0; // initialize to zero for each timepoint 
+		    for (j in 1:NumDoses)
+			    VacEffects_Regional[i, l] += VaxProp[i,j] * VaxEffect[j, l];
+	    }
 	
 	// final (logged) regional Rt predictions are regional trends minus regional vaccine effects
 	// LogPredictions[1:NumDatapoints] = RegionalTrends[1:NumDatapoints] - VacEffects_Regional[1:NumDatapoints];
 	for (i in 1:NumDatapoints)
-		LogPredictions[i] = RegionalTrends[i] - VacEffects_Regional[i];
+	  for (j in 1:NumVar)
+		  LogPredictions[i] = VarProp[i, j]*(RegionalTrends[i] - VacEffects_Regional[i, j]);
 	
 }
 
