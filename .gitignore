@@ -8,8 +8,8 @@ Vax_model*
 ## Vaccination_model_1 folder
 
 # Folders to ignore
-/Vaccination_model_1/Figures/
-/Vaccination_model_1/Results/
+/Vaccination_model/Figures/
+/Vaccination_model/Results/
 
 # Old Stan files
 
