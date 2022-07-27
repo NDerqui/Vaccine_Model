@@ -297,10 +297,12 @@ data_model$Rt <- log(data_model$Rt)
 
 #### Switches for parameters ####
 
+# Model flexibility
+
 IncludeIntercept <- 1
 IncludeScaling <- 1
 
-# Analyses by steps of lockdown
+# Spline option
 
 DoKnots <- 0
 Quadratic <- 0
@@ -311,6 +313,18 @@ if (DoKnots == 1) {
   NumTrendPar <- NumTimepoints
 }
 
+# Variants / Age groups option
+
+DoVariants <- 0
+
+if (DoVariants == 1) {
+  NumVar <- length(covar_var)
+  VarProp <- data_model[,covar_var]
+} else {
+  NumVar <- 1
+  VarProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
+}
+
 
 #### Stan Data ####
 
@@ -319,11 +333,12 @@ data_stan <- list(
           IncludeScaling = IncludeScaling,
           DoKnots = DoKnots,
           Quadratic = Quadratic,
+          DoVariants = DoVariants,
           
           NumDatapoints = NumDatapoints,
           NumLTLAs = NumLTLAs,
           NumDoses = length(covar_vax),
-          NumVar = length(covar_var),
+          NumVar = NumVar,
           NumTimepoints = NumTimepoints,
           NumKnots = NumKnots,
           NumPointsLine = NumPointsLine,
@@ -335,7 +350,7 @@ data_stan <- list(
           
           RtVals = data_model$Rt,
           VaxProp = data_model[,covar_vax],
-          VarProp = data_model[,covar_var]
+          VarProp = VarProp
 )
 
 

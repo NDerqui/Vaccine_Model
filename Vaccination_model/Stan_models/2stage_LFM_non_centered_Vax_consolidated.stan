@@ -4,10 +4,11 @@ data {
 	int <lower = 0, upper = 1>	IncludeScaling; 	// Boolean for scaling
 	int <lower = 0, upper = 1>	DoKnots;        	// Boolean for spline
 	int <lower = 0, upper = 1>	Quadratic;        // Boolean for quadratic (If 1, quadratic spline, if 0, linear)
+	int <lower = 0, upper = 1>  DoVariants;       // Boolean for Variants model
 	
 	int<lower = 1>	NumDatapoints; 	// Number of Rt values (all timepoints x regions) 
 	int<lower = 1>	NumDoses; 		  // Number of parameters: Vax doses
-	int<lower = 1>  NumVar;
+	int<lower = 1>  NumVar;         // Number of parameters: SARS-CoV-2 variants
 	int<lower = 1>	NumLTLAs;		    // Number of regions / LTLAs
 	int<lower = 1>	NumTimepoints;	// Number of timepoints (weeks)
 	int<lower = 1>	NumKnots;       // Number of knots
@@ -22,7 +23,7 @@ data {
 	vector[NumDatapoints] 			RtVals; 	    // y: Rt values across all time points and regions (expressed as giant vector) 
 	matrix[NumDatapoints,NumDoses] 	VaxProp;	// x predictor: Binary design matrix. Each row is a region and date combination.
 	    // Each column has the proportion of vax at that time/LTLA with 1, 2, 3 doses
-	matrix[NumDatapoints, NumVar] VarProp;
+	matrix[NumDatapoints, NumVar] VarProp;   // x predictor: Each col has the proportion of variants 1, 2, etc. up to NumVar
 }
 
 transformed data{
