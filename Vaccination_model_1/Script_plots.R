@@ -83,8 +83,8 @@ sum_rt <- data.frame(Rt_data, Rt_LogP, RegionalTrends, NationalTrend,
                      Dose_3 = data_model$Third_Prop,
                      date = data_model$date,
                      week = data_model$week,
-                     row.names = paste0("Rt", 1:12726))
-sum_line <- data.frame(date = rep(Steps, times = 303),
+                     row.names = paste0("Rt", 1:9282))
+sum_line <- data.frame(date = rep(Steps, times = 221),
                        Lambda = Lambda)
 
 
@@ -110,7 +110,8 @@ VEMean_exp <-(exp(-VEMean))
 VEQuan_exp <-(exp(-VEQuan))
  
 sum_ve <- round(data.frame(VEMean, VEQuan, VEMean_exp, VEQuan_exp,
-                            row.names = c("Dose 1", "Dose 2", "Dose 3")),
+                            row.names = c("Alpha1", "Alpha2", "Alpha3",
+                                          "Delta1", "Delta2", "Delta3")),
                  digits = 2)
 sum_ve <- sum_ve %>%
   select("VEMean", "X2.5.", "X97.5.",
@@ -551,7 +552,7 @@ dev.off()
  
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_4.png"), width = 10, height = 6, units = 'in', res = 300)
  
-Plot_sum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 299,]) +
+Plot_sum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 38,]) +
   geom_line (mapping = aes(x = date, y = NationalTrend, 
                            color = "Lambda"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = RegionalTrends,
