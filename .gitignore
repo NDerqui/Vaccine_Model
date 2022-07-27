@@ -8,6 +8,7 @@ Vax_model*
 ## Vaccination_model_1 folder
 
 # Folders to ignore
+/Vaccination_model/Data/
 /Vaccination_model/Figures/
 /Vaccination_model/Results/
 
@@ -30,9 +31,3 @@ Vaccination_model.Rproj
 # Data Files
 
 data_model_for_plots.Rds
-
-UK_hotspot_Rt_estimates.csv
-
-rtm_incoming_vaccination_20211116-173218-f36a1245_vacc_coverage_ltla.csv
-
-vam_by_ltla.csv
