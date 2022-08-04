@@ -43,6 +43,7 @@ parameters {
   matrix[NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
   
 	matrix<lower = 0>[NumDoses, NumVar] 	VaxEffect_nc;	
+	vector<lower = 0>[NumVar] VarAdvantage_nc;
 }
 
 transformed parameters{
@@ -71,6 +72,8 @@ transformed parameters{
 	matrix[NumDatapoints, NumVar] VacEffects_Regional 	= rep_matrix(0, NumDatapoints, NumVar);
 	matrix[NumDoses, NumVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVar);
 	
+	vector[NumVar] VarAdvantage = rep_vector(0, NumVar);
+	
 	vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
 	
 	// initialize - get centered parameter values from their non-centered equivalents.
@@ -82,7 +85,8 @@ transformed parameters{
 	sigma 		= sigma_nc		* 0.5;
 	gamma 		= gamma_nc 		* phi2;
 	intercept 	= intercept_nc	* phi3;
-	VaxEffect 	= VaxEffect_nc 	* phi;	
+	VaxEffect 	= VaxEffect_nc	* phi;
+	VarAdvantage 	= VarAdvantage_nc	* phi;
 	
 	if (DoKnots) {  
 	 
@@ -198,7 +202,7 @@ transformed parameters{
 	// LogPredictions[1:NumDatapoints] = RegionalTrends[1:NumDatapoints] - VacEffects_Regional[1:NumDatapoints];
 	for (i in 1:NumDatapoints)
 	  for (j in 1:NumVar)
-		  LogPredictions[i] = VarProp[i, j]*(RegionalTrends[i] - VacEffects_Regional[i, j]);
+		  LogPredictions[i] = VarProp[i, j]*(VarAdvantage[j]*RegionalTrends[i] - VacEffects_Regional[i, j]);
 	
 }
 
@@ -221,7 +225,12 @@ model {
 	sigma_nc 		~ std_normal();
 	
 	for (i in 1:NumDoses)
-		VaxEffect_nc[i] ~ std_normal();
+	  for (j in 1:NumVar)
+		  VaxEffect_nc[i, j] ~ std_normal();
+		  
+	for (i in 1:NumVar)
+		VarAdvantage_nc[i] ~ std_normal();
+		
 	RtVals 			~ normal(LogPredictions, sigma);
 }
 
