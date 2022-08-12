@@ -109,17 +109,18 @@ VEQuan <- colQuantiles(model_matrix[, grep(
 VEMean_exp <-(exp(-VEMean))
 VEQuan_exp <-(exp(-VEQuan))
  
-sum_ve <- round(data.frame(VEMean, VEQuan, VEMean_exp, VEQuan_exp,
-                            row.names = c("Alpha1", "Alpha2", "Alpha3",
-                                          "Delta1", "Delta2", "Delta3")),
-                 digits = 2)
-sum_ve <- sum_ve %>%
+sum_ve <- round(data.frame(VEMean, VEQuan, VEMean_exp, VEQuan_exp), digits = 2) %>%
   select("VEMean", "X2.5.", "X97.5.",
          "VEMean_exp", "X97.5..1", "X2.5..1")
 colnames(sum_ve) <- c("Mean Effect", "2.5% Q", "97.5% Q",
-                       "Exp(Mean Effect)", "Exp(2.5% Q)", "Exp(97.5% Q)")
-View(sum_ve)
- 
+                      "Exp(Mean Effect)", "Exp(2.5% Q)", "Exp(97.5% Q)")
+
+if (nrow(sum_ve) == 3) {
+  row.names(sum_ve) <- c("Dose 1", "Dose 2", "Dose 3")
+} else {
+  row.names(sum_ve) <- c("Alpha1", "Alpha2", "Alpha3", "Delta1", "Delta2", "Delta3")
+}
+                
 write.xlsx(sum_ve, rowNames = TRUE,
             paste0("Results/", model_name, "/Vax_VE_table.xlsx"))
 
