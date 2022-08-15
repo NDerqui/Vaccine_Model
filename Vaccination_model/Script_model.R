@@ -539,7 +539,7 @@ if (DoAge == 0) {
     RtVals = data_model$Rt,
     VaxProp = data_model[,covar_vax],
     VarProp = VarProp,
-    AgeProp = rep(1, times = NumDatapoints)
+    AgeProp = as.data.frame(matrix(1, nrow = NumDatapoints))
   )
 
 } else {

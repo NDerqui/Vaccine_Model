@@ -27,7 +27,7 @@ data {
 	matrix[NumDatapoints, NumDoses]	VaxProp;	// x predictor: Binary design matrix. Each row is a region and date combination.
 	                                          // Each column has the proportion of vax at that time/LTLA with 1, 2, 3 doses
 	matrix[NumDatapoints, NumVar] VarProp;    // x predictor: Each col has the proportion of variants 1, 2, etc. up to NumVar
-	vector[NumDatapoints]       AgeProp;      // x predictor: Each age group proportion in each LTLA
+	matrix[NumDatapoints, 1]       AgeProp;   // x predictor: Each age group proportion in each LTLA
 }
 
 transformed data{
@@ -204,7 +204,7 @@ transformed parameters{
 		    VacEffects_Regional[i, l] = 0; // initialize to zero for each timepoint
 		     if(Groups[i] == k) {
 		        for (j in 1:NumDoses) {
-			        VacEffects_Regional[i, l] += VaxProp[i,j] * VaxEffect[j, l] * AgeProp[i];
+			        VacEffects_Regional[i, l] += VaxProp[i,j] * VaxEffect[j, l] * AgeProp[i, 1];
 		      }
 		    }
 	    }
