@@ -123,10 +123,23 @@ Nested_Char <- ""
 lockdown_steps <- as.Date(c("05/01/2021", "08/03/2021", "19/04/2021",
                             "17/05/2021", "19/07/2021"), format = "%d/%m/%Y")
 
-# What model?
+
+##### Models option ####
+
+# Age or variants
 
 DoVariants <- 0
 DoAge <- 0
+
+# Spline
+
+DoKnots <- 0
+Quadratic <- 0
+
+# Model flexibility
+
+IncludeIntercept <- 1
+IncludeScaling <- 1
 
 
 
@@ -257,6 +270,8 @@ data_merge_age <- data_merge_age %>%
          Third_Prop = ThirdDose / sum(total)) %>%
   ungroup()
 
+# Calculate age proportion in each LTLA
+
 age_prop <- data_merge_age %>%
   group_by(ltla_name, week) %>%
   mutate(total_ltla = sum(total)) %>%
@@ -265,9 +280,7 @@ age_prop <- data_merge_age %>%
   mutate(age_prop = sum(total)/total_ltla) %>%
   filter(row_number() == 1) %>%
   ungroup() %>%
-  select(ltla_name, week, group, age_prop) %>%
-  group_by(ltla_name, group) %>%
-  filter(row_number() == 1)
+  select(age_prop)
 
 #Remove the duplicates
 
@@ -305,7 +318,7 @@ data_model_age <- select(data_merge_age, "ltla_name", "date", "week", "Rt","grou
 
 if (DoAge == 0) {
  
-  #### No. observations ####
+  #### No age: var or not ####
   
   dim(data_model)
   
@@ -345,9 +358,17 @@ if (DoAge == 0) {
   }
   NumWeeksByLTLA
   
+  # No groups
+  
+  NumGroup <- 1
+  NumGroup
+  
+  Groups <- rep(1, times = NumDatapoints)
+  Groups
+  
   # No of total obs 
   
-  NumDatapoints <- NumLTLAs * NumTimepoints
+  NumDatapoints <- NumLTLAs * NumTimepoints * NumGroup
   NumDatapoints
   
   nrow(data_model)
@@ -366,22 +387,12 @@ if (DoAge == 0) {
   NumPointsLine
   
   
-  #### Rt log ####
+  # Rt log #
   
   data_model$Rt <- log(data_model$Rt)
   
   
-  #### Switches for parameters ####
-  
-  # Model flexibility
-  
-  IncludeIntercept <- 1
-  IncludeScaling <- 1
-  
   # Spline option
-  
-  DoKnots <- 0
-  Quadratic <- 0
   
   if (DoKnots == 1) {
     NumTrendPar <- NumKnots
@@ -401,7 +412,7 @@ if (DoAge == 0) {
   
 } else {
   
-  #### No. observations ####
+  #### Age model ####
   
   dim(data_model_age)
   
@@ -446,7 +457,14 @@ if (DoAge == 0) {
   NumGroup <- length(unique(data_model_age$group))
   NumGroup
   
-  Groups <- data_model_age$group
+  NamesGroups <- unique(data_model_age$group)
+  
+  data_model_age$Groups <- NA
+  for(i in 1:NumGroup){
+    data_model_age$Groups[data_model_age$group == NamesGroups[i]] = i
+  }
+  
+  Groups <- data_model_age$Groups
   Groups
   
   # No of total obs 
@@ -470,22 +488,12 @@ if (DoAge == 0) {
   NumPointsLine
   
   
-  #### Rt log ####
+  # Rt log #
   
   data_model_age$Rt <- log(data_model_age$Rt)
   
   
-  #### Switches for parameters ####
-  
-  # Model flexibility
-  
-  IncludeIntercept <- 1
-  IncludeScaling <- 1
-  
   # Spline option
-  
-  DoKnots <- 0
-  Quadratic <- 0
   
   if (DoKnots == 1) {
     NumTrendPar <- NumKnots
@@ -495,13 +503,9 @@ if (DoAge == 0) {
   
   # Variants / Age groups option
   
-  if (DoVariants == 1) {
-    NumVar <- length(covar_var)
-    VarProp <- data_model_age[,covar_var]
-  } else {
-    NumVar <- 1
-    VarProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
-  }
+  NumVar <- 1
+  VarProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
+  
 }
 
 
@@ -515,11 +519,13 @@ if (DoAge == 0) {
     DoKnots = DoKnots,
     Quadratic = Quadratic,
     DoVariants = DoVariants,
+    DoAge = DoAge,
     
     NumDatapoints = NumDatapoints,
     NumLTLAs = NumLTLAs,
     NumDoses = length(covar_vax),
     NumVar = NumVar,
+    NumGroup = NumGroup,
     NumTimepoints = NumTimepoints,
     NumKnots = NumKnots,
     NumPointsLine = NumPointsLine,
@@ -528,10 +534,12 @@ if (DoAge == 0) {
     Knots = Knots_weeks,
     Timepoints = Timepoints,
     LTLAs = LTLAs,
+    Groups = Groups,
     
     RtVals = data_model$Rt,
     VaxProp = data_model[,covar_vax],
-    VarProp = VarProp
+    VarProp = VarProp,
+    AgeProp = rep(1, times = NumDatapoints)
   )
 
 } else {
@@ -542,11 +550,13 @@ if (DoAge == 0) {
     DoKnots = DoKnots,
     Quadratic = Quadratic,
     DoVariants = DoVariants,
+    DoAge = DoAge,
     
     NumDatapoints = NumDatapoints,
     NumLTLAs = NumLTLAs,
     NumDoses = length(covar_vax),
     NumVar = NumVar,
+    NumGroup = NumGroup,
     NumTimepoints = NumTimepoints,
     NumKnots = NumKnots,
     NumPointsLine = NumPointsLine,
@@ -555,10 +565,12 @@ if (DoAge == 0) {
     Knots = Knots_weeks,
     Timepoints = Timepoints,
     LTLAs = LTLAs,
+    Groups = Groups,
     
     RtVals = data_model_age$Rt,
     VaxProp = data_model_age[,covar_vax],
-    VarProp = VarProp
+    VarProp = VarProp,
+    AgeProp = age_prop
   )
 }
 
