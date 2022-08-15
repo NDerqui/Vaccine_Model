@@ -363,7 +363,7 @@ if (DoAge == 0) {
   NumGroup <- 1
   NumGroup
   
-  Groups <- rep(1, times = NumDatapoints)
+  Groups <- rep(1, times = nrow(data_model))
   Groups
   
   # No of total obs 
