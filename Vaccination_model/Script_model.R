@@ -94,6 +94,11 @@ dim(data_var)
 l_code2*l_date3
 
 
+#### Clean ####
+
+rm(l_agemin, l_code, l_code2, l_name, l_date, l_date_2, l_date3)
+
+
 
 # SET PARAMETERS ----------------------------------------------------------
 
@@ -118,6 +123,11 @@ Nested_Char <- ""
 lockdown_steps <- as.Date(c("05/01/2021", "08/03/2021", "19/04/2021",
                             "17/05/2021", "19/07/2021"), format = "%d/%m/%Y")
 
+# What model?
+
+DoVariants <- 0
+DoAge <- 0
+
 
 
 # DATA CLEANING & MERGE --------------------------------------------------
@@ -128,13 +138,16 @@ lockdown_steps <- as.Date(c("05/01/2021", "08/03/2021", "19/04/2021",
 dvax <- data_vax
 drt <- data_rt
 dvar <- data_var
+dage <- data_vax
 
 
 #### Making Vax/Var/Rt Data comparable ####
 
-# No age groups
+# No/Yes age groups
 
 dvax <- filter(dvax, is.na(age_band_min))
+
+dage <- filter(dage, !is.na(age_band_min))
 
 # Dates of interest
 
@@ -148,10 +161,28 @@ drt <- filter(drt, date <= Date_End)
 dvar <- filter(dvar, date >= Date_Start)
 dvar <- filter(dvar, date <= Date_End)
 
+dage <- rename(dage, date = vaccination_date)
+dage <- filter(dage, date >= Date_Start)
+dage <- filter(dage, date <= Date_End)
+
 # LTLA names
 
 drt <- rename(drt, ltla_name = area)
 dvar <- rename(dvar, ltla_code = ltlacode)
+
+# Three age groups
+
+dage <- dage %>%
+  mutate(total = First/First_Prop) %>%
+  mutate(group = case_when(age_band_min >= 15 & age_band_min <= 45 ~ "15-49",
+                           age_band_min >= 50 & age_band_min <= 65 ~ "50-69",
+                           age_band_min >= 70 & age_band_min <= 90 ~ ">=70"))
+#To calculate new group proportions, only one weekly entry per age band
+dage$week <- round(as.numeric(floor((dage$date - Date_Start)/7)), digits = 0)
+dage <- dage %>%
+  mutate(combi = paste0(week, ltla_name, age_band_min))
+dage <- filter(dage, !duplicated(dage$combi))
+
 
 # Select the vars of interest
 
@@ -160,6 +191,8 @@ dvax <- select(dvax, "ltla_code", "ltla_name", "date",
 drt <- select(drt, "ltla_name", "date", "Rt")
 dvar <- select(dvar, "ltla_code", "date",
                "n_all_alpha_variant", "n_all_delta_variant")
+dage <- select(dage, "ltla_code", "ltla_name", "date", "group",
+               "First", "Second", "Third", "total")
 
 
 #### Merge ####
@@ -167,10 +200,15 @@ dvar <- select(dvar, "ltla_code", "date",
 data_merge <- merge(dvax, drt, by = c("ltla_name", "date"), all = TRUE)
 data_merge <- merge(data_merge, dvar, by = c("ltla_code", "date"), all = TRUE)
 
+data_merge_age <- merge(dage, drt, by = c("ltla_name", "date"), all = TRUE)
+
 # Checks
 
 dim(data_merge)
 names(data_merge)
+
+dim(data_merge_age)
+names(data_merge_age)
 
 
 #### Final Cleaning ####
@@ -178,6 +216,7 @@ names(data_merge)
 # No NA
 
 data_merge <- data_merge[complete.cases(data_merge),]
+data_merge_age <- data_merge_age[complete.cases(data_merge_age),]
 
 # Steps
 
@@ -198,12 +237,42 @@ Knots_weeks <- round(as.numeric(floor((Steps - Steps[1])/7)), digits = 0)
 
 #Var for the number of weeks
 data_merge$week <- round(as.numeric(floor((data_merge$date - min(data_merge$date))/7)), digits = 0)
+data_merge_age$week <- round(as.numeric(floor((data_merge_age$date - min(data_merge_age$date))/7)), digits = 0)
 
 #Combi for unique combination of LTLA*week
-data_merge <- mutate(data_merge, combi = paste0(data_merge$week, data_merge$ltla_name))
+data_merge <- data_merge %>%
+  mutate(combi = paste0(week, "/", ltla_name))
+data_merge_age <- data_merge_age %>%
+  mutate(combi = paste0(week, "/", group, "/", ltla_name))
+
+# Age group proportion: prop of vaccinated and age prop in each region
+
+data_merge_age <- data_merge_age %>%
+  group_by(combi) %>%
+  mutate(FirstDose = sum(First),
+         SecondDose = sum(Second),
+         ThirdDose = sum(Third)) %>%
+  mutate(First_Prop = FirstDose / sum(total),
+         Second_Prop = SecondDose / sum(total),
+         Third_Prop = ThirdDose / sum(total)) %>%
+  ungroup()
+
+age_prop <- data_merge_age %>%
+  group_by(ltla_name, week) %>%
+  mutate(total_ltla = sum(total)) %>%
+  ungroup() %>%
+  group_by(ltla_name, week, group) %>%
+  mutate(age_prop = sum(total)/total_ltla) %>%
+  filter(row_number() == 1) %>%
+  ungroup() %>%
+  select(ltla_name, week, group, age_prop) %>%
+  group_by(ltla_name, group) %>%
+  filter(row_number() == 1)
 
 #Remove the duplicates
+
 data_merge <- filter(data_merge, !duplicated(data_merge$combi))
+data_merge_age <- filter(data_merge_age, !duplicated(data_merge_age$combi))
 
 # Create vars for the proportion of alpha vs delta
 
@@ -226,132 +295,272 @@ data_merge <- data_merge %>%
 
 data_model <- select(data_merge, "ltla_name", "date", "week", "Rt",
                      "First_Prop", "Second_Prop", "Third_Prop", "Var_Alpha", "Var_Delta")
+data_model_age <- select(data_merge_age, "ltla_name", "date", "week", "Rt","group",
+                         "First_Prop", "Second_Prop", "Third_Prop")
 
 
 
 # DATA FOR STAN MODEL ---------------------------------------------------------
 
 
-#### No. observations ####
-
-dim(data_model)
-
-# No of LTLA
-
-NumLTLAs <- length(unique(data_model$ltla_name))
-NumLTLAs
-
-# No of weeks
-
-NumTimepoints <- length(unique(data_model$week))
-NumTimepoints
-
-Timepoints <- data_model$week
-Timepoints
-
-# No of total obs 
-
-NumDatapoints <- NumLTLAs * NumTimepoints
-NumDatapoints
-
-nrow(data_model)
-
-# No of LTLAs in the data
-
-NamesLTLAs <- unique(data_model$ltla_name)
-
-data_model$LTLAs <- NA
-for(i in 1:NumLTLAs){
-  data_model$LTLAs[data_model$ltla_name == NamesLTLAs[i]] = i
-}
-
-# No of weeks per LTLA
-
-NumWeeksByLTLA <- rep(NA, NumLTLAs)
-for(i in 1: NumLTLAs){   
+if (DoAge == 0) {
+ 
+  #### No. observations ####
   
-  d_sub = data_model[data_model$ltla_name == NamesLTLAs[i], ]
+  dim(data_model)
   
-  NumWeeksByLTLA[i] = length(unique(d_sub$week))
-}
-NumWeeksByLTLA
-
-# No of Knots
-
-Knots
-Knots_weeks
-
-NumKnots <- length(Knots)
-NumKnots
-
-# No of LTLAs x No of Knots
-
-NumPointsLine <- NumLTLAs*NumKnots
-NumPointsLine
-
-
-#### Rt log ####
-
-data_model$Rt <- log(data_model$Rt)
-
-
-#### Switches for parameters ####
-
-# Model flexibility
-
-IncludeIntercept <- 1
-IncludeScaling <- 1
-
-# Spline option
-
-DoKnots <- 0
-Quadratic <- 0
-
-if (DoKnots == 1) {
-  NumTrendPar <- NumKnots
+  # No of LTLA
+  
+  NumLTLAs <- length(unique(data_model$ltla_name))
+  NumLTLAs
+  
+  # No of LTLAs in the data
+  
+  NamesLTLAs <- unique(data_model$ltla_name)
+  
+  data_model$LTLAs <- NA
+  for(i in 1:NumLTLAs){
+    data_model$LTLAs[data_model$ltla_name == NamesLTLAs[i]] = i
+  }
+  
+  LTLAs <- data_model$LTLAs
+  LTLAs
+  
+  # No of weeks
+  
+  NumTimepoints <- length(unique(data_model$week))
+  NumTimepoints
+  
+  Timepoints <- data_model$week
+  Timepoints
+  
+  # No of weeks per LTLA
+  
+  NumWeeksByLTLA <- rep(NA, NumLTLAs)
+  for(i in 1: NumLTLAs){   
+    
+    d_sub = data_model[data_model$ltla_name == NamesLTLAs[i], ]
+    
+    NumWeeksByLTLA[i] = length(unique(d_sub$week))
+  }
+  NumWeeksByLTLA
+  
+  # No of total obs 
+  
+  NumDatapoints <- NumLTLAs * NumTimepoints
+  NumDatapoints
+  
+  nrow(data_model)
+  
+  # No of Knots
+  
+  Knots
+  Knots_weeks
+  
+  NumKnots <- length(Knots)
+  NumKnots
+  
+  # No of LTLAs x No of Knots
+  
+  NumPointsLine <- NumLTLAs*NumKnots
+  NumPointsLine
+  
+  
+  #### Rt log ####
+  
+  data_model$Rt <- log(data_model$Rt)
+  
+  
+  #### Switches for parameters ####
+  
+  # Model flexibility
+  
+  IncludeIntercept <- 1
+  IncludeScaling <- 1
+  
+  # Spline option
+  
+  DoKnots <- 0
+  Quadratic <- 0
+  
+  if (DoKnots == 1) {
+    NumTrendPar <- NumKnots
+  } else {
+    NumTrendPar <- NumTimepoints
+  }
+  
+  # Variants
+  
+  if (DoVariants == 1) {
+    NumVar <- length(covar_var)
+    VarProp <- data_model[,covar_var]
+  } else {
+    NumVar <- 1
+    VarProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
+  }
+  
 } else {
-  NumTrendPar <- NumTimepoints
-}
-
-# Variants / Age groups option
-
-DoVariants <- 0
-
-if (DoVariants == 1) {
-  NumVar <- length(covar_var)
-  VarProp <- data_model[,covar_var]
-} else {
-  NumVar <- 1
-  VarProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
+  
+  #### No. observations ####
+  
+  dim(data_model_age)
+  
+  # No of LTLA
+  
+  NumLTLAs <- length(unique(data_model_age$ltla_name))
+  NumLTLAs
+  
+  # LTLAs in the data
+  
+  NamesLTLAs <- unique(data_model_age$ltla_name)
+  
+  data_model_age$LTLAs <- NA
+  for(i in 1:NumLTLAs){
+    data_model_age$LTLAs[data_model_age$ltla_name == NamesLTLAs[i]] = i
+  }
+  
+  LTLAs <- data_model_age$LTLAs
+  LTLAs
+  
+  # No of weeks
+  
+  NumTimepoints <- length(unique(data_model_age$week))
+  NumTimepoints
+  
+  Timepoints <- data_model_age$week
+  Timepoints
+  
+  # No of weeks per LTLA
+  
+  NumWeeksByLTLA <- rep(NA, NumLTLAs)
+  for(i in 1: NumLTLAs){   
+    
+    d_sub = data_model_age[data_model_age$ltla_name == NamesLTLAs[i], ]
+    
+    NumWeeksByLTLA[i] = length(unique(d_sub$week))
+  }
+  NumWeeksByLTLA
+  
+  # No groups
+  
+  NumGroup <- length(unique(data_model_age$group))
+  NumGroup
+  
+  Groups <- data_model_age$group
+  Groups
+  
+  # No of total obs 
+  
+  NumDatapoints <- NumLTLAs * NumTimepoints * NumGroup
+  NumDatapoints
+  
+  nrow(data_model_age)
+  
+  # No of Knots
+  
+  Knots
+  Knots_weeks
+  
+  NumKnots <- length(Knots)
+  NumKnots
+  
+  # No of LTLAs x No of Knots
+  
+  NumPointsLine <- NumLTLAs*NumKnots
+  NumPointsLine
+  
+  
+  #### Rt log ####
+  
+  data_model_age$Rt <- log(data_model_age$Rt)
+  
+  
+  #### Switches for parameters ####
+  
+  # Model flexibility
+  
+  IncludeIntercept <- 1
+  IncludeScaling <- 1
+  
+  # Spline option
+  
+  DoKnots <- 0
+  Quadratic <- 0
+  
+  if (DoKnots == 1) {
+    NumTrendPar <- NumKnots
+  } else {
+    NumTrendPar <- NumTimepoints
+  }
+  
+  # Variants / Age groups option
+  
+  if (DoVariants == 1) {
+    NumVar <- length(covar_var)
+    VarProp <- data_model_age[,covar_var]
+  } else {
+    NumVar <- 1
+    VarProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
+  }
 }
 
 
 #### Stan Data ####
 
-data_stan <- list(
-          IncludeIntercept = IncludeIntercept,
-          IncludeScaling = IncludeScaling,
-          DoKnots = DoKnots,
-          Quadratic = Quadratic,
-          DoVariants = DoVariants,
-          
-          NumDatapoints = NumDatapoints,
-          NumLTLAs = NumLTLAs,
-          NumDoses = length(covar_vax),
-          NumVar = NumVar,
-          NumTimepoints = NumTimepoints,
-          NumKnots = NumKnots,
-          NumPointsLine = NumPointsLine,
-          NumTrendPar = NumTrendPar,
-          
-          Knots = Knots_weeks,
-          Timepoints = Timepoints,
-          LTLAs = data_model$LTLAs,
-          
-          RtVals = data_model$Rt,
-          VaxProp = data_model[,covar_vax],
-          VarProp = VarProp
-)
+if (DoAge == 0) {
+  
+  data_stan <- list(
+    IncludeIntercept = IncludeIntercept,
+    IncludeScaling = IncludeScaling,
+    DoKnots = DoKnots,
+    Quadratic = Quadratic,
+    DoVariants = DoVariants,
+    
+    NumDatapoints = NumDatapoints,
+    NumLTLAs = NumLTLAs,
+    NumDoses = length(covar_vax),
+    NumVar = NumVar,
+    NumTimepoints = NumTimepoints,
+    NumKnots = NumKnots,
+    NumPointsLine = NumPointsLine,
+    NumTrendPar = NumTrendPar,
+    
+    Knots = Knots_weeks,
+    Timepoints = Timepoints,
+    LTLAs = LTLAs,
+    
+    RtVals = data_model$Rt,
+    VaxProp = data_model[,covar_vax],
+    VarProp = VarProp
+  )
+
+} else {
+  
+  data_stan <- list(
+    IncludeIntercept = IncludeIntercept,
+    IncludeScaling = IncludeScaling,
+    DoKnots = DoKnots,
+    Quadratic = Quadratic,
+    DoVariants = DoVariants,
+    
+    NumDatapoints = NumDatapoints,
+    NumLTLAs = NumLTLAs,
+    NumDoses = length(covar_vax),
+    NumVar = NumVar,
+    NumTimepoints = NumTimepoints,
+    NumKnots = NumKnots,
+    NumPointsLine = NumPointsLine,
+    NumTrendPar = NumTrendPar,
+    
+    Knots = Knots_weeks,
+    Timepoints = Timepoints,
+    LTLAs = LTLAs,
+    
+    RtVals = data_model_age$Rt,
+    VaxProp = data_model_age[,covar_vax],
+    VarProp = VarProp
+  )
+}
 
 
 
