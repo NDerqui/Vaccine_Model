@@ -5,25 +5,29 @@ data {
 	int <lower = 0, upper = 1>	DoKnots;        	// Boolean for spline
 	int <lower = 0, upper = 1>	Quadratic;        // Boolean for quadratic (If 1, quadratic spline, if 0, linear)
 	int <lower = 0, upper = 1>  DoVariants;       // Boolean for Variants model
+	int <lower = 0, upper = 1>  DoAge;            // Boolean for age model
 	
 	int<lower = 1>	NumDatapoints; 	// Number of Rt values (all timepoints x regions) 
 	int<lower = 1>	NumDoses; 		  // Number of parameters: Vax doses
 	int<lower = 1>  NumVar;         // Number of parameters: SARS-CoV-2 variants
+	int<lower = 1>  NumGroup;       // Number of parameters: age groups
 	int<lower = 1>	NumLTLAs;		    // Number of regions / LTLAs
 	int<lower = 1>	NumTimepoints;	// Number of timepoints (weeks)
 	int<lower = 1>	NumKnots;       // Number of knots
 	int<lower = 1>	NumPointsLine;  // Number of line-lambdas (knots x regions)
 	int<lower = 1>  NumTrendPar;    // Number of NationalTrend pars (Knots or Free)
 	
-	int 							LTLAs[NumDatapoints];  // vector giving LTLA number for each Rt-region combination.
+	int LTLAs[NumDatapoints];  // vector giving LTLA number for each Rt-region combination.
+	int Groups[NumDatapoints]; // vector giving age group number for each Rt-region-age combi
 	    
 	vector[NumKnots]		Knots;	        // Sequence of knots
 	vector[NumDatapoints]   Timepoints; // Sequence of timepoints
 	
 	vector[NumDatapoints] 			RtVals; 	    // y: Rt values across all time points and regions (expressed as giant vector) 
-	matrix[NumDatapoints,NumDoses] 	VaxProp;	// x predictor: Binary design matrix. Each row is a region and date combination.
-	    // Each column has the proportion of vax at that time/LTLA with 1, 2, 3 doses
-	matrix[NumDatapoints, NumVar] VarProp;   // x predictor: Each col has the proportion of variants 1, 2, etc. up to NumVar
+	matrix[NumDatapoints, NumDoses]	VaxProp;	// x predictor: Binary design matrix. Each row is a region and date combination.
+	                                          // Each column has the proportion of vax at that time/LTLA with 1, 2, 3 doses
+	matrix[NumDatapoints, NumVar] VarProp;    // x predictor: Each col has the proportion of variants 1, 2, etc. up to NumVar
+	vector[NumDatapoints]       AgeProp;      // x predictor: Each age group proportion in each LTLA
 }
 
 transformed data{
@@ -42,7 +46,7 @@ parameters {
 	
   matrix[NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
   
-	matrix<lower = 0>[NumDoses, NumVar] 	VaxEffect_nc;	
+	matrix<lower = 0>[NumDoses*NumGroup, NumVar] 	VaxEffect_nc;	
 	matrix<lower = 0>[1, NumVar] VarAdvantage_nc;
 }
 
@@ -70,7 +74,7 @@ transformed parameters{
 	vector[NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
 	
 	matrix[NumDatapoints, NumVar] VacEffects_Regional 	= rep_matrix(0, NumDatapoints, NumVar);
-	matrix[NumDoses, NumVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVar);
+	matrix[NumDoses*NumGroup, NumVar] 			VaxEffect 	= rep_matrix(0, NumDoses*NumGroup, NumVar);
 	
 	matrix[1, NumVar] VarAdvantage = rep_matrix(1, 1, NumVar);
 	
@@ -193,12 +197,16 @@ transformed parameters{
 	
 	// CONTINUE WITH LOG PRED MODEL WHETHER LAMBDA WAS FIT IN THE LINE OR NOT
 	// VacEffects_Regional[1:NumDatapoints] = VaxProp * VaxEffect; // x * -beta in manuscript
-	for (i in 1:NumDatapoints)
-	  for(l in 1:NumVar)
+	for (k in 1:NumGroup)
+	  for (i in 1:NumDatapoints)
+	    for(l in 1:NumVar)
 	    {
-		    VacEffects_Regional[i, l] = 0; // initialize to zero for each timepoint 
-		    for (j in 1:NumDoses)
-			    VacEffects_Regional[i, l] += VaxProp[i,j] * VaxEffect[j, l];
+		    VacEffects_Regional[i, l] = 0; // initialize to zero for each timepoint
+		     if(Groups[i] == k) {
+		        for (j in 1:NumDoses) {
+			        VacEffects_Regional[i, l] += VaxProp[i,j] * VaxEffect[j, l] * AgeProp[i];
+		      }
+		    }
 	    }
 	
 	// final (logged) regional Rt predictions are regional trends minus regional vaccine effects
@@ -227,7 +235,7 @@ model {
 	phi4_nc 		~ std_normal();
 	sigma_nc 		~ std_normal();
 	
-	for (i in 1:NumDoses)
+	for (i in 1:NumDoses*NumGroup)
 	  for (j in 1:NumVar)
 		  VaxEffect_nc[i, j] ~ std_normal();
 		  
