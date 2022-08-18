@@ -298,7 +298,7 @@ dev.off()
 # As a scatter plot
  
 png(paste0("Figures/", model_name, "/Pre_Obs_Rt_time.png"),
-    width = 10, height = 6, units = 'in', res = 600)
+    width = 12, height = 6, units = 'in', res = 600)
  
 ggplot(data = sum_rt) +
   geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date,
@@ -382,37 +382,41 @@ dev.off()
  
 # Spline: National Trend plotted with knots 
 
-png(paste0("Figures/", model_name, "/NationalTrendSpline.png"), width = 10, height = 6, units = 'in', res = 300)
-
-Lambda_2 <- ggplot() +
-  geom_point (data = sum_line,
-              mapping = aes(x = date, y = Lambda, group = date), 
-              size = rel(1.2), color = "red") +
-  geom_line (data = sum_line,
-             mapping = aes(x = date, y = Lambda), 
-             color = "red") +
-  geom_point (data = sum_rt,
-              mapping = aes(x = date, y = NationalTrend, group = date), 
-              size = rel(0.8), color = "black") +
-  theme_classic() +
-  labs(title = "National Trend over time and knots inputted",
-       x = "Week",
-       y = "National Trend") +
-  theme(
-    plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
-    axis.title.x = element_text(size = rel(0.9), face="bold"),
-    axis.title.y = element_text(size = rel(0.9), face="bold"),
-    axis.text = element_text(size=rel(0.7)),
-    legend.title = element_text(size = rel(0.9), face="bold"),
-    legend.text = element_text(size=rel(0.7)))
-Lambda_2
-
-dev.off()
+if(DoKnots == 1) {
+  
+  png(paste0("Figures/", model_name, "/NationalTrendSpline.png"),
+      width = 10, height = 6, units = 'in', res = 300)
+  
+  ggplot() +
+    geom_point (data = sum_line,
+                mapping = aes(x = date, y = Lambda, group = date), 
+                size = rel(1.2), color = "red") +
+    geom_line (data = sum_line,
+               mapping = aes(x = date, y = Lambda), 
+               color = "red") +
+    geom_point (data = sum_rt,
+                mapping = aes(x = date, y = NationalTrend, group = date), 
+                size = rel(0.8), color = "black") +
+    theme_classic() +
+    labs(title = "National Trend over time and knots inputted",
+         x = "Week",
+         y = "National Trend") +
+    theme(
+      plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
+      axis.title.x = element_text(size = rel(0.9), face="bold"),
+      axis.title.y = element_text(size = rel(0.9), face="bold"),
+      axis.text = element_text(size=rel(0.7)),
+      legend.title = element_text(size = rel(0.9), face="bold"),
+      legend.text = element_text(size=rel(0.7)))
+  
+  dev.off()
+}
 
  
 #### In one LTLA ####
  
-png(paste0("Figures/", model_name, "/LTLA_sum_plot_1.png"), width = 10, height = 6, units = 'in', res = 300)
+png(paste0("Figures/", model_name, "/LTLA_sum_plot_1.png"), 
+    width = 10, height = 6, units = 'in', res = 300)
  
 Plot_sum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
    geom_line (mapping = aes(x = date, y = NationalTrend, 
@@ -443,11 +447,11 @@ Plot_sum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
      axis.text = element_text(size=rel(0.7)),
      legend.title = element_text(size = rel(0.9), face="bold"),
      legend.text = element_text(size=rel(0.7)))
-Plot_sum
- 
+
 dev.off()
  
-png(paste0("Figures/", model_name, "/LTLA_sum_plot_2.png"), width = 10, height = 6, units = 'in', res = 300)
+png(paste0("Figures/", model_name, "/LTLA_sum_plot_2.png"),
+    width = 10, height = 6, units = 'in', res = 300)
  
 Plot_sum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
   geom_line (mapping = aes(x = date, y = NationalTrend, 
@@ -478,11 +482,11 @@ Plot_sum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
      axis.text = element_text(size=rel(0.7)),
      legend.title = element_text(size = rel(0.9), face="bold"),
      legend.text = element_text(size=rel(0.7)))
-Plot_sum_2
  
 dev.off()
  
-png(paste0("Figures/", model_name, "/LTLA_sum_plot_3.png"), width = 10, height = 6, units = 'in', res = 300)
+png(paste0("Figures/", model_name, "/LTLA_sum_plot_3.png"),
+    width = 10, height = 6, units = 'in', res = 300)
  
 Plot_sum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
   geom_line (mapping = aes(x = date, y = NationalTrend, 
@@ -513,13 +517,13 @@ Plot_sum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
      axis.text = element_text(size=rel(0.7)),
      legend.title = element_text(size = rel(0.9), face="bold"),
      legend.text = element_text(size=rel(0.7)))
-Plot_sum_3
- 
+
 dev.off()
  
-png(paste0("Figures/", model_name, "/LTLA_sum_plot_4.png"), width = 10, height = 6, units = 'in', res = 300)
+png(paste0("Figures/", model_name, "/LTLA_sum_plot_4.png"),
+    width = 10, height = 6, units = 'in', res = 300)
  
-Plot_sum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 38,]) +
+Plot_sum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 47,]) +
   geom_line (mapping = aes(x = date, y = NationalTrend, 
                            color = "Lambda"), size =rel(1)) +
   geom_line (mapping = aes(x = date, y = RegionalTrends,
@@ -538,7 +542,7 @@ Plot_sum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 38,]) +
                      labels = c("National Trend", "Regional Trend",
                                 "Predicted Rt", "Observed Rt")) +
    theme_classic() +
-   labs(title = "Parameters in LTLA 299",
+   labs(title = "Parameters in LTLA 47",
         x = "Date",
         y = "Parameter value") +
    theme(
@@ -548,13 +552,13 @@ Plot_sum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 38,]) +
      axis.text = element_text(size=rel(0.7)),
      legend.title = element_text(size = rel(0.9), face="bold"),
      legend.text = element_text(size=rel(0.7)))
-Plot_sum_4
- 
+
 dev.off()
  
 library(ggpubr)
  
-png(paste0("Figures/", model_name, "/LTLA_sum_plot_all.png"), width = 10, height = 6, units = 'in', res = 300)
+png(paste0("Figures/", model_name, "/LTLA_sum_plot_all.png"),
+    width = 10, height = 6, units = 'in', res = 300)
  
 ggarrange(Plot_sum,Plot_sum_2, Plot_sum_3, Plot_sum_4,
            common.legend = TRUE, legend = "bottom", ncol = 2, nrow = 2)
