@@ -25,29 +25,68 @@ library(openxlsx)
 
 
 
-# DATA: OBS  ------------------------------------------------------------
-
-data_model <- readRDS("data_model_for_plots.Rds")
+# INPUT DATA  ------------------------------------------------------------
 
 
-#### Overview ####
+#### Basic data ####
 
-names(data_model)
-dim(data_model)
+# data_vax <- read.csv("Data/rtm_incoming_vaccination_20211116-173218-f36a1245_vacc_coverage_ltla.csv")
+# data_rt <- read.csv("Data/UK_hotspot_Rt_estimates.csv")
+# data_var <- read.csv("Data/vam_by_ltla.csv")
+# 
+# data_vax$vaccination_date <- as.Date(data_vax$vaccination_date)
+# data_rt$date <- as.Date(data_rt$date)
+
+# If needed, run the get_data function with the same specs as model
+
+# data_stan <- get_data(data_vax = data_vax, data_rt = data_rt, data_var = data_var,
+#                       covar_var = covar_var, covar_vax = covar_vax,
+#                       Date_Start = Date_Start, Date_End = Date_End,
+#                       lockdown_steps = lockdown_steps,
+#                       DoVariants = 0, DoAge = 0,
+#                       DoKnots = 0, Quadratic = 0,
+#                       IncludeIntercept = 1, IncludeScaling = 1)
+
+
+#### Options ####
+
+DoKnots <- 0
+Quadratic <- 0
+
+DoAge <- 0
+DoVarriants <- 0
+
+
+#### Extract parameters ####
+
+Rt_data <- exp(data_stan[[20]])
+
+LTLAs <- data_stan[[18]]
+
+Dose_1 <- data_stan[[21]][,1]
+Dose_2 <- data_stan[[21]][,2]
+Dose_3 <- data_stan[[21]][,3]
+
+date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[17]]
+
+Steps <- c(max(c(min(data_rt$date), min(data_var$date))),
+           lockdown_steps[2:length(lockdown_steps)],
+           min(c(max(data_rt$date), max(data_var$date))))
 
 
 
-# DATA: MODEL ------------------------------------------------------------
+# MODEL DATA ------------------------------------------------------------
 
 
 #### Load data ####
 
-#model_name <- "fit_2000_8_linear_noscaling_nointercept"
-model_name <- "Fits/fit_2000_8_linear"
+model_name <- "Base_1A"
 
-fit <- readRDS(paste0(model_name, ".Rds"))
+# fit <- readRDS(paste0(model_name, ".Rds"))
   
 # loo_run <- readRDS(paste0("loo_", model_name, ".Rds"))
+
+# [Or directly open from directory]
 
 
 #### Substract parameters ####
@@ -55,8 +94,6 @@ fit <- readRDS(paste0(model_name, ".Rds"))
 model_matrix <- as.matrix(fit)
 rm(fit)
 gc()
-
-Rt_data <- exp(data_model$Rt)
 
 Rt_LogP <- exp(colMeans(model_matrix[, grep(
   "LogPredictions", colnames(model_matrix))]))
@@ -67,25 +104,17 @@ RegionalTrends <- exp(colMeans(model_matrix[, grep(
 NationalTrend <- exp(colMeans(model_matrix[, grep(
   '^NationalTrend\\[', colnames(model_matrix))]))
 
-Gamma <- exp(colMeans(model_matrix[, grep(
-  '^gamma\\[', colnames(model_matrix))]))
-
-Intercept <- exp(colMeans(model_matrix[, grep(
-  '^intercept\\[', colnames(model_matrix))]))
-
 Lambda <- exp(colMeans(model_matrix[, grep(
   '^lambda\\[', colnames(model_matrix))]))
 
-sum_rt <- data.frame(Rt_data, Rt_LogP, RegionalTrends, NationalTrend,
-                     LTLA = data_model$LTLAs,
-                     Dose_1 = data_model$First_Prop,
-                     Dose_2 = data_model$Second_Prop,
-                     Dose_3 = data_model$Third_Prop,
-                     date = data_model$date,
-                     week = data_model$week,
-                     row.names = paste0("Rt", 1:9282))
-sum_line <- data.frame(date = rep(Steps, times = 221),
-                       Lambda = Lambda)
+sum_rt <- data.frame(LTLAs, date, 
+                     Rt_data, Rt_LogP, RegionalTrends, NationalTrend,
+                     Dose_1, Dose_2, Dose_3)
+
+if (DoKnots == 1) {
+  sum_line <- data.frame(date = rep(Steps, times = length(unique(LTLAs))),
+                         Lambda = Lambda)
+}
 
 
 
