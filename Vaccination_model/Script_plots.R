@@ -415,9 +415,6 @@ if(DoKnots == 1) {
  
 #### In one LTLA ####
  
-png(paste0("Figures/", model_name, "/LTLA_sum_plot_1.png"), 
-    width = 10, height = 6, units = 'in', res = 300)
- 
 Plot_sum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
    geom_line (mapping = aes(x = date, y = NationalTrend, 
                             color = "Lambda"), size =rel(1)) +
@@ -448,11 +445,6 @@ Plot_sum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
      legend.title = element_text(size = rel(0.9), face="bold"),
      legend.text = element_text(size=rel(0.7)))
 
-dev.off()
- 
-png(paste0("Figures/", model_name, "/LTLA_sum_plot_2.png"),
-    width = 10, height = 6, units = 'in', res = 300)
- 
 Plot_sum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
   geom_line (mapping = aes(x = date, y = NationalTrend, 
                            color = "Lambda"), size =rel(1)) +
@@ -483,11 +475,6 @@ Plot_sum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
      legend.title = element_text(size = rel(0.9), face="bold"),
      legend.text = element_text(size=rel(0.7)))
  
-dev.off()
- 
-png(paste0("Figures/", model_name, "/LTLA_sum_plot_3.png"),
-    width = 10, height = 6, units = 'in', res = 300)
- 
 Plot_sum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
   geom_line (mapping = aes(x = date, y = NationalTrend, 
                            color = "Lambda"), size =rel(1)) +
@@ -517,11 +504,6 @@ Plot_sum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
      axis.text = element_text(size=rel(0.7)),
      legend.title = element_text(size = rel(0.9), face="bold"),
      legend.text = element_text(size=rel(0.7)))
-
-dev.off()
- 
-png(paste0("Figures/", model_name, "/LTLA_sum_plot_4.png"),
-    width = 10, height = 6, units = 'in', res = 300)
  
 Plot_sum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 47,]) +
   geom_line (mapping = aes(x = date, y = NationalTrend, 
@@ -553,8 +535,6 @@ Plot_sum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 47,]) +
      legend.title = element_text(size = rel(0.9), face="bold"),
      legend.text = element_text(size=rel(0.7)))
 
-dev.off()
- 
 library(ggpubr)
  
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_all.png"),
