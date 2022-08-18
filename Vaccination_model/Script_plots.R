@@ -70,7 +70,7 @@ Dose_1 <- data_stan[[21]][,1]
 Dose_2 <- data_stan[[21]][,2]
 Dose_3 <- data_stan[[21]][,3]
 
-date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[17]]
+date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[17]]*7
 
 Steps <- c(max(c(min(data_rt$date), min(data_var$date))),
            lockdown_steps[2:length(lockdown_steps)],
@@ -277,9 +277,10 @@ write.xlsx(lam_table, rowNames = TRUE,
  
 # General
  
-png(paste0("Figures/", model_name, "/Obs_Pre_Rt.png"), width = 9, height = 8, units = 'in', res = 600)
+png(paste0("Figures/", model_name, "/Obs_Pre_Rt.png"),
+    width = 9, height = 8, units = 'in', res = 600)
  
-Rt_Obs_Pre <- ggplot(data = sum_rt) +
+ggplot(data = sum_rt) +
    geom_point(mapping = aes(x = Rt_data, y = Rt_LogP), size = rel(0.8)) +
    geom_abline(x = 0, y = 1, col = "red") +
    theme_classic() +
@@ -291,139 +292,92 @@ Rt_Obs_Pre <- ggplot(data = sum_rt) +
      axis.title.x = element_text(size = rel(0.9), face="bold"),
      axis.title.y = element_text(size = rel(0.9), face="bold"),
      axis.text = element_text(size=rel(0.7)))
-Rt_Obs_Pre
- 
+
 dev.off()
  
 # As a scatter plot
  
-png(paste0("Figures/", model_name, "/Pre_Obs_Rt_time.png"), width = 10, height = 6, units = 'in', res = 600)
+png(paste0("Figures/", model_name, "/Pre_Obs_Rt_time.png"),
+    width = 10, height = 6, units = 'in', res = 600)
  
-Obs_Pre_Date <- ggplot(data = sum_rt) +
-   geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date,
+ggplot(data = sum_rt) +
+  geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date,
                                color = "Rt_data"), size = rel(0.5)) +
-   geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date,
-                               color = "Rt_LogP"), size = rel(0.5)) +
-  geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
-             color = "darkmagenta") +
-   scale_color_manual(name="Reproduction number",
+  geom_boxplot (mapping = aes(x = date, y = Rt_LogP, group = date,
+                               color = "Rt_LogP"), size = rel(0.5)) + 
+  scale_color_manual(name="Reproduction number",
                       breaks = c("Rt_data", "Rt_LogP"),
                       values = c("Rt_data"="firebrick", 
                                  "Rt_LogP"="forestgreen"),
                       labels=c("Observed", "Predicted")) +
-   theme_classic() +
-   labs(title = "Observed and Predicted Rt across LTLAs over time",
+  theme_classic() +
+  labs(title = "Observed and Predicted Rt in all LTLAs over time",
         x = "Date",
         y = "Reproduction number") +
-   theme(
+  theme(
      plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
      axis.title.x = element_text(size = rel(0.9), face="bold"),
      axis.title.y = element_text(size = rel(0.9), face="bold"),
      axis.text = element_text(size=rel(0.7)),
+     legend.position = "bottom",
      legend.title = element_text(size = rel(0.9), face="bold"),
-     legend.text = element_text(size=rel(0.7)))
-Obs_Pre_Date
- 
+     legend.text = element_text(size=rel(0.7))) +
+  if (DoKnots == 1) {
+  geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
+             color = "darkmagenta")}
+
 dev.off()
 
  
 #### Reg Trend ####
  
-RE_uniq <- RegionalTrends[data_model$ltla_name == NamesLTLAs[1]]
- for(i in 2:length(NamesLTLAs))	{
-   RE_uniq = RE_uniq + RegionalTrends[data_model$ltla_name == NamesLTLAs[i]]}
-RE_uniq = RE_uniq/length(NamesLTLAs)
-#Random Effects normalised to the number of LTLAs
+png(paste0("Figures/", model_name, "/RegionalTrend.png"),
+    width = 10, height = 6, units = 'in', res = 600)
  
-SES <- ggplot()+
-   geom_point(data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[1]],
-                                y = RegionalTrends[data_model$ltla_name==NamesLTLAs[1]]),
-              aes(x=x,y=y), alpha=0.5, size = rel(1.2)) + 
-   theme_classic() +
-   labs(x = "Date",
-        y = "Secular Effect Size") +
-   theme(
-     axis.title.x = element_text(size = rel(1), face="bold"),
-     axis.title.y = element_text(size = rel(1), face="bold"),
-     axis.text=element_text(size=rel(0.9), face="bold"))
-#Note we only plot unique values for each LTLA
- 
-for(i in 2:length(NamesLTLAs)){
-   SES <- SES + geom_point(data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
-                                             y = RegionalTrends[data_model$ltla_name==NamesLTLAs[i]]),
-                           aes(x=x,y=y), alpha=0.5, size = rel(1.2))}
-#This is the loop to do so
- 
-png(paste0("Figures/", model_name, "/RegionalTrend.png"), width = 10, height = 6, units = 'in', res = 600)
- 
-SES = SES + geom_point(
-  data = data.frame(x = data_model$date[data_model$ltla_name==NamesLTLAs[i]],
-                     y = RE_uniq), aes(x=x,y=y), alpha=1, col = "red", size = rel(1.2)) +
-  geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
-             color = "darkmagenta") +
-   theme_classic() +
-   labs(title = "Regional Trends across all LTLAs over time",
-        x = "Date",
-        y = "Regional Trend") +
-   theme(
-     plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
-     axis.title.x = element_text(size = rel(0.9), face="bold"),
-     axis.title.y = element_text(size = rel(0.9), face="bold"),
-     axis.text = element_text(size=rel(0.7)),
-     legend.title = element_text(size = rel(0.9), face="bold"),
-     legend.text = element_text(size=rel(0.7)))
-SES
- 
-dev.off()
- 
- 
-#### Reg Trend 2 ####
- 
-png(paste0("Figures/", model_name, "/RegionalTrend2.png"), width = 10, height = 6, units = 'in', res = 600)
- 
-RanEff_time <- ggplot(data = sum_rt) +
-   geom_boxplot (mapping = aes(x = date, y = RegionalTrends, group = date), 
+ggplot(data = sum_rt) +
+  geom_boxplot (mapping = aes(x = date, y = RegionalTrends, group = date), 
                  size = rel(0.5)) +
-  geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
-             color = "darkmagenta") +
-   theme_classic() +
-   labs(title = "Regional Trends across all LTLAs over time",
+  theme_classic() +
+   labs(title = "Regional Trends in all LTLAs over time",
         x = "Date",
         y = "Secular Trend") +
-   theme(
+  theme(
      plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
      axis.title.x = element_text(size = rel(0.9), face="bold"),
      axis.title.y = element_text(size = rel(0.9), face="bold"),
      axis.text = element_text(size=rel(0.7)),
      legend.title = element_text(size = rel(0.9), face="bold"),
-     legend.text = element_text(size=rel(0.7)))
-RanEff_time
- 
+     legend.text = element_text(size=rel(0.7)))+
+  if (DoKnots == 1) {
+    geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
+               color = "darkmagenta")}
+
 dev.off()
  
  
 #### National Trend ####
  
-png(paste0("Figures/", model_name, "/NationalTrend.png"), width = 10, height = 6, units = 'in', res = 600)
+png(paste0("Figures/", model_name, "/NationalTrend.png"),
+    width = 10, height = 6, units = 'in', res = 600)
  
-Lambda_time <- ggplot(data = sum_rt) +
-   geom_boxplot (mapping = aes(x = date, y = NationalTrend, group = date), 
+ggplot(data = sum_rt) +
+  geom_boxplot (mapping = aes(x = date, y = NationalTrend, group = date), 
                  size = rel(0.5)) +
-  geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
-             color = "darkmagenta") +
-   theme_classic() +
-   labs(title = "National Trend over time",
+  theme_classic() +
+  labs(title = "National Trend over time",
         x = "Date",
         y = "National Trend") +
-   theme(
+  theme(
      plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
      axis.title.x = element_text(size = rel(0.9), face="bold"),
      axis.title.y = element_text(size = rel(0.9), face="bold"),
      axis.text = element_text(size=rel(0.7)),
      legend.title = element_text(size = rel(0.9), face="bold"),
-     legend.text = element_text(size=rel(0.7)))
-Lambda_time
- 
+     legend.text = element_text(size=rel(0.7)))+
+  if (DoKnots == 1) {
+    geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
+               color = "darkmagenta")}
+
 dev.off()
  
 # Spline: National Trend plotted with knots 
