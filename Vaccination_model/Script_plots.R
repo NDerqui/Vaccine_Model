@@ -141,7 +141,7 @@ VEQuan <- colQuantiles(model_matrix[, grep(
 VEMean_exp <-(exp(-VEMean))
 VEQuan_exp <-(exp(-VEQuan))
  
-sum_ve <- round(data.frame(VEMean, VEQuan, VEMean_exp, VEQuan_exp), digits = 2) %>%
+sum_ve <- round(data.frame(VEMean, VEQuan, VEMean_exp, VEQuan_exp), digits = 4) %>%
   select("VEMean", "X2.5.", "X97.5.",
          "VEMean_exp", "X97.5..1", "X2.5..1")
 colnames(sum_ve) <- c("Mean Effect", "2.5% Q", "97.5% Q",
