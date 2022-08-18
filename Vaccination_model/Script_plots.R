@@ -6,6 +6,9 @@
 #MRes Biomedical Research - EECID stream - Project 1#
 
 
+### Beter to not save the RData when closing the session ###
+
+
 
 # SET UP ------------------------------------------------------------------
 
@@ -61,7 +64,7 @@ DoVarriants <- 0
 
 Rt_data <- exp(data_stan[[20]])
 
-LTLAs <- data_stan[[18]]
+LTLA <- data_stan[[18]]
 
 Dose_1 <- data_stan[[21]][,1]
 Dose_2 <- data_stan[[21]][,2]
@@ -107,7 +110,7 @@ NationalTrend <- exp(colMeans(model_matrix[, grep(
 Lambda <- exp(colMeans(model_matrix[, grep(
   '^lambda\\[', colnames(model_matrix))]))
 
-sum_rt <- data.frame(LTLAs, date, 
+sum_rt <- data.frame(LTLA, date, 
                      Rt_data, Rt_LogP, RegionalTrends, NationalTrend,
                      Dose_1, Dose_2, Dose_3)
 
@@ -266,27 +269,7 @@ write.xlsx(lam_table, rowNames = TRUE,
           paste0("Results/", model_name, "/NationalTrend.xlsx"))
  
  
-#### Gamma - Scaling ####
- 
-gamma_table <- Gamma %>%
- as.data.frame(rowNames = paste0("LTLA", 1:303)) %>%
- rename(gamma = ".")
 
-write.xlsx(gamma_table, rowNames = TRUE,
-          paste0("Results/", model_name, "/Scaling.xlsx"))
- 
- 
-#### Intercept - Intercept####
- 
-intercept_table <- Intercept %>%
- as.data.frame(rowNames = paste0("LTLA", 1:303)) %>%
- rename(intercept = ".")
- 
-write.xlsx(intercept_table, rowNames = TRUE,
-          paste0("Results/", model_name, "/Intercept.xlsx"))
-
- 
- 
 # PLOTS -------------------------------------------------------------------
  
  
