@@ -62,15 +62,31 @@ DoVarriants <- 0
 
 #### Extract parameters ####
 
-Rt_data <- exp(data_stan[[20]])
-
-LTLA <- data_stan[[18]]
-
-Dose_1 <- data_stan[[21]][,1]
-Dose_2 <- data_stan[[21]][,2]
-Dose_3 <- data_stan[[21]][,3]
-
-date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[17]]*7
+if (DoAge == 0) {
+  
+  Rt_data <- exp(data_stan[[20]])
+  
+  LTLA <- data_stan[[18]]
+  
+  Dose_1 <- data_stan[[21]][,1]
+  Dose_2 <- data_stan[[21]][,2]
+  Dose_3 <- data_stan[[21]][,3]
+  
+  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[17]]*7
+  
+} else {
+  
+  Rt_data <- exp(data_stan_age[[20]])
+  
+  LTLA <- data_stan_age[[18]]
+  
+  Dose_1 <- data_stan_age[[21]][,1]
+  Dose_2 <- data_stan_age[[21]][,2]
+  Dose_3 <- data_stan_age[[21]][,3]
+  
+  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan_age[[17]]*7
+  
+}
 
 Steps <- c(max(c(min(data_rt$date), min(data_var$date))),
            lockdown_steps[2:length(lockdown_steps)],
