@@ -187,6 +187,7 @@ write.xlsx(sum_ve, rowNames = TRUE,
  
 rt_mean <- sum_rt %>%
  select("LTLA", "date", "Rt_LogP") %>%
+ dplyr::group_by(LTLA, date) %>%
  pivot_wider(names_from = date, values_from = Rt_LogP) %>%
  colMeans() %>%
  as.data.frame() %>%
@@ -194,6 +195,7 @@ rt_mean <- sum_rt %>%
  slice(-1)
 rt_max <- sum_rt %>%
  select("LTLA", "date", "Rt_LogP") %>%
+  dplyr::group_by(LTLA, date) %>%
  pivot_wider(names_from = date, values_from = Rt_LogP) %>%
  as.matrix() %>%
  colMaxs () %>%
@@ -202,6 +204,7 @@ rt_max <- sum_rt %>%
  slice(-1)
 rt_min <- sum_rt %>%
  select("LTLA", "date", "Rt_LogP") %>%
+  dplyr::group_by(LTLA, date) %>%
  pivot_wider(names_from = date, values_from = Rt_LogP) %>%
  as.matrix() %>%
  colMins() %>%
@@ -210,6 +213,7 @@ rt_min <- sum_rt %>%
  slice(-1)
 rt_sd <- sum_rt %>%
  select("LTLA", "date", "Rt_LogP") %>%
+  dplyr::group_by(LTLA, date) %>%
  pivot_wider(names_from = date, values_from = Rt_LogP) %>%
  as.matrix() %>%
  colSds() %>%
@@ -218,6 +222,7 @@ rt_sd <- sum_rt %>%
  slice(-1)
 rt_iqr <- sum_rt %>%
  select("LTLA", "date", "Rt_LogP") %>%
+  dplyr::group_by(LTLA, date) %>%
  pivot_wider(names_from = date, values_from = Rt_LogP) %>%
  as.matrix() %>%
  colQuantiles(probs = seq(from = 0, to = 1, by = 0.25)) %>%
@@ -234,6 +239,7 @@ write.xlsx(rt_table, rowNames = TRUE,
  
 ref_mean <- sum_rt %>%
  select("LTLA", "date", "RegionalTrends") %>%
+  dplyr::group_by(LTLA, date) %>%
  pivot_wider(names_from = date, values_from = RegionalTrends) %>%
  colMeans() %>%
  as.data.frame() %>%
@@ -241,6 +247,7 @@ ref_mean <- sum_rt %>%
  slice(-1)
 ref_max <- sum_rt %>%
  select("LTLA", "date", "RegionalTrends") %>%
+  dplyr::group_by(LTLA, date) %>%
  pivot_wider(names_from = date, values_from = RegionalTrends) %>%
  as.matrix() %>%
  colMaxs () %>%
@@ -249,6 +256,7 @@ ref_max <- sum_rt %>%
  slice(-1)
 ref_min <- sum_rt %>%
  select("LTLA", "date", "RegionalTrends") %>%
+  dplyr::group_by(LTLA, date) %>%
  pivot_wider(names_from = date, values_from = RegionalTrends) %>%
  as.matrix() %>%
  colMins() %>%
@@ -257,6 +265,7 @@ ref_min <- sum_rt %>%
  slice(-1)
 ref_sd <- sum_rt %>%
  select("LTLA", "date", "RegionalTrends") %>%
+  dplyr::group_by(LTLA, date) %>%
  pivot_wider(names_from = date, values_from = RegionalTrends) %>%
  as.matrix() %>%
  colSds() %>%
@@ -265,6 +274,7 @@ ref_sd <- sum_rt %>%
  slice(-1)
 ref_iqr <- sum_rt %>%
  select("LTLA", "date", "RegionalTrends") %>%
+  dplyr::group_by(LTLA, date) %>%
  pivot_wider(names_from = date, values_from = RegionalTrends) %>%
  as.matrix() %>%
  colQuantiles(probs = seq(from = 0, to = 1, by = 0.25)) %>%
@@ -281,6 +291,7 @@ write.xlsx(ref_table, rowNames = TRUE,
  
 lam_table <- sum_rt %>%
  select("LTLA", "date", "NationalTrend") %>%
+  dplyr::group_by(LTLA, date) %>%
  pivot_wider(names_from = date, values_from = NationalTrend) %>%
  colMeans() %>%
  as.data.frame() %>%
