@@ -188,46 +188,51 @@ write.xlsx(sum_ve, rowNames = TRUE,
 rt_mean <- sum_rt %>%
  select("LTLA", "date", "Rt_LogP") %>%
  dplyr::group_by(LTLA, date) %>%
- pivot_wider(names_from = date, values_from = Rt_LogP) %>%
+ dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+ dplyr::filter(n > 1L) %>%
+ pivot_wider(names_from = date, values_from = all_of(Rt_LogP)) %>%
  colMeans() %>%
  as.data.frame() %>%
- rename(mean = ".")%>%
- slice(-1)
+ rename(mean = ".")
 rt_max <- sum_rt %>%
  select("LTLA", "date", "Rt_LogP") %>%
   dplyr::group_by(LTLA, date) %>%
- pivot_wider(names_from = date, values_from = Rt_LogP) %>%
+  dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+  dplyr::filter(n > 1L) %>%
+ pivot_wider(names_from = date, values_from = all_of(Rt_LogP)) %>%
  as.matrix() %>%
  colMaxs () %>%
  as.data.frame() %>%
- rename(max = ".") %>%
- slice(-1)
+ rename(max = ".") 
 rt_min <- sum_rt %>%
  select("LTLA", "date", "Rt_LogP") %>%
   dplyr::group_by(LTLA, date) %>%
- pivot_wider(names_from = date, values_from = Rt_LogP) %>%
+  dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+  dplyr::filter(n > 1L) %>%
+ pivot_wider(names_from = date, values_from = all_of(Rt_LogP)) %>%
  as.matrix() %>%
  colMins() %>%
  as.data.frame() %>%
- rename(min = ".") %>%
- slice(-1)
+ rename(min = ".") 
 rt_sd <- sum_rt %>%
  select("LTLA", "date", "Rt_LogP") %>%
   dplyr::group_by(LTLA, date) %>%
- pivot_wider(names_from = date, values_from = Rt_LogP) %>%
+  dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+  dplyr::filter(n > 1L) %>%
+ pivot_wider(names_from = date, values_from = all_of(Rt_LogP)) %>%
  as.matrix() %>%
  colSds() %>%
  as.data.frame() %>%
- rename(sd = ".") %>%
- slice(-1)
+ rename(sd = ".")
 rt_iqr <- sum_rt %>%
  select("LTLA", "date", "Rt_LogP") %>%
   dplyr::group_by(LTLA, date) %>%
- pivot_wider(names_from = date, values_from = Rt_LogP) %>%
+  dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+  dplyr::filter(n > 1L) %>%
+ pivot_wider(names_from = date, values_from = all_of(Rt_LogP)) %>%
  as.matrix() %>%
  colQuantiles(probs = seq(from = 0, to = 1, by = 0.25)) %>%
- as.data.frame() %>%
- slice(-1)  
+ as.data.frame()   
 
 rt_table <- round(data.frame(rt_mean, rt_sd,
                           rt_min, rt_iqr, rt_max), digits = 4)
@@ -240,47 +245,52 @@ write.xlsx(rt_table, rowNames = TRUE,
 ref_mean <- sum_rt %>%
  select("LTLA", "date", "RegionalTrends") %>%
   dplyr::group_by(LTLA, date) %>%
- pivot_wider(names_from = date, values_from = RegionalTrends) %>%
+  dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+  dplyr::filter(n > 1L) %>%
+ pivot_wider(names_from = date, values_from = all_of(RegionalTrends)) %>%
  colMeans() %>%
  as.data.frame() %>%
- rename(mean = ".")%>%
- slice(-1)
+ rename(mean = ".")
 ref_max <- sum_rt %>%
  select("LTLA", "date", "RegionalTrends") %>%
   dplyr::group_by(LTLA, date) %>%
- pivot_wider(names_from = date, values_from = RegionalTrends) %>%
+  dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+  dplyr::filter(n > 1L) %>%
+ pivot_wider(names_from = date, values_from = all_of(RegionalTrends)) %>%
  as.matrix() %>%
  colMaxs () %>%
  as.data.frame() %>%
- rename(max = ".") %>%
- slice(-1)
+ rename(max = ".")
 ref_min <- sum_rt %>%
  select("LTLA", "date", "RegionalTrends") %>%
   dplyr::group_by(LTLA, date) %>%
- pivot_wider(names_from = date, values_from = RegionalTrends) %>%
+  dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+  dplyr::filter(n > 1L) %>%
+ pivot_wider(names_from = date, values_from = all_of(RegionalTrends)) %>%
  as.matrix() %>%
  colMins() %>%
  as.data.frame() %>%
- rename(min = ".") %>%
- slice(-1)
+ rename(min = ".")
 ref_sd <- sum_rt %>%
  select("LTLA", "date", "RegionalTrends") %>%
   dplyr::group_by(LTLA, date) %>%
- pivot_wider(names_from = date, values_from = RegionalTrends) %>%
+  dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+  dplyr::filter(n > 1L) %>%
+ pivot_wider(names_from = date, values_from = all_of(RegionalTrends)) %>%
  as.matrix() %>%
  colSds() %>%
  as.data.frame() %>%
- rename(sd = ".") %>%
- slice(-1)
+ rename(sd = ".") 
 ref_iqr <- sum_rt %>%
  select("LTLA", "date", "RegionalTrends") %>%
   dplyr::group_by(LTLA, date) %>%
- pivot_wider(names_from = date, values_from = RegionalTrends) %>%
+  dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+  dplyr::filter(n > 1L) %>%
+ pivot_wider(names_from = date, values_from = all_of(RegionalTrends)) %>%
  as.matrix() %>%
  colQuantiles(probs = seq(from = 0, to = 1, by = 0.25)) %>%
- as.data.frame() %>%
- slice(-1)  
- 
+ as.data.frame()
+
 ref_table <- round(data.frame(ref_mean, ref_sd,
                              ref_min, ref_iqr, ref_max), digits = 4)
 write.xlsx(ref_table, rowNames = TRUE,
@@ -292,11 +302,12 @@ write.xlsx(ref_table, rowNames = TRUE,
 lam_table <- sum_rt %>%
  select("LTLA", "date", "NationalTrend") %>%
   dplyr::group_by(LTLA, date) %>%
- pivot_wider(names_from = date, values_from = NationalTrend) %>%
+  dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
+  dplyr::filter(n > 1L) %>%
+ pivot_wider(names_from = date, values_from = all_of(NationalTrend)) %>%
  colMeans() %>%
  as.data.frame() %>%
- rename(lambda = ".")%>%
- slice(-1)
+ rename(lambda = ".")
  
 write.xlsx(lam_table, rowNames = TRUE,
           paste0("Results/", model_name, "/NationalTrend.xlsx"))
