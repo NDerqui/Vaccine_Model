@@ -64,27 +64,27 @@ DoVariants <- 0
 
 if (DoAge == 0) {
   
-  Rt_data <- exp(data_stan[[20]])
+  Rt_data <- exp(data_stan[[22]])
   
-  LTLA <- data_stan[[18]]
+  LTLA <- data_stan[[20]]
   
   Dose_1 <- data_stan[[23]][,1]
   Dose_2 <- data_stan[[23]][,2]
   Dose_3 <- data_stan[[23]][,3]
   
-  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[17]]*7
+  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[19]]*7
   
 } else {
   
-  Rt_data <- exp(data_stan_age[[20]])
+  Rt_data <- exp(data_stan_age[[22]])
   
-  LTLA <- data_stan_age[[18]]
+  LTLA <- data_stan_age[[20]]
   
   Dose_1 <- data_stan_age[[23]][,1]
   Dose_2 <- data_stan_age[[23]][,2]
   Dose_3 <- data_stan_age[[23]][,3]
   
-  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan_age[[17]]*7
+  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan_age[[19]]*7
   
 }
 
