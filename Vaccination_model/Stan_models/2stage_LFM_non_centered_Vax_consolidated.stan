@@ -5,11 +5,13 @@ data {
 	int <lower = 0, upper = 1>	DoKnots;        	// Boolean for spline
 	int <lower = 0, upper = 1>	Quadratic;        // Boolean for quadratic (If 1, quadratic spline, if 0, linear)
 	int <lower = 0, upper = 1>  DoVariants;       // Boolean for Variants model
+	int <lower = 0, upper = 1>  DoVaxVariants;    // Boolean for specific variant's VEs
 	int <lower = 0, upper = 1>  DoAge;            // Boolean for age model
 	
 	int<lower = 1>	NumDatapoints; 	// Number of Rt values (all timepoints x regions) 
 	int<lower = 1>	NumDoses; 		  // Number of parameters: Vax doses
 	int<lower = 1>  NumVar;         // Number of parameters: SARS-CoV-2 variants
+	int<lower = 1>  NumVaxVar;      // Number of parameters: variants considered for the VEs
 	int<lower = 1>  NumGroup;       // Number of parameters: age groups
 	int<lower = 1>	NumLTLAs;		    // Number of regions / LTLAs
 	int<lower = 1>	NumTimepoints;	// Number of timepoints (weeks)
@@ -46,7 +48,7 @@ parameters {
 	
   matrix[NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
   
-	matrix<lower = 0>[NumDoses*NumGroup, NumVar] 	VaxEffect_nc;	
+	matrix<lower = 0>[NumDoses*NumGroup, NumVaxVar] 	VaxEffect_nc;	
 	matrix<lower = 0>[1, NumVar] VarAdvantage_nc;
 }
 
@@ -73,8 +75,8 @@ transformed parameters{
 	matrix[NumDatapoints, IntDim]	NationalTrend	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line or free
 	vector[NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
 	
-	matrix[NumDatapoints, NumVar] VacEffects_Regional 	= rep_matrix(0, NumDatapoints, NumVar);
-	matrix[NumDoses*NumGroup, NumVar] 			VaxEffect 	= rep_matrix(0, NumDoses*NumGroup, NumVar);
+	matrix[NumDatapoints, NumVaxVar] VacEffects_Regional 	= rep_matrix(0, NumDatapoints, NumVaxVar);
+	matrix[NumDoses*NumGroup, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses*NumGroup, NumVaxVar);
 	
 	matrix[1, NumVar] VarAdvantage = rep_matrix(1, 1, NumVar);
 	
@@ -199,7 +201,7 @@ transformed parameters{
 	// VacEffects_Regional[1:NumDatapoints] = VaxProp * VaxEffect; // x * -beta in manuscript
 	for (k in 1:NumGroup)
 	  for (i in 1:NumDatapoints)
-	    for(l in 1:NumVar)
+	    for(l in 1:NumVaxVar)
 	    {
 		    VacEffects_Regional[i, l] = 0; // initialize to zero for each timepoint
 		     if(Groups[i] == k) {
@@ -213,7 +215,8 @@ transformed parameters{
 	// LogPredictions[1:NumDatapoints] = RegionalTrends[1:NumDatapoints] - VacEffects_Regional[1:NumDatapoints];
 	for (i in 1:NumDatapoints)
 	  for (j in 1:NumVar)
-		  LogPredictions[i] = VarProp[i, j]*(RegionalTrends[i]*VarAdvantage[1, j] - VacEffects_Regional[i, j]);
+	    for (k in 1:NumVaxVar)
+		    LogPredictions[i] = VarProp[i, j]*(RegionalTrends[i]*VarAdvantage[1, j] - VacEffects_Regional[i, k]);
 	
 }
 
@@ -236,7 +239,7 @@ model {
 	sigma_nc 		~ std_normal();
 	
 	for (i in 1:NumDoses*NumGroup)
-	  for (j in 1:NumVar)
+	  for (j in 1:NumVaxVar)
 		  VaxEffect_nc[i, j] ~ std_normal();
 		  
 	for (i in 2:NumVar)

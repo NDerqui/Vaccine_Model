@@ -57,7 +57,7 @@ DoKnots <- 0
 Quadratic <- 0
 
 DoAge <- 0
-DoVarriants <- 0
+DoVariants <- 0
 
 
 #### Extract parameters ####
@@ -68,9 +68,9 @@ if (DoAge == 0) {
   
   LTLA <- data_stan[[18]]
   
-  Dose_1 <- data_stan[[21]][,1]
-  Dose_2 <- data_stan[[21]][,2]
-  Dose_3 <- data_stan[[21]][,3]
+  Dose_1 <- data_stan[[23]][,1]
+  Dose_2 <- data_stan[[23]][,2]
+  Dose_3 <- data_stan[[23]][,3]
   
   date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[17]]*7
   
@@ -80,9 +80,9 @@ if (DoAge == 0) {
   
   LTLA <- data_stan_age[[18]]
   
-  Dose_1 <- data_stan_age[[21]][,1]
-  Dose_2 <- data_stan_age[[21]][,2]
-  Dose_3 <- data_stan_age[[21]][,3]
+  Dose_1 <- data_stan_age[[23]][,1]
+  Dose_2 <- data_stan_age[[23]][,2]
+  Dose_3 <- data_stan_age[[23]][,3]
   
   date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan_age[[17]]*7
   

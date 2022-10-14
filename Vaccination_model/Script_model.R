@@ -132,7 +132,7 @@ get_data <- function(data_vax, data_rt, data_var,
                      covar_var, covar_vax,
                      Date_Start, Date_End,
                      lockdown_steps,
-                     DoVariants, DoAge,
+                     DoVariants, DoVaxVariants, DoAge,
                      DoKnots, Quadratic,
                      IncludeIntercept, IncludeScaling) {
   
@@ -391,6 +391,12 @@ get_data <- function(data_vax, data_rt, data_var,
       VarProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
     }
     
+    if (DoVaxVariants == 1) {
+      NumVaxVar <- NumVar
+    } else {
+      NumVaxVar <- 1
+    }
+    
     # Stan list
     
     data_stan <- list(
@@ -399,12 +405,14 @@ get_data <- function(data_vax, data_rt, data_var,
       DoKnots = DoKnots,
       Quadratic = Quadratic,
       DoVariants = DoVariants,
+      DoVaxVariants = DoVaxVariants,
       DoAge = DoAge,
       
       NumDatapoints = NumDatapoints,
       NumLTLAs = NumLTLAs,
       NumDoses = length(covar_vax),
       NumVar = NumVar,
+      NumVaxVar = NumVaxVar,
       NumGroup = NumGroup,
       NumTimepoints = NumTimepoints,
       NumKnots = NumKnots,
@@ -517,6 +525,7 @@ get_data <- function(data_vax, data_rt, data_var,
     
     NumVar <- 1
     VarProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
+    NumVaxVar <- 1
     
     # Stan list
     
@@ -526,12 +535,14 @@ get_data <- function(data_vax, data_rt, data_var,
       DoKnots = DoKnots,
       Quadratic = Quadratic,
       DoVariants = DoVariants,
+      DoVaxVariants = DoVaxVariants,
       DoAge = DoAge,
       
       NumDatapoints = NumDatapoints,
       NumLTLAs = NumLTLAs,
       NumDoses = length(covar_vax),
       NumVar = NumVar,
+      NumVaxVar = NumVaxVar,
       NumGroup = NumGroup,
       NumTimepoints = NumTimepoints,
       NumKnots = NumKnots,
@@ -560,9 +571,9 @@ data_stan <- get_data(data_vax = data_vax, data_rt = data_rt, data_var = data_va
                       covar_var = covar_var, covar_vax = covar_vax,
                       Date_Start = Date_Start, Date_End = Date_End,
                       lockdown_steps = lockdown_steps,
-                      DoVariants = 0, DoAge = 0,
+                      DoVariants = 1, DoVaxVariants = 0, DoAge = 0,
                       DoKnots = 0, Quadratic = 0,
-                      IncludeIntercept = 1, IncludeScaling = 1)
+                      IncludeIntercept = 0, IncludeScaling = 0)
 
 data_stan_age <- get_data(data_vax = data_vax, data_rt = data_rt, data_var = data_var,
                       covar_var = covar_var, covar_vax = covar_vax,
