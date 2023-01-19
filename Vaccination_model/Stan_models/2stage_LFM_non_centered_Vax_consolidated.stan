@@ -242,7 +242,7 @@ model {
 	  for (j in 1:NumVaxVar)
 		  VaxEffect_nc[i, j] ~ std_normal();
 		  
-	for (i in 2:NumVar)
+	for (i in 1:NumVar)
 		VarAdvantage_nc[,i] ~ std_normal();
 		
 	RtVals 			~ normal(LogPredictions, sigma);

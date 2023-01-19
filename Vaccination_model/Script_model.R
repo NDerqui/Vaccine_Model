@@ -109,7 +109,7 @@ Date_End <- as.Date("31/12/2021", format = "%d/%m/%Y")
 
 # Covariates
 
-covar_var <- c("Var_Alpha", "Var_Delta")
+covar_var <- c("Var_PreAlpha", "Var_Alpha", "Var_Delta")
 covar_vax <- c("First_Prop", "Second_Prop", "Third_Prop")
 
 # Nested and BackDate (For later Stan Model)
@@ -195,7 +195,7 @@ get_data <- function(data_vax, data_rt, data_var,
   dvax <- select(dvax, "ltla_code", "ltla_name", "date",
                  "First_Prop", "Second_Prop", "Third_Prop")
   drt <- select(drt, "ltla_name", "date", "Rt")
-  dvar <- select(dvar, "ltla_code", "date",
+  dvar <- select(dvar, "ltla_code", "date", "n_all_wildtype_variant",
                  "n_all_alpha_variant", "n_all_delta_variant")
   dage <- select(dage, "ltla_code", "ltla_name", "date", "group",
                  "First", "Second", "Third", "total")
@@ -273,7 +273,9 @@ get_data <- function(data_vax, data_rt, data_var,
   # Create vars for the proportion of alpha vs delta
   
   data_merge <- data_merge %>%
-    mutate(total = (n_all_alpha_variant + n_all_delta_variant)) %>%
+    mutate(total = (n_all_wildtype_variant + n_all_alpha_variant + n_all_delta_variant)) %>%
+    mutate(Var_PreAlpha = case_when(total == 0 ~ 0,
+                                 total != 0 ~ n_all_wildtype_variant/total)) %>%
     mutate(Var_Alpha = case_when(total == 0 ~ 0,
                                  total != 0 ~ n_all_alpha_variant/total)) %>%
     mutate(Var_Delta = case_when(total == 0 ~ 0,
@@ -290,7 +292,8 @@ get_data <- function(data_vax, data_rt, data_var,
   # Select cols
   
   data_model <- select(data_merge, "ltla_name", "date", "week", "Rt",
-                       "First_Prop", "Second_Prop", "Third_Prop", "Var_Alpha", "Var_Delta")
+                       "First_Prop", "Second_Prop", "Third_Prop",
+                       "Var_PreAlpha", "Var_Alpha", "Var_Delta")
   data_model_age <- select(data_merge_age, "ltla_name", "date", "week", "Rt","group",
                            "First_Prop", "Second_Prop", "Third_Prop")
   
@@ -571,7 +574,7 @@ data_stan <- get_data(data_vax = data_vax, data_rt = data_rt, data_var = data_va
                       covar_var = covar_var, covar_vax = covar_vax,
                       Date_Start = Date_Start, Date_End = Date_End,
                       lockdown_steps = lockdown_steps,
-                      DoVariants = 1, DoVaxVariants = 0, DoAge = 0,
+                      DoVariants = 1, DoVaxVariants = 1, DoAge = 0,
                       DoKnots = 0, Quadratic = 0,
                       IncludeIntercept = 0, IncludeScaling = 0)
 
