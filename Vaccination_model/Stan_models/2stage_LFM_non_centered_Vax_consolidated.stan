@@ -196,27 +196,36 @@ transformed parameters{
 		}
 	}
 	
+	for (TimeRegion in 1:NumDatapoints)
+  	for (Variant in 1:NumVar)
+  	{
+  	    LogPredictions[TimeRegion] += VarAdvantage[1, Variant] * RegionalTrends[TimeRegion]; // variant advantage * retgional trend
+  	    for (Dose in 1:NumDoses)
+  	        LogPredictions[TimeRegion] -= VaxProp[TimeRegion,Dose] * VaxEffect[Dose, Variant]; // subtract vaccine efficacy by dose and variant and proportion who have received dose at this time in this region.
+  	    LogPredictions[TimeRegion] *= VarProp[TimeRegion, Variant]; // multiply by proportion of variant in that time and region.
+  	}
+	    
 	
 	// CONTINUE WITH LOG PRED MODEL WHETHER LAMBDA WAS FIT IN THE LINE OR NOT
 	// VacEffects_Regional[1:NumDatapoints] = VaxProp * VaxEffect; // x * -beta in manuscript
-	for (k in 1:NumGroup)
-	  for (i in 1:NumDatapoints)
-	    for(l in 1:NumVaxVar)
-	    {
-		    VacEffects_Regional[i, l] = 0; // initialize to zero for each timepoint
+	//for (k in 1:NumGroup)
+	 // for (i in 1:NumDatapoints)
+	    //for(l in 1:NumVaxVar)
+	  //  {
+		 //   VacEffects_Regional[i, l] = 0; // initialize to zero for each timepoint
 		     //if(Groups[i] == k) {
-		        for (j in 1:NumDoses)
-			        VacEffects_Regional[i, l] += VaxProp[i,j] * VaxEffect[j, l] * AgeProp[i, 1];
+		 //       for (j in 1:NumDoses)
+			//        VacEffects_Regional[i, l] += VaxProp[i,j] * VaxEffect[j, l] * AgeProp[i, 1];
 		      
 		    //}
 	    }
 	
 	// final (logged) regional Rt predictions are regional trends minus regional vaccine effects
 	// LogPredictions[1:NumDatapoints] = RegionalTrends[1:NumDatapoints] - VacEffects_Regional[1:NumDatapoints];
-	for (i in 1:NumDatapoints)
-	  for (j in 1:NumVar)
-	    for (k in 1:NumVaxVar)
-		    LogPredictions[i] = VarProp[i, j]*(RegionalTrends[i]*VarAdvantage[1, j] - VacEffects_Regional[i, k]);
+//	for (i in 1:NumDatapoints)
+//	  for (j in 1:NumVar)
+	//    for (k in 1:NumVaxVar)
+	//	    LogPredictions[i] = VarProp[i, j]*(RegionalTrends[i]*VarAdvantage[1, j] - VacEffects_Regional[i, k]);
 	
 }
 
