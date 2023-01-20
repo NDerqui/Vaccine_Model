@@ -204,11 +204,11 @@ transformed parameters{
 	    for(l in 1:NumVaxVar)
 	    {
 		    VacEffects_Regional[i, l] = 0; // initialize to zero for each timepoint
-		     if(Groups[i] == k) {
-		        for (j in 1:NumDoses) {
+		     //if(Groups[i] == k) {
+		        for (j in 1:NumDoses)
 			        VacEffects_Regional[i, l] += VaxProp[i,j] * VaxEffect[j, l] * AgeProp[i, 1];
-		      }
-		    }
+		      
+		    //}
 	    }
 	
 	// final (logged) regional Rt predictions are regional trends minus regional vaccine effects
