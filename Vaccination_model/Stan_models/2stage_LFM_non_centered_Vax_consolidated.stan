@@ -218,7 +218,7 @@ transformed parameters{
 			//        VacEffects_Regional[i, l] += VaxProp[i,j] * VaxEffect[j, l] * AgeProp[i, 1];
 		      
 		    //}
-	    }
+	    // }
 	
 	// final (logged) regional Rt predictions are regional trends minus regional vaccine effects
 	// LogPredictions[1:NumDatapoints] = RegionalTrends[1:NumDatapoints] - VacEffects_Regional[1:NumDatapoints];
