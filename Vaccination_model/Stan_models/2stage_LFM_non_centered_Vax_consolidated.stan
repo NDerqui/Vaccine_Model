@@ -6,13 +6,13 @@ data {
 	int <lower = 0, upper = 1>	Quadratic;        // Boolean for quadratic (If 1, quadratic spline, if 0, linear)
 	int <lower = 0, upper = 1>  DoVariants;       // Boolean for Variants model
 	int <lower = 0, upper = 1>  DoVaxVariants;    // Boolean for specific variant's VEs
-	int <lower = 0, upper = 1>  DoAge;            // Boolean for age model
+	// int <lower = 0, upper = 1>  DoAge;            // Boolean for age model
 	
 	int<lower = 1>	NumDatapoints; 	// Number of Rt values (all timepoints x regions) 
 	int<lower = 1>	NumDoses; 		  // Number of parameters: Vax doses
 	int<lower = 1>  NumVar;         // Number of parameters: SARS-CoV-2 variants
 	int<lower = 1>  NumVaxVar;      // Number of parameters: variants considered for the VEs
-	int<lower = 1>  NumGroup;       // Number of parameters: age groups
+	// int<lower = 1>  NumGroup;       // Number of parameters: age groups
 	int<lower = 1>	NumLTLAs;		    // Number of regions / LTLAs
 	int<lower = 1>	NumTimepoints;	// Number of timepoints (weeks)
 	int<lower = 1>	NumKnots;       // Number of knots
@@ -48,7 +48,8 @@ parameters {
 	
   matrix[NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
   
-	matrix<lower = 0>[NumDoses*NumGroup, NumVaxVar] 	VaxEffect_nc;	
+	matrix<lower = 0>[NumDoses, NumVaxVar] 	VaxEffect_nc;	
+	// matrix<lower = 0>[NumDoses*NumGroup, NumVaxVar] 	VaxEffect_nc;	
 	matrix<lower = 0>[1, NumVar] VarAdvantage_nc;
 }
 
@@ -76,7 +77,8 @@ transformed parameters{
 	vector[NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
 	
 	matrix[NumDatapoints, NumVaxVar] VacEffects_Regional 	= rep_matrix(0, NumDatapoints, NumVaxVar);
-	matrix[NumDoses*NumGroup, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses*NumGroup, NumVaxVar);
+	matrix[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
+	// matrix[NumDoses*NumGroup, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses*NumGroup, NumVaxVar);
 	
 	matrix[1, NumVar] VarAdvantage = rep_matrix(1, 1, NumVar);
 	
@@ -200,8 +202,10 @@ transformed parameters{
   	for (Variant in 1:NumVar)
   	{
   	    LogPredictions[TimeRegion] += VarAdvantage[1, Variant] * RegionalTrends[TimeRegion]; // variant advantage * retgional trend
-  	    for (Dose in 1:NumDoses)
-  	        LogPredictions[TimeRegion] -= VaxProp[TimeRegion,Dose] * VaxEffect[Dose, Variant]; // subtract vaccine efficacy by dose and variant and proportion who have received dose at this time in this region.
+  	    
+  	    for (Dose in 1:NumDoses) {
+  	        LogPredictions[TimeRegion] -= VaxProp[TimeRegion,Dose] * VaxEffect[Dose, Variant];} // subtract vaccine efficacy by dose and variant and proportion who have received dose at this time in this region.
+  	    
   	    LogPredictions[TimeRegion] *= VarProp[TimeRegion, Variant]; // multiply by proportion of variant in that time and region.
   	}
 	    
