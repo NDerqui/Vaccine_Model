@@ -251,7 +251,8 @@ model {
 	phi4_nc 		~ std_normal();
 	sigma_nc 		~ std_normal();
 	
-	for (i in 1:NumDoses*NumGroup)
+	for (i in 1:NumDoses)
+	// for (i in 1:NumDoses*NumGroup)
 	  for (j in 1:NumVaxVar)
 		  VaxEffect_nc[i, j] ~ std_normal();
 		  
