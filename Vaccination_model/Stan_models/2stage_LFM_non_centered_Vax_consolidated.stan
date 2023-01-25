@@ -204,7 +204,7 @@ transformed parameters{
   	    LogPredictions[TimeRegion] += VarAdvantage[1, Variant] * RegionalTrends[TimeRegion]; // variant advantage * retgional trend
   	    
   	    for (Dose in 1:NumDoses) 
-  	      for (VariantVE in 1:NumvaxVar) {
+  	      for (VariantVE in 1:NumVaxVar) {
   	        LogPredictions[TimeRegion] -= VaxProp[TimeRegion,Dose] * VaxEffect[Dose, VariantVE];} // subtract vaccine efficacy by dose and variant and proportion who have received dose at this time in this region.
   	    
   	    LogPredictions[TimeRegion] *= VarProp[TimeRegion, Variant]; // multiply by proportion of variant in that time and region.
