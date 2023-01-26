@@ -165,14 +165,23 @@ colnames(sum_ve) <- c("Mean Effect", "2.5% Q", "97.5% Q",
 
 if (nrow(sum_ve) == 3) {
   row.names(sum_ve) <- c("Dose 1", "Dose 2", "Dose 3")
+
 } else {
+  
   if(nrow(sum_ve) == 6) {
     row.names(sum_ve) <- c("Alpha1", "Alpha2", "Alpha3",
                            "Delta1", "Delta2", "Delta3")
     } else {
-    row.names(sum_ve) <- c("15-49_D1", "15-49_D2", "15-49_D3",
-                           "50-69_D1", "50-69_D2", "50-69_D3",
-                           "70+_D1", "70+_D2", "70+_D3")
+      
+      if (DoAge == 1) {
+        row.names(sum_ve) <- c("15-49_D1", "15-49_D2", "15-49_D3",
+                               "50-69_D1", "50-69_D2", "50-69_D3",
+                               "70+_D1", "70+_D2", "70+_D3")
+      } else {
+        row.names(sum_ve) <- c("PreAl_1", "PreAl_2", "PreAl_3",
+                               "Alpha1", "Alpha2", "Alpha3",
+                               "Delta1", "Delta2", "Delta3")
+      }
   }
 }
                 
