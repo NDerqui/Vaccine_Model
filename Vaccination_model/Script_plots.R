@@ -468,133 +468,46 @@ if(DoKnots == 1) {
 
  
 #### In one LTLA ####
- 
-Plot_sum <- ggplot(data = sum_rt[sum_rt$LTLA == 1,]) +
-   geom_line (mapping = aes(x = date, y = NationalTrend, 
-                            color = "Lambda"), size =rel(1)) +
-   geom_line (mapping = aes(x = date, y = RegionalTrends,
-                            color = "RanEffect"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Rt_LogP,
-                           color = "RtLogP"), size =rel(1)) +
-   geom_line (mapping = aes(x = date, y = Rt_data,
-                            color = "RtData"), size =rel(1)) +
-   scale_color_manual(name = "Parameter",
-                      breaks = c("Lambda", "RanEffect",
-                                 "RtLogP", "RtData"),
-                      values = c("Lambda" = "navy",
-                                 "RanEffect" = "lightgreen",
-                                 "RtLogP" = "forestgreen",
-                                 "RtData" = "firebrick"),
-                      labels = c("National Trend", "Regional Trend",
-                                 "Predicted Rt", "Observed Rt")) +
-   theme_classic() +
-   labs(title = "Parameters in LTLA 1",
-        x = "Date",
-        y = "Parameter value") +
-   theme(
-     plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
-     axis.title.x = element_text(size = rel(0.9), face="bold"),
-     axis.title.y = element_text(size = rel(0.9), face="bold"),
-     axis.text = element_text(size=rel(0.7)),
-     legend.title = element_text(size = rel(0.9), face="bold"),
-     legend.text = element_text(size=rel(0.7)))
 
-Plot_sum_2 <- ggplot(data = sum_rt[sum_rt$LTLA == 147,]) +
-  geom_line (mapping = aes(x = date, y = NationalTrend, 
-                           color = "Lambda"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = RegionalTrends,
-                           color = "RanEffect"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Rt_LogP,
-                           color = "RtLogP"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Rt_data,
-                           color = "RtData"), size =rel(1)) +
-  scale_color_manual(name = "Parameter",
-                     breaks = c("Lambda", "RanEffect",
-                                "RtLogP", "RtData"),
-                     values = c("Lambda" = "navy",
-                                "RanEffect" = "lightgreen",
-                                "RtLogP" = "forestgreen",
-                                "RtData" = "firebrick"),
-                     labels = c("National Trend", "Regional Trend",
-                                "Predicted Rt", "Observed Rt")) +
-   theme_classic() +
-   labs(title = "Parameters in LTLA 147",
-        x = "Date",
-        y = "Parameter value") +
-   theme(
-     plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
-     axis.title.x = element_text(size = rel(0.9), face="bold"),
-     axis.title.y = element_text(size = rel(0.9), face="bold"),
-     axis.text = element_text(size=rel(0.7)),
-     legend.title = element_text(size = rel(0.9), face="bold"),
-     legend.text = element_text(size=rel(0.7)))
- 
-Plot_sum_3 <- ggplot(data = sum_rt[sum_rt$LTLA == 208,]) +
-  geom_line (mapping = aes(x = date, y = NationalTrend, 
-                           color = "Lambda"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = RegionalTrends,
-                           color = "RanEffect"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Rt_LogP,
-                           color = "RtLogP"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Rt_data,
-                           color = "RtData"), size =rel(1)) +
-  scale_color_manual(name = "Parameter",
-                     breaks = c("Lambda", "RanEffect",
-                                "RtLogP", "RtData"),
-                     values = c("Lambda" = "navy",
-                                "RanEffect" = "lightgreen",
-                                "RtLogP" = "forestgreen",
-                                "RtData" = "firebrick"),
-                     labels = c("National Trend", "Regional Trend",
-                                "Predicted Rt", "Observed Rt")) +
-   theme_classic() +
-   labs(title = "Parameters in LTLA 208",
-        x = "Date",
-        y = "Parameter value") +
-   theme(
-     plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
-     axis.title.x = element_text(size = rel(0.9), face="bold"),
-     axis.title.y = element_text(size = rel(0.9), face="bold"),
-     axis.text = element_text(size=rel(0.7)),
-     legend.title = element_text(size = rel(0.9), face="bold"),
-     legend.text = element_text(size=rel(0.7)))
- 
-Plot_sum_4 <- ggplot(data = sum_rt[sum_rt$LTLA == 47,]) +
-  geom_line (mapping = aes(x = date, y = NationalTrend, 
-                           color = "Lambda"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = RegionalTrends,
-                           color = "RanEffect"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Rt_LogP,
-                           color = "RtLogP"), size =rel(1)) +
-  geom_line (mapping = aes(x = date, y = Rt_data,
-                           color = "RtData"), size =rel(1)) +
-  scale_color_manual(name = "Parameter",
-                     breaks = c("Lambda", "RanEffect",
-                                "RtLogP", "RtData"),
-                     values = c("Lambda" = "navy",
-                                "RanEffect" = "lightgreen",
-                                "RtLogP" = "forestgreen",
-                                "RtData" = "firebrick"),
-                     labels = c("National Trend", "Regional Trend",
-                                "Predicted Rt", "Observed Rt")) +
-   theme_classic() +
-   labs(title = "Parameters in LTLA 47",
-        x = "Date",
-        y = "Parameter value") +
-   theme(
-     plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
-     axis.title.x = element_text(size = rel(0.9), face="bold"),
-     axis.title.y = element_text(size = rel(0.9), face="bold"),
-     axis.text = element_text(size=rel(0.7)),
-     legend.title = element_text(size = rel(0.9), face="bold"),
-     legend.text = element_text(size=rel(0.7)))
-
-library(ggpubr)
+some_LTLA <- sum_rt %>%
+  filter(LTLA == 1 | LTLA == 47 | LTLA == 93 |
+         LTLA == 104 | LTLA == 123 | LTLA == 147 |
+         LTLA == 208 | LTLA == 179 | LTLA == 221)
  
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_all.png"),
-    width = 10, height = 6, units = 'in', res = 300)
- 
-ggarrange(Plot_sum,Plot_sum_2, Plot_sum_3, Plot_sum_4,
-           common.legend = TRUE, legend = "bottom", ncol = 2, nrow = 2)
+    width = 15, height = 12, units = 'in', res = 300)
+
+ggplot(data = some_LTLA) +
+  geom_line (mapping = aes(x = date, y = NationalTrend, 
+                           color = "Lambda"), size =rel(0.8)) +
+  geom_line (mapping = aes(x = date, y = RegionalTrends,
+                           color = "RanEffect"), size =rel(0.8)) +
+  geom_line (mapping = aes(x = date, y = Rt_LogP,
+                           color = "RtLogP"), size =rel(0.8)) +
+  geom_line (mapping = aes(x = date, y = Rt_data,
+                           color = "RtData"), size =rel(0.8)) +
+  scale_color_manual(name = "Parameter",
+                     breaks = c("Lambda", "RanEffect",
+                                "RtLogP", "RtData"),
+                     values = c("Lambda" = "navy",
+                                "RanEffect" = "lightgreen",
+                                "RtLogP" = "forestgreen",
+                                "RtData" = "firebrick"),
+                     labels = c("National Trend", "Regional Trend",
+                                "Predicted Rt", "Observed Rt")) +
+   theme_classic() +
+   labs(title = "Parameters in various LTLAs",
+        x = "Date",
+        y = "Parameter value") +
+   theme(
+     plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
+     axis.title.x = element_text(size = rel(0.9), face="bold"),
+     axis.title.y = element_text(size = rel(0.9), face="bold"),
+     axis.text = element_text(size=rel(0.7)),
+     legend.title = element_text(size = rel(0.9), face="bold"),
+     legend.position = "bottom",
+     legend.text = element_text(size=rel(0.7))) +
+  facet_wrap(LTLA ~ .)
+
 dev.off()
 
