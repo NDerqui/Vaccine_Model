@@ -50,7 +50,7 @@ parameters {
   
 	matrix<lower = 0>[NumDoses, NumVaxVar] 	VaxEffect_nc;	
 	// matrix<lower = 0>[NumDoses*NumGroup, NumVaxVar] 	VaxEffect_nc;	
-	matrix<lower = 0>[1, NumVar] VarAdvantage_nc;
+	vector<lower = 1>[NumVar] VarAdvantage_nc;
 }
 
 transformed parameters{
@@ -80,7 +80,7 @@ transformed parameters{
 	matrix[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
 	// matrix[NumDoses*NumGroup, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses*NumGroup, NumVaxVar);
 	
-	matrix[1, NumVar] VarAdvantage = rep_matrix(1, 1, NumVar);
+	vector[NumVar] VarAdvantage = rep_vector(1, NumVar);
 	
 	vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
 	
@@ -96,7 +96,7 @@ transformed parameters{
 	VaxEffect 	= VaxEffect_nc	* phi;
 	
 	if(DoVariants) {
-	 VarAdvantage[,2:NumVar] 	= VarAdvantage_nc[,2:NumVar]	* phi;
+	 VarAdvantage[2:NumVar] 	= VarAdvantage_nc[2:NumVar]	* phi;
 	}
 	
 	if (DoKnots) {  
@@ -201,7 +201,7 @@ transformed parameters{
 	for (TimeRegion in 1:NumDatapoints)
   	for (Variant in 1:NumVar)
   	{
-  	    LogPredictions[TimeRegion] += VarAdvantage[1, Variant] * RegionalTrends[TimeRegion]; // variant advantage * retgional trend
+  	    LogPredictions[TimeRegion] += VarAdvantage[Variant] * RegionalTrends[TimeRegion]; // variant advantage * retgional trend
   	    
   	    for (Dose in 1:NumDoses) 
   	      for (VariantVE in 1:NumVaxVar) {
@@ -258,7 +258,7 @@ model {
 		  VaxEffect_nc[i, j] ~ std_normal();
 		  
 	for (i in 1:NumVar)
-		VarAdvantage_nc[,i] ~ std_normal();
+		VarAdvantage_nc[i] ~ std_normal();
 		
 	RtVals 			~ normal(LogPredictions, sigma);
 }
