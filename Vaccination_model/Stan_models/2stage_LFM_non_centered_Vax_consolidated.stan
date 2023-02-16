@@ -96,7 +96,7 @@ transformed parameters{
 	VaxEffect 	= VaxEffect_nc	* phi;
 	
 	if(DoVariants) {
-	 VarAdvantage[2:NumVar] 	= VarAdvantage_nc[2:NumVar]	* phi;
+	 VarAdvantage[1:NumVar] 	= VarAdvantage_nc[1:NumVar]	* phi;
 	}
 	
 	if (DoKnots) {  
@@ -257,7 +257,7 @@ model {
 	  for (j in 1:NumVaxVar)
 		  VaxEffect_nc[i, j] ~ std_normal();
 		  
-	for (i in 1:NumVar)
+	for (i in 2:NumVar)
 		VarAdvantage_nc[i] ~ std_normal();
 		
 	RtVals 			~ normal(LogPredictions, sigma);

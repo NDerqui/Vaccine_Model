@@ -126,6 +126,9 @@ NationalTrend <- exp(colMeans(model_matrix[, grep(
 Lambda <- exp(colMeans(model_matrix[, grep(
   '^lambda\\[', colnames(model_matrix))]))
 
+VarAdvantage <- exp(colMeans(model_matrix[, grep(
+  '^VarAdvantage\\[', colnames(model_matrix))]))
+
 sum_rt <- data.frame(LTLA, date, 
                      Rt_data, Rt_LogP, RegionalTrends, NationalTrend,
                      Dose_1, Dose_2, Dose_3)
