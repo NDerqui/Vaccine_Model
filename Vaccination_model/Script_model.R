@@ -374,11 +374,6 @@ get_data <- function(data_vax, data_rt, data_var,
     NumPointsLine
     
     
-    # Rt log #
-    
-    data_model$Rt <- log(data_model$Rt)
-    
-    
     # Spline option
     
     if (DoKnots == 1) {
@@ -512,11 +507,6 @@ get_data <- function(data_vax, data_rt, data_var,
     
     NumPointsLine <- NumLTLAs*NumKnots
     NumPointsLine
-    
-    
-    # Rt log #
-    
-    data_model_age$Rt <- log(data_model_age$Rt)
     
     
     # Spline option
