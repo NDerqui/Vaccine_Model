@@ -204,7 +204,7 @@ transformed parameters{
 	for (TimeRegion in 1:NumDatapoints)
   	for (Variant in 1:NumVar)
   	{
-  	    LogPredictions[TimeRegion] += VarAdvantage[2] * RegionalTrends[TimeRegion]; // variant advantage * retgional trend
+  	    LogPredictions[TimeRegion] += VarAdvantage[Variant] * RegionalTrends[TimeRegion]; // variant advantage * retgional trend
   	    
   	    for (Dose in 1:NumDoses) 
   	      for (VariantVE in 1:NumVaxVar) {
