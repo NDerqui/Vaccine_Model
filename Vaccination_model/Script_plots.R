@@ -114,20 +114,15 @@ model_matrix <- as.matrix(fit)
 rm(fit)
 gc()
 
-Rt_LogP <- exp(colMeans(model_matrix[, grep(
-  "LogPredictions", colnames(model_matrix))]))
+Rt_LogP <- colMeans(model_matrix[, grep("LogPredictions", colnames(model_matrix))])
 
-RegionalTrends <- exp(colMeans(model_matrix[, grep(
-  "RegionalTrends", colnames(model_matrix))]))
+RegionalTrends <- colMeans(model_matrix[, grep("RegionalTrends", colnames(model_matrix))])
 
-NationalTrend <- exp(colMeans(model_matrix[, grep(
-  '^NationalTrend\\[', colnames(model_matrix))]))
+NationalTrend <- colMeans(model_matrix[, grep('^NationalTrend\\[', colnames(model_matrix))])
 
-Lambda <- exp(colMeans(model_matrix[, grep(
-  '^lambda\\[', colnames(model_matrix))]))
+Lambda <- colMeans(model_matrix[, grep('^lambda\\[', colnames(model_matrix))])
 
-VarAdvantage <- exp(colMeans(model_matrix[, grep(
-  '^VarAdvantage\\[', colnames(model_matrix))]))
+VarAdvantage <- colMeans(model_matrix[, grep('^VarAdvantage\\[', colnames(model_matrix))])
 
 sum_rt <- data.frame(LTLA, date, 
                      Rt_data, Rt_LogP, RegionalTrends, NationalTrend,
