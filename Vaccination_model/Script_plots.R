@@ -64,7 +64,7 @@ DoVariants <- 0
 
 if (DoAge == 0) {
   
-  Rt_data <- exp(data_stan[[22]])
+  Rt_data <- data_stan[[22]]
   
   LTLA <- data_stan[[20]]
   
@@ -76,7 +76,7 @@ if (DoAge == 0) {
   
 } else {
   
-  Rt_data <- exp(data_stan_age[[22]])
+  Rt_data <- data_stan_age[[22]]
   
   LTLA <- data_stan_age[[20]]
   
@@ -152,8 +152,8 @@ VEMean <- colMeans(model_matrix[, grep(
 VEQuan <- colQuantiles(model_matrix[, grep(
    "VaxEffect", colnames(model_matrix))], probs=c(0.025,0.975))
 
-VEMean_exp <-(exp(-VEMean))
-VEQuan_exp <-(exp(-VEQuan))
+VEMean_exp <-(-VEMean)
+VEQuan_exp <-(-VEQuan)
  
 sum_ve <- round(data.frame(VEMean, VEQuan, VEMean_exp, VEQuan_exp), digits = 4) %>%
   select("VEMean", "X2.5.", "X97.5.",
