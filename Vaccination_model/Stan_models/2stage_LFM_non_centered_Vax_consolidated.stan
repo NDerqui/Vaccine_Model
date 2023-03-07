@@ -48,7 +48,7 @@ parameters {
 	
   matrix[NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
   
-	matrix<lower = 0>[NumDoses, NumVaxVar] 	VaxEffect_nc;	
+	matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 	VaxEffect_nc;	
 	// matrix<lower = 0>[NumDoses*NumGroup, NumVaxVar] 	VaxEffect_nc;	
 	
 	real<lower = 1> VarAdvantage_nc;
@@ -204,7 +204,7 @@ transformed parameters{
 	for (TimeRegion in 1:NumDatapoints)
   	for (Variant in 1:NumVar)
   	{
-  	    LogPredictions[TimeRegion] *= VarAdvantage[Variant] * RegionalTrends[TimeRegion]; // variant advantage * retgional trend
+  	    LogPredictions[TimeRegion] += VarAdvantage[Variant] * RegionalTrends[TimeRegion]; // variant advantage * retgional trend
   	    
   	    for (Dose in 1:NumDoses) 
   	      for (VariantVE in 1:NumVaxVar) {
