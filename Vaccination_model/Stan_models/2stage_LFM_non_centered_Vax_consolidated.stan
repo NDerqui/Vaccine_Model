@@ -51,7 +51,7 @@ parameters {
 	matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 	VaxEffect_nc;	
 	// matrix<lower = 0>[NumDoses*NumGroup, NumVaxVar] 	VaxEffect_nc;	
 	
-	real<lower = 1> VarAdvantage_nc;
+	vector<lower = 1>[NumVar-1] VarAdvantage_nc;
 }
 
 transformed parameters{
@@ -60,7 +60,6 @@ transformed parameters{
 	real phi2 	= 0;
 	real phi3 	= 0;
 	real phi4 	= 0;
-	real VarAd2 = 0;
 
 	// allocate
 	vector[NumLTLAs] 			intercept 	= rep_vector(0, NumLTLAs); 
@@ -95,11 +94,11 @@ transformed parameters{
 	intercept 	= intercept_nc	* phi3;
 	VaxEffect 	= VaxEffect_nc	* phi;
 	
-	vector[NumVar] VarAdvantage;
-	VarAdvantage[1] = 1;
+	matrix[NumVar, 1] VarAdvantage;
+	VarAdvantage[1, 1] = 1;
 	
 	if(DoVariants) {
-	 VarAdvantage[2] 	= VarAdvantage_nc	* phi;
+	 VarAdvantage[2:NumVar, 1] 	= VarAdvantage_nc	* phi;
 	}
 	
 	if (DoKnots) {  
@@ -217,7 +216,7 @@ transformed parameters{
     for (i in 1:NumDatapoints)
       for (j in 1:NumVar)
         for (k in 1:NumVaxVar) {
-	        LogPredictions[i] = VarProp[i, j]*RegionalTrends[i]*VarAdvantage[j] *VacEffects_Regional[i, k];
+	        LogPredictions[i] = VarProp[i, j]*RegionalTrends[i]*VarAdvantage[j, 1] *VacEffects_Regional[i, k];
         }
 	
 	
@@ -280,7 +279,8 @@ model {
 	  for (j in 1:NumVaxVar)
 		  VaxEffect_nc[i, j] ~ std_normal();
 		  
-	VarAdvantage_nc ~ std_normal();
+	for (i in 1:(NumVar-1))
+	  VarAdvantage_nc[i] ~ std_normal();
 		
 	RtVals 			~ normal(LogPredictions, sigma);
 }
