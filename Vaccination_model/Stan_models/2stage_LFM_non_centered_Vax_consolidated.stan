@@ -79,7 +79,7 @@ transformed parameters{
 	vector[NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
 	
 	matrix[NumDatapoints, NumVaxVar] VacEffects_Regional 	= rep_matrix(0, NumDatapoints, NumVaxVar);
-	matrix[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
+	matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
 	// matrix[NumDoses*NumGroup, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses*NumGroup, NumVaxVar);
 	
 	vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
@@ -201,17 +201,37 @@ transformed parameters{
 		}
 	}
 	
-	for (TimeRegion in 1:NumDatapoints)
-  	for (Variant in 1:NumVar)
-  	{
-  	    LogPredictions[TimeRegion] += VarAdvantage[Variant] * RegionalTrends[TimeRegion]; // variant advantage * retgional trend
+	// Vax Effect
+	// VacEffects_Regional[1:NumDatapoints] = VaxProp * VaxEffect; // x * -beta in manuscript
+	for (i in 1:NumDatapoints)
+	 for(l in 1:NumVaxVar)
+	  {
+		 VacEffects_Regional[i, l] = 0; // initialize to zero for each timepoint
+		     for (j in 1:NumDoses) {
+			      VacEffects_Regional[i, l] += VaxProp[i,j] * VaxEffect[j, l];
+		     }
+	  }
+	 
+	 // final regional Rt predictions are regional trends minus regional vaccine effects
+	 // LogPredictions[1:NumDatapoints] = RegionalTrends[1:NumDatapoints] - VacEffects_Regional[1:NumDatapoints];
+    for (i in 1:NumDatapoints)
+      for (j in 1:NumVar)
+        for (k in 1:NumVaxVar) {
+	        LogPredictions[i] = VarProp[i, j]*RegionalTrends[i]*VarAdvantage[j] *VacEffects_Regional[i, k];
+        }
+	
+	
+	//for (TimeRegion in 1:NumDatapoints)
+  	//for (Variant in 1:NumVar)
+  	//{
+  	  //  LogPredictions[TimeRegion] = VarAdvantage[Variant] * RegionalTrends[TimeRegion]; // variant advantage * retgional trend
   	    
-  	    for (Dose in 1:NumDoses) 
-  	      for (VariantVE in 1:NumVaxVar) {
-  	        LogPredictions[TimeRegion] *= VaxProp[TimeRegion,Dose] * VaxEffect[Dose, VariantVE];} // subtract vaccine efficacy by dose and variant and proportion who have received dose at this time in this region.
+  	    //for (Dose in 1:NumDoses) 
+  	      //for (VariantVE in 1:NumVaxVar) {
+  	       // LogPredictions[TimeRegion] *= VaxProp[TimeRegion,Dose] * VaxEffect[Dose, VariantVE];} // subtract vaccine efficacy by dose and variant and proportion who have received dose at this time in this region.
   	    
-  	    LogPredictions[TimeRegion] *= VarProp[TimeRegion, Variant]; // multiply by proportion of variant in that time and region.
-  	}
+  	    //LogPredictions[TimeRegion] *= VarProp[TimeRegion, Variant]; // multiply by proportion of variant in that time and region.
+  	//}
 	    
 	
 	// CONTINUE WITH LOG PRED MODEL WHETHER LAMBDA WAS FIT IN THE LINE OR NOT
