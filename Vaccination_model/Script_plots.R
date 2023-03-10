@@ -147,19 +147,20 @@ if (DoKnots == 1) {
  
 #### VaxEffect ####
  
-VEMean <- colMeans(model_matrix[, grep(
+VERedMean <- colMeans(model_matrix[, grep(
    "VaxEffect", colnames(model_matrix))])
-VEQuan <- colQuantiles(model_matrix[, grep(
+VERedQuan <- colQuantiles(model_matrix[, grep(
    "VaxEffect", colnames(model_matrix))], probs=c(0.025,0.975))
 
-VEMean_exp <-(-VEMean)
-VEQuan_exp <-(-VEQuan)
+VE_1_RedMean <-(1-VERedMean)
+VE_1_RedQuan <-(1-VERedQuan)
  
-sum_ve <- round(data.frame(VEMean, VEQuan, VEMean_exp, VEQuan_exp), digits = 4) %>%
-  select("VEMean", "X2.5.", "X97.5.",
-         "VEMean_exp", "X97.5..1", "X2.5..1")
-colnames(sum_ve) <- c("Mean Effect", "2.5% Q", "97.5% Q",
-                      "Exp(Mean Effect)", "Exp(2.5% Q)", "Exp(97.5% Q)")
+sum_ve <- round(data.frame(VERedMean, VERedQuan,
+                           VE_1_RedMean, VE_1_RedQuan), digits = 4) %>%
+  select("VERedMean", "X2.5.", "X97.5.",
+         "VE_1_RedMean", "X97.5..1", "X2.5..1")
+colnames(sum_ve) <- c("Mean Red Effect", "Red 2.5% Q", "Red 97.5% Q",
+                      "VE (1-Red)", " VE 2.5% Q", " VE97.5% Q")
 
 if (nrow(sum_ve) == 3) {
   row.names(sum_ve) <- c("Dose 1", "Dose 2", "Dose 3")
