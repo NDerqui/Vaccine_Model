@@ -109,8 +109,8 @@ Date_End <- as.Date("31/12/2021", format = "%d/%m/%Y")
 
 # Covariates
 
-# covar_var <- c("Var_PreAlpha", "Var_Alpha", "Var_Delta")
-covar_var <- c("Var_Alpha", "Var_Delta")
+covar_var <- c("Var_PreAlpha", "Var_Alpha", "Var_Delta")
+# covar_var <- c("Var_Alpha", "Var_Delta")
 covar_vax <- c("First_Prop", "Second_Prop", "Third_Prop")
 
 # Nested and BackDate (For later Stan Model)
@@ -274,10 +274,10 @@ get_data <- function(data_vax, data_rt, data_var,
   # Create vars for the proportion of alpha vs delta
   
   data_merge <- data_merge %>%
-    # mutate(total = (n_all_wildtype_variant + n_all_alpha_variant + n_all_delta_variant)) %>%
-    # mutate(Var_PreAlpha = case_when(total == 0 ~ 0,
-    #                              total != 0 ~ n_all_wildtype_variant/total)) %>%
-    mutate(total = (n_all_alpha_variant + n_all_delta_variant)) %>%
+    mutate(total = (n_all_wildtype_variant + n_all_alpha_variant + n_all_delta_variant)) %>%
+    mutate(Var_PreAlpha = case_when(total == 0 ~ 0,
+                                 total != 0 ~ n_all_wildtype_variant/total)) %>%
+    # mutate(total = (n_all_alpha_variant + n_all_delta_variant)) %>%
     mutate(Var_Alpha = case_when(total == 0 ~ 1,
                                  total != 0 ~ n_all_alpha_variant/total)) %>%
     mutate(Var_Delta = case_when(total == 0 ~ 0,
@@ -295,8 +295,8 @@ get_data <- function(data_vax, data_rt, data_var,
   
   data_model <- select(data_merge, "ltla_name", "date", "week", "Rt",
                        "First_Prop", "Second_Prop", "Third_Prop",
-                       "Var_Alpha", "Var_Delta")
-                       # "Var_PreAlpha", "Var_Alpha", "Var_Delta")
+                       # "Var_Alpha", "Var_Delta")
+                       "Var_PreAlpha", "Var_Alpha", "Var_Delta")
   data_model_age <- select(data_merge_age, "ltla_name", "date", "week", "Rt","group",
                            "First_Prop", "Second_Prop", "Third_Prop")
   
