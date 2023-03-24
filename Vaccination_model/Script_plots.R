@@ -99,7 +99,7 @@ Steps <- c(max(c(min(data_rt$date), min(data_var$date))),
 
 #### Load data ####
 
-model_name <- "Base_1A"
+model_name <- "NonExpSum_2000_8_1A"
 
 # fit <- readRDS(paste0(model_name, ".Rds"))
   
