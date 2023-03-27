@@ -216,7 +216,7 @@ transformed parameters{
     for (i in 1:NumDatapoints)
       for (j in 1:NumVar)
         for (k in 1:NumVaxVar) {
-	        LogPredictions[i] = VarProp[i, j]*RegionalTrends[i]*VarAdvantage[j, 1] *VacEffects_Regional[i, k];
+	        LogPredictions[i] = VarProp[i, j]*RegionalTrends[i]*VarAdvantage[j, 1]*(1 - VacEffects_Regional[i, k]);
         }
 	
 	
