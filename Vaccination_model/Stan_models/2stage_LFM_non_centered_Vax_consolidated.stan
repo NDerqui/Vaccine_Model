@@ -81,7 +81,12 @@ transformed parameters{
 	matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
 	// matrix[NumDoses*NumGroup, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses*NumGroup, NumVaxVar);
 	
+	matrix[NumVar, 1] VarAdvantage;
+	
 	vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
+	
+	// VarAdvantage for base variant set to 1
+	VarAdvantage[1, 1] = 1;
 	
 	// initialize - get centered parameter values from their non-centered equivalents.
 	phi  		= phi_nc		* 2.0;
@@ -93,9 +98,6 @@ transformed parameters{
 	gamma 		= gamma_nc 		* phi2;
 	intercept 	= intercept_nc	* phi3;
 	VaxEffect 	= VaxEffect_nc	* phi;
-	
-	matrix[NumVar, 1] VarAdvantage;
-	VarAdvantage[1, 1] = 1;
 	
 	if(DoVariants) {
 	 VarAdvantage[2:NumVar, 1] 	= VarAdvantage_nc	* phi;
