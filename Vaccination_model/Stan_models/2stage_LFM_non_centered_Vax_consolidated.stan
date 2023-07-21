@@ -209,7 +209,7 @@ transformed parameters{
 	  {
 		 VacEffects_Regional[i, l] = 1; // initialize to zero for each timepoint
 		     for (j in 1:NumDoses) {
-			      VacEffects_Regional[i, l] += VaxProp[i,j] * VaxEffect[j, l];
+			      VacEffects_Regional[i, l] *= VaxProp[i,j] * VaxEffect[j, l];
 		     }
 	  }
 	 
