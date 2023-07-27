@@ -81,12 +81,13 @@ transformed parameters{
 	matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
 	// matrix[NumDoses*NumGroup, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses*NumGroup, NumVaxVar);
 	
-	matrix[NumVar, 1] VarAdvantage;
+	vector[NumDatapoints] VariantsEffect 	= rep_vector(0, NumDatapoints);
+	vector[NumVar] VarAdvantage;
 	
 	vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
 	
 	// VarAdvantage for base variant set to 1
-	VarAdvantage[1, 1] = 1;
+	VarAdvantage[1] = 1;
 	
 	// initialize - get centered parameter values from their non-centered equivalents.
 	phi  		= phi_nc		* 2.0;
@@ -100,7 +101,7 @@ transformed parameters{
 	VaxEffect 	= VaxEffect_nc	* phi;
 	
 	if(DoVariants) {
-	 VarAdvantage[2:NumVar, 1] 	= VarAdvantage_nc	* phi;
+	 VarAdvantage[2:NumVar] 	= VarAdvantage_nc	* phi;
 	}
 	
 	if (DoKnots) {  
@@ -209,16 +210,22 @@ transformed parameters{
 	  {
 		 VacEffects_Regional[i, l] = 1; // initialize to zero for each timepoint
 		     for (j in 1:NumDoses) {
-			      VacEffects_Regional[i, l] *= VaxProp[i,j] * VaxEffect[j, l];
+			      VacEffects_Regional[i, l] += VaxProp[i,j] * VaxEffect[j, l];
 		     }
 	  }
 	 
-	 // final regional Rt predictions are regional trends minus regional vaccine effects
+	 // Effect of variants
+    for (i in 1:NumDatapoints)
+      for (j in 1:NumVar) {
+	        VariantsEffect[i] += VarProp[i, j]*VarAdvantage[j];
+        }
+   
+   // final regional Rt predictions are regional trends minus regional vaccine effects
 	 // LogPredictions[1:NumDatapoints] = RegionalTrends[1:NumDatapoints] - VacEffects_Regional[1:NumDatapoints];
     for (i in 1:NumDatapoints)
       for (j in 1:NumVar)
         for (k in 1:NumVaxVar) {
-	        LogPredictions[i] = VarProp[i, j]*RegionalTrends[i]*VarAdvantage[j, 1]*(1 - VacEffects_Regional[i, k]);
+	        LogPredictions[i] += VariantsEffect[i]*RegionalTrends[i]*(1 - VacEffects_Regional[i, k]);
         }
 	
 	
