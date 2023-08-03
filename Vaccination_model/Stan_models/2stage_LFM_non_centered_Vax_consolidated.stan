@@ -223,9 +223,9 @@ transformed parameters{
    // final regional Rt predictions are regional trends minus regional vaccine effects
 	 // LogPredictions[1:NumDatapoints] = RegionalTrends[1:NumDatapoints] - VacEffects_Regional[1:NumDatapoints];
     for (i in 1:NumDatapoints)
-      for (j in 1:NumVar) {
-	        LogPredictions[i] += VariantsEffect[i]*RegionalTrends[i]*(1 - VacEffects_Regional[i, j]);
-      }
+      for (k in 1:NumVaxVar) {
+	        LogPredictions[i] += VariantsEffect[i]*RegionalTrends[i]*(1 - VacEffects_Regional[i, k]);
+        }
 	
 	
 	//for (TimeRegion in 1:NumDatapoints)
