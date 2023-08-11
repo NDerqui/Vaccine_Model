@@ -110,24 +110,24 @@ sum <- readRDS(paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/P
 
 #### Substract parameters ####
 
-# model_matrix <- as.matrix(fit)
+model_matrix <- as.matrix(fit)
 # rm(fit)
 # gc()
 
-# Rt_LogP <- colMeans(model_matrix[, grep("LogPredictions", colnames(model_matrix))])
-Rt_LogP <- sum[grep("LogPredictions", rownames(sum)), 1]
+Rt_LogP <- colMeans(model_matrix[, grep("LogPredictions", colnames(model_matrix))])
+# Rt_LogP <- sum[grep("LogPredictions", rownames(sum)), 1]
 
-# RegionalTrends <- colMeans(model_matrix[, grep("RegionalTrends", colnames(model_matrix))])
-RegionalTrends <- sum[grep("RegionalTrends", rownames(sum)), 1]
+RegionalTrends <- colMeans(model_matrix[, grep("RegionalTrends", colnames(model_matrix))])
+# RegionalTrends <- sum[grep("RegionalTrends", rownames(sum)), 1]
 
-# NationalTrend <- colMeans(model_matrix[, grep('^NationalTrend\\[', colnames(model_matrix))])
-NationalTrend <- sum[grep('^NationalTrend\\[', rownames(sum)), 1]
+NationalTrend <- colMeans(model_matrix[, grep('^NationalTrend\\[', colnames(model_matrix))])
+# NationalTrend <- sum[grep('^NationalTrend\\[', rownames(sum)), 1]
 
-# Lambda <- colMeans(model_matrix[, grep('^lambda\\[', colnames(model_matrix))])
-Lambda <- sum[grep('^lambda\\[', rownames(sum)), 1]
+Lambda <- colMeans(model_matrix[, grep('^lambda\\[', colnames(model_matrix))])
+# Lambda <- sum[grep('^lambda\\[', rownames(sum)), 1]
 
-# VarAdvantage <- colMeans(model_matrix[, grep('^VarAdvantage\\[', colnames(model_matrix))])
-VarAdvantage <- sum[grep('^VarAdvantage\\[', rownames(sum)), 1]
+VarAdvantage <- colMeans(model_matrix[, grep('^VarAdvantage\\[', colnames(model_matrix))])
+# VarAdvantage <- sum[grep('^VarAdvantage\\[', rownames(sum)), 1]
 
 sum_rt <- data.frame(LTLA, date, 
                      Rt_data, Rt_LogP, RegionalTrends, NationalTrend,
@@ -152,11 +152,11 @@ if (DoKnots == 1) {
  
 #### VaxEffect ####
  
-# VERedMean <- colMeans(model_matrix[, grep("VaxEffect", colnames(model_matrix))])
-VERedMean <- sum[grep('^VaxEffect\\[', rownames(sum)), 1]
+VERedMean <- colMeans(model_matrix[, grep("VaxEffect", colnames(model_matrix))])
+# VERedMean <- sum[grep('^VaxEffect\\[', rownames(sum)), 1]
 
-# VERedQuan <- colQuantiles(model_matrix[, grep("VaxEffect", colnames(model_matrix))], probs=c(0.025,0.975))
-VERedQuan <- sum[grep('^VaxEffect\\[', rownames(sum)), c(4,8)]
+VERedQuan <- colQuantiles(model_matrix[, grep("VaxEffect", colnames(model_matrix))], probs=c(0.025,0.975))
+# VERedQuan <- sum[grep('^VaxEffect\\[', rownames(sum)), c(4,8)]
  
 VE_1_RedMean <-(1-VERedMean)
 VE_1_RedQuan <-(1-VERedQuan)
