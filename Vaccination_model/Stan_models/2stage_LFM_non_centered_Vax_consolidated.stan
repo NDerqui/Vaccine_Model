@@ -79,7 +79,8 @@ transformed parameters{
 	vector[NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
 	
 //	matrix[NumDatapoints, NumVaxVar] VacEffects_Regional 	= rep_matrix(0, NumDatapoints, NumVaxVar);
-	matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
+	//matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
+	matrix<lower = 0, upper = 1>[NumDoses, NumVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVar); // want 2nd dimension to be NumVar, not NumVaxVar, unlike VaxEffect_nc above
 	// matrix[NumDoses*NumGroup, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses*NumGroup, NumVaxVar);
 	
 //	vector[NumDatapoints] VariantsEffect 	= rep_vector(0, NumDatapoints);
@@ -99,7 +100,12 @@ transformed parameters{
 	sigma 		= sigma_nc		* 0.5;
 	gamma 		= gamma_nc 		* phi2;
 	intercept 	= intercept_nc	* phi3;
-	VaxEffect 	= VaxEffect_nc	* phi;
+
+	if (NumVaxVar == NumVar) 
+	  VaxEffect 	= VaxEffect_nc	* phi; else 
+	for (Variant in 1:NumVar) // i.e. NumVaxVar < NumVar (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
+	  for (Dose in 1:NumDoses)  
+	    VaxEffect[Dose, Variant] = VaxEffect_nc[Dose, 1] * phi;
 	
 	if(DoVariants) {
 	 VarAdvantage[2:NumVar] 	= VarAdvantage_nc	* phi;
