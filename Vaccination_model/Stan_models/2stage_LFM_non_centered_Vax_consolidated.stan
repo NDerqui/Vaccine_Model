@@ -84,7 +84,7 @@ transformed parameters{
 	// matrix[NumDoses*NumGroup, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses*NumGroup, NumVaxVar);
 	
 //	vector[NumDatapoints] VariantsEffect 	= rep_vector(0, NumDatapoints);
-	vector[NumVar] VarAdvantage;
+	vector<lower = 1>[NumVar] VarAdvantage;
 	
 	vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
 	
