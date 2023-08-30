@@ -99,13 +99,13 @@ Steps <- c(max(c(min(data_rt$date), min(data_var$date))),
 
 #### Load data ####
 
-model_name <- "NonExpSum_2000_8_1A"
+model_name <- "CorrectVar_2000_8_1D"
 
 # fit <- readRDS(paste0(model_name, ".Rds"))
   
 # loo_run <- readRDS(paste0("loo_", model_name, ".Rds"))
 
-sum <- readRDS(paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/", model_name, ".Rds"))
+fit <- readRDS(paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/", model_name, ".Rds"))
 
 
 #### Substract parameters ####
@@ -126,8 +126,10 @@ NationalTrend <- colMeans(model_matrix[, grep('^NationalTrend\\[', colnames(mode
 Lambda <- colMeans(model_matrix[, grep('^lambda\\[', colnames(model_matrix))])
 # Lambda <- sum[grep('^lambda\\[', rownames(sum)), 1]
 
-VarAdvantage <- colMeans(model_matrix[, grep('^VarAdvantage\\[', colnames(model_matrix))])
-# VarAdvantage <- sum[grep('^VarAdvantage\\[', rownames(sum)), 1]
+if (DoVariants == 1) {
+  VarAdvantage <- colMeans(model_matrix[, grep('^VarAdvantage\\[', colnames(model_matrix))])
+  # VarAdvantage <- sum[grep('^VarAdvantage\\[', rownames(sum)), 1]
+}
 
 sum_rt <- data.frame(LTLA, date, 
                      Rt_data, Rt_LogP, RegionalTrends, NationalTrend,
@@ -147,7 +149,7 @@ if (DoKnots == 1) {
 
 
 
-# VAX TABLE ---------------------------------------------------------------
+# TABLES ---------------------------------------------------------------
  
  
 #### VaxEffect ####
@@ -158,15 +160,9 @@ VERedMean <- colMeans(model_matrix[, grep("VaxEffect", colnames(model_matrix))])
 VERedQuan <- colQuantiles(model_matrix[, grep("VaxEffect", colnames(model_matrix))], probs=c(0.025,0.975))
 # VERedQuan <- sum[grep('^VaxEffect\\[', rownames(sum)), c(4,8)]
  
-VE_1_RedMean <-(1-VERedMean)
-VE_1_RedQuan <-(1-VERedQuan)
- 
-sum_ve <- round(data.frame(VERedMean, VERedQuan,
-                           VE_1_RedMean, VE_1_RedQuan), digits = 4) %>%
-  select("VERedMean", "X2.5.", "X97.5.",
-         "VE_1_RedMean", "X97.5..1", "X2.5..1")
-colnames(sum_ve) <- c("Mean Red Effect", "Red 2.5% Q", "Red 97.5% Q",
-                      "VE (1-Red)", " VE 2.5% Q", " VE97.5% Q")
+sum_ve <- round(data.frame(VERedMean, VERedQuan), digits = 4) %>%
+  select("VERedMean", "X2.5.", "X97.5.")
+colnames(sum_ve) <- c("VE (1-Red)", " VE 2.5% Q", " VE97.5% Q")
 
 if (nrow(sum_ve) == 3) {
   row.names(sum_ve) <- c("Dose 1", "Dose 2", "Dose 3")
@@ -193,142 +189,17 @@ if (nrow(sum_ve) == 3) {
 write.xlsx(sum_ve, rowNames = TRUE,
             paste0("Results/", model_name, "/Vax_VE_table.xlsx"))
 
+
+#### Var Advantage ####
+
+if (DoVariants == 1) {
+  
+  write.xlsx(as.data.frame(VarAdvantage), rowNames = TRUE,
+             paste0("Results/", model_name, "/Var_Ad_table.xlsx"))
+}
+
  
  
-# PARAMETERs TABLE --------------------------------------------------------
-#  
-#  
-# #### Log Predictions ####
-#  
-# rt_mean <- sum_rt %>%
-#  select("LTLA", "date", "Rt_LogP") %>%
-#  dplyr::group_by(LTLA, date) %>%
-#  dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-#  dplyr::filter(n > 1L) %>%
-#  pivot_wider(names_from = date, values_from = all_of(Rt_LogP)) %>%
-#  colMeans() %>%
-#  as.data.frame() %>%
-#  rename(mean = ".")
-# rt_max <- sum_rt %>%
-#  select("LTLA", "date", "Rt_LogP") %>%
-#   dplyr::group_by(LTLA, date) %>%
-#   dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-#   dplyr::filter(n > 1L) %>%
-#  pivot_wider(names_from = date, values_from = all_of(Rt_LogP)) %>%
-#  as.matrix() %>%
-#  colMaxs () %>%
-#  as.data.frame() %>%
-#  rename(max = ".") 
-# rt_min <- sum_rt %>%
-#  select("LTLA", "date", "Rt_LogP") %>%
-#   dplyr::group_by(LTLA, date) %>%
-#   dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-#   dplyr::filter(n > 1L) %>%
-#  pivot_wider(names_from = date, values_from = all_of(Rt_LogP)) %>%
-#  as.matrix() %>%
-#  colMins() %>%
-#  as.data.frame() %>%
-#  rename(min = ".") 
-# rt_sd <- sum_rt %>%
-#  select("LTLA", "date", "Rt_LogP") %>%
-#   dplyr::group_by(LTLA, date) %>%
-#   dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-#   dplyr::filter(n > 1L) %>%
-#  pivot_wider(names_from = date, values_from = all_of(Rt_LogP)) %>%
-#  as.matrix() %>%
-#  colSds() %>%
-#  as.data.frame() %>%
-#  rename(sd = ".")
-# rt_iqr <- sum_rt %>%
-#  select("LTLA", "date", "Rt_LogP") %>%
-#   dplyr::group_by(LTLA, date) %>%
-#   dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-#   dplyr::filter(n > 1L) %>%
-#  pivot_wider(names_from = date, values_from = all_of(Rt_LogP)) %>%
-#  as.matrix() %>%
-#  colQuantiles(probs = seq(from = 0, to = 1, by = 0.25)) %>%
-#  as.data.frame()   
-# 
-# rt_table <- round(data.frame(rt_mean, rt_sd,
-#                           rt_min, rt_iqr, rt_max), digits = 4)
-# write.xlsx(rt_table, rowNames = TRUE,
-#           paste0("Results/", model_name, "/Rt_LogP.xlsx"))
-# 
-#  
-# #### Reg Trends ####
-#  
-# ref_mean <- sum_rt %>%
-#  select("LTLA", "date", "RegionalTrends") %>%
-#   dplyr::group_by(LTLA, date) %>%
-#   dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-#   dplyr::filter(n > 1L) %>%
-#  pivot_wider(names_from = date, values_from = all_of(RegionalTrends)) %>%
-#  colMeans() %>%
-#  as.data.frame() %>%
-#  rename(mean = ".")
-# ref_max <- sum_rt %>%
-#  select("LTLA", "date", "RegionalTrends") %>%
-#   dplyr::group_by(LTLA, date) %>%
-#   dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-#   dplyr::filter(n > 1L) %>%
-#  pivot_wider(names_from = date, values_from = all_of(RegionalTrends)) %>%
-#  as.matrix() %>%
-#  colMaxs () %>%
-#  as.data.frame() %>%
-#  rename(max = ".")
-# ref_min <- sum_rt %>%
-#  select("LTLA", "date", "RegionalTrends") %>%
-#   dplyr::group_by(LTLA, date) %>%
-#   dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-#   dplyr::filter(n > 1L) %>%
-#  pivot_wider(names_from = date, values_from = all_of(RegionalTrends)) %>%
-#  as.matrix() %>%
-#  colMins() %>%
-#  as.data.frame() %>%
-#  rename(min = ".")
-# ref_sd <- sum_rt %>%
-#  select("LTLA", "date", "RegionalTrends") %>%
-#   dplyr::group_by(LTLA, date) %>%
-#   dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-#   dplyr::filter(n > 1L) %>%
-#  pivot_wider(names_from = date, values_from = all_of(RegionalTrends)) %>%
-#  as.matrix() %>%
-#  colSds() %>%
-#  as.data.frame() %>%
-#  rename(sd = ".") 
-# ref_iqr <- sum_rt %>%
-#  select("LTLA", "date", "RegionalTrends") %>%
-#   dplyr::group_by(LTLA, date) %>%
-#   dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-#   dplyr::filter(n > 1L) %>%
-#  pivot_wider(names_from = date, values_from = all_of(RegionalTrends)) %>%
-#  as.matrix() %>%
-#  colQuantiles(probs = seq(from = 0, to = 1, by = 0.25)) %>%
-#  as.data.frame()
-# 
-# ref_table <- round(data.frame(ref_mean, ref_sd,
-#                              ref_min, ref_iqr, ref_max), digits = 4)
-# write.xlsx(ref_table, rowNames = TRUE,
-#           paste0("Results/", model_name, "/RegionalTrends.xlsx"))
-#  
-#  
-# #### National Trends ####
-#  
-# lam_table <- sum_rt %>%
-#  select("LTLA", "date", "NationalTrend") %>%
-#   dplyr::group_by(LTLA, date) %>%
-#   dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-#   dplyr::filter(n > 1L) %>%
-#  pivot_wider(names_from = date, values_from = all_of(NationalTrend)) %>%
-#  colMeans() %>%
-#  as.data.frame() %>%
-#  rename(lambda = ".")
-#  
-# write.xlsx(lam_table, rowNames = TRUE,
-#           paste0("Results/", model_name, "/NationalTrend.xlsx"))
-#  
-#  
-# 
 # PLOTS -------------------------------------------------------------------
  
  
