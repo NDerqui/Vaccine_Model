@@ -99,7 +99,7 @@ Steps <- c(max(c(min(data_rt$date), min(data_var$date))),
 
 #### Load data ####
 
-model_name <- "CorrectVar_2000_8_1D"
+model_name <- "CorrectVar_2000_8_3D"
 
 # fit <- readRDS(paste0(model_name, ".Rds"))
   
@@ -228,7 +228,7 @@ dev.off()
 # As a scatter plot
  
 png(paste0("Figures/", model_name, "/Pre_Obs_Rt_time.png"),
-    width = 12, height = 6, units = 'in', res = 600)
+    width = 9, height = 5, units = 'in', res = 600)
  
 ggplot(data = sum_rt) +
   geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date,
@@ -245,13 +245,11 @@ ggplot(data = sum_rt) +
         x = "Date",
         y = "Reproduction number") +
   theme(
-     plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
-     axis.title.x = element_text(size = rel(0.9), face="bold"),
-     axis.title.y = element_text(size = rel(0.9), face="bold"),
-     axis.text = element_text(size=rel(0.7)),
+     plot.title = element_text(face="bold", hjust = 0.5),
+     axis.title.x = element_text(face="bold"),
+     axis.title.y = element_text(face="bold"),
      legend.position = "bottom",
-     legend.title = element_text(size = rel(0.9), face="bold"),
-     legend.text = element_text(size=rel(0.7))) +
+     legend.title = element_text(face="bold")) +
   if (DoKnots == 1) {
   geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
              color = "darkmagenta")}
@@ -351,17 +349,17 @@ some_LTLA <- sum_rt %>%
          LTLA == 208 | LTLA == 179 | LTLA == 221)
  
 png(paste0("Figures/", model_name, "/LTLA_sum_plot_all.png"),
-    width = 15, height = 12, units = 'in', res = 300)
+    width = 12, height = 8, units = 'in', res = 300)
 
 ggplot(data = some_LTLA) +
   geom_line (mapping = aes(x = date, y = NationalTrend, 
-                           color = "Lambda"), size =rel(0.8)) +
+                           color = "Lambda"), linewidth = 1.3) +
   geom_line (mapping = aes(x = date, y = RegionalTrends,
-                           color = "RanEffect"), size =rel(0.8)) +
+                           color = "RanEffect"), linewidth = 1.3) +
   geom_line (mapping = aes(x = date, y = Rt_LogP,
-                           color = "RtLogP"), size =rel(0.8)) +
+                           color = "RtLogP"), linewidth = 1.3) +
   geom_line (mapping = aes(x = date, y = Rt_data,
-                           color = "RtData"), size =rel(0.8)) +
+                           color = "RtData"), linewidth = 1.3) +
   scale_color_manual(name = "Parameter",
                      breaks = c("Lambda", "RanEffect",
                                 "RtLogP", "RtData"),
@@ -376,13 +374,13 @@ ggplot(data = some_LTLA) +
         x = "Date",
         y = "Parameter value") +
    theme(
-     plot.title = element_text(size = rel(1), face="bold", hjust = 0.5),
-     axis.title.x = element_text(size = rel(0.9), face="bold"),
-     axis.title.y = element_text(size = rel(0.9), face="bold"),
-     axis.text = element_text(size=rel(0.7)),
-     legend.title = element_text(size = rel(0.9), face="bold"),
+     plot.title = element_text(size = rel(1.5), face="bold", hjust = 0.5),
+     axis.title.x = element_text(size = rel(1.3), face="bold"),
+     axis.title.y = element_text(size = rel(1.3), face="bold"),
+     axis.text = element_text(size=rel(1.2)),
+     legend.title = element_text(size = rel(1.3), face="bold"),
      legend.position = "bottom",
-     legend.text = element_text(size=rel(0.7))) +
+     legend.text = element_text(size=rel(1.2))) +
   facet_wrap(LTLA ~ .)
 
 dev.off()
