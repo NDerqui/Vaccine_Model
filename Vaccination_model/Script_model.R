@@ -626,6 +626,80 @@ fit = sampling(StanModel, data = data_stan,
                  control = list(adapt_delta = ModelMetaData$adapt_delta,
                                 max_treedepth = ModelMetaData$max_treedepth))
 
+#### Get pars of interest
+
+## LOO-CV
+
+loo_cv <- loo(fit)
+
+## Fit results
+
+model_matrix <- as.matrix(fit)
+
+# Vaccine Effect
+
+VE <- colMeans(model_matrix[, grep("VaxEffect", colnames(model_matrix))])
+
+VE_Quan <- colQuantiles(model_matrix[, grep("VaxEffect", colnames(model_matrix))], probs=c(0.025,0.975))
+
+VE_data <- round(data.frame(VE, VE_Quan), digits = 4)
+
+# Var Advantage
+
+if (data_stan[[5]] == 1) {
+  
+  VarAdvantage <- colMeans(model_matrix[, grep('^VarAdvantage\\[', colnames(model_matrix))])
+  
+  VarAdvantage_Quan <- colQuantiles(model_matrix[, grep('^VarAdvantage\\[', colnames(model_matrix))], probs=c(0.025,0.975))
+  
+  VarAdvantage_data <- round(data.frame(VarAdvantage, VarAdvantage_Quan), digits = 4)
+}
+
+# Rt predictions
+
+Rt <- colMeans(model_matrix[, grep("LogPredictions", colnames(model_matrix))])
+
+Rt_Quan <- colQuantiles(model_matrix[, grep("LogPredictions", colnames(model_matrix))], probs=c(0.025,0.975))
+
+Rt_data <- round(data.frame(Rt, Rt_Quan), digits = 4)
+
+# Regional Trends
+
+RegionalTrends <- colMeans(model_matrix[, grep("RegionalTrends", colnames(model_matrix))])
+
+RegionalTrends_Quan <- colQuantiles(model_matrix[, grep("RegionalTrends", colnames(model_matrix))], probs=c(0.025,0.975))
+
+RegionalTrends_data <- round(data.frame(RegionalTrends, RegionalTrends_Quan), digits = 4)
+
+# National Trend
+
+NationalTrend <- colMeans(model_matrix[, grep('^NationalTrend\\[', colnames(model_matrix))])
+
+NationalTrend_Quan <- colQuantiles(model_matrix[, grep('^NationalTrend\\[', colnames(model_matrix))], probs=c(0.025,0.975))
+
+NationalTrend_data <- round(data.frame(NationalTrend, NationalTrend_Quan), digits = 4)
+
+# Lambda (only useful if doing spline)
+
+Lambda <- colMeans(model_matrix[, grep('^lambda\\[', colnames(model_matrix))])
+
+Lambda_Quan <- colQuantiles(model_matrix[, grep('^lambda\\[', colnames(model_matrix))], probs=c(0.025,0.975))
+
+Lambda_data <- round(data.frame(Lambda, Lambda_Quan), digits = 4)
+
+## Return object
+
+list_result <- list(loo = loo_cv,
+                    VaccineEffect = VE_data,
+                    if(data_stan[[5]] == 1) {VarAdvantage = VarAdvantage_data} else {VarAdvantage = NA},
+                    Rt_Predictions = Rt_data,
+                    RegionalRends = RegionalTrends_data,
+                    NationalTrend = NationalTrend_data,
+                    Lambda = Lambda_data)
+
+list_result
+
+
 
 # MODEL RESULTS -----------------------------------------------------------
 
@@ -634,19 +708,10 @@ fit = sampling(StanModel, data = data_stan,
 
 model_note <- "_linear" # Ie. "_nointercept"
 
-model_name <- paste0("fit_", ModelMetaData$iter, "_", ModelMetaData$chains, model_note)
+model_name <- paste0("fit_", ModelMetaData$iter, "_", ModelMetaData$chains, "_", model_note)
 
 
 #### Save data ####
 
-# saveRDS(fit, paste0(model_name, ".Rds"))
-# saveRDS(fit, paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/", model_name, ".Rds"))
-
-
-#### Loo_cv ####
-
-loo_run = loo(fit)
-loo_run
-
-# saveRDS(loo_run, paste0("loo_", model_name, ".Rds")
-# saveRDS(loo_run, paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/", "loo_", model_name,".Rds"))
+# saveRDS(list_result, paste0("Sum", model_name, ".Rds"))
+# saveRDS(list_result, paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/Sum_", model_name, ".Rds"))
