@@ -407,6 +407,9 @@ for (i in 1:length(names)) {
 
 library(rcartocolor)
 
+
+##### Getting different models
+
 all_ve <- data.frame()
 
 models <- c("1A", "1B", "1C", "1D",
@@ -490,6 +493,47 @@ ggplot(data = filter(all_ve, model == "3A" |  model == "3B" |
                 position = position_dodge(0.5), width = 0.2) +
   scale_color_manual(values = carto_pal(name = "Safe")) +
   labs(title = "Model 3", y = "VE estimates", color = "Model") +
+  theme_bw() +
+  theme(title = element_text(face = "bold"),
+        axis.title.x = element_blank(),
+        legend.position = "bottom")
+
+dev.off()
+
+
+##### Getting different iterations
+
+all_ve <- data.frame()
+
+models <- c("2k_8cha", "5k_10cha", "10k_10cha", "10k_20cha", "20k_10cha")
+
+for (variation in 1:length(models)) {
+  
+  add <- read.xlsx(xlsxFile = paste0("Results/Checks_", models[variation], "_2D_results_table.xlsx"),
+                   sheet = "VaxEffect")
+  
+  add$model <- paste0(models[variation])
+  
+  add[,1] <- rep(c("Dose 1", "Dose 2", "Dose 3"), times = 3)
+  
+  colnames(add) <- c("variant", "ve", "low", "upp", "model")
+  
+  all_ve <- rbind(all_ve, add)
+}
+
+### Plot
+
+png(paste0("Figures/Comparing_2Dmodels.png"),
+    width = 8, height = 5, units = 'in', res = 1200)
+
+ggplot(data = all_ve) +
+  geom_point(mapping = aes(x = variant, y = ve, color = model),
+             position = position_dodge(0.5)) +
+  geom_errorbar(mapping = aes(x = variant, y = ve, color = model,
+                              ymin = low, ymax = upp),
+                position = position_dodge(0.5), width = 0.2) +
+  scale_color_manual(values = carto_pal(name = "Safe")) +
+  labs(title = "Model 2D - iter and chain variations", y = "VE estimates", color = "Model") +
   theme_bw() +
   theme(title = element_text(face = "bold"),
         axis.title.x = element_blank(),
