@@ -540,3 +540,116 @@ ggplot(data = all_ve) +
         legend.position = "bottom")
 
 dev.off()
+
+
+#### Summary Advantage effects ####
+
+## Now that results have been extracted, we can loop through some models
+## to summarise VarAD estimates together
+
+library(rcartocolor)
+
+
+##### Getting different models
+
+all_ve <- data.frame()
+
+models <- c("2A", "2B", "2C", "2D",
+            "3A", "3B", "3C", "3D")
+
+for (variation in 1:length(models)) {
+  
+  add <- read.xlsx(xlsxFile = paste0("Results/CorrectVar_10k_20_sum_", models[variation], "_results_table.xlsx"),
+                   sheet = "VarAdvantage")
+  
+  add$model <- paste0(models[variation])
+  
+  add[,1] <- c(" WT", "Alpha", "Delta")
+  
+  colnames(add) <- c("variant", "ad", "low", "upp", "model")
+  
+  all_ve <- rbind(all_ve, add)
+}
+
+### Model 2
+
+png(paste0("Figures/VarAd_sum_model2.png"),
+    width = 8, height = 5, units = 'in', res = 1200)
+
+ggplot(data = filter(all_ve, model == "2A" |  model == "2B" |
+                       model == "2C" |  model == "2D")) +
+  geom_point(mapping = aes(x = variant, y = ad, color = model),
+             position = position_dodge(0.5)) +
+  geom_errorbar(mapping = aes(x = variant, y = ad, color = model,
+                              ymin = low, ymax = upp),
+                position = position_dodge(0.5), width = 0.2) +
+  scale_color_manual(values = carto_pal(name = "Safe")) +
+  labs(title = "Model 2", y = "VarAd estimates", color = "Model") +
+  theme_bw() +
+  theme(title = element_text(face = "bold"),
+        axis.title.x = element_blank(),
+        legend.position = "bottom")
+
+dev.off()
+
+### Model 3
+
+png(paste0("Figures/VarAd_sum_model3.png"),
+    width = 10, height = 6, units = 'in', res = 1200)
+
+ggplot(data = filter(all_ve, model == "3A" |  model == "3B" |
+                       model == "3C" |  model == "3D")) +
+  geom_point(mapping = aes(x = variant, y = ve, color = model),
+             position = position_dodge(0.5)) +
+  geom_errorbar(mapping = aes(x = variant, y = ve, color = model,
+                              ymin = low, ymax = upp),
+                position = position_dodge(0.5), width = 0.2) +
+  scale_color_manual(values = carto_pal(name = "Safe")) +
+  labs(title = "Model 3", y = "VarAd estimates", color = "Model") +
+  theme_bw() +
+  theme(title = element_text(face = "bold"),
+        axis.title.x = element_blank(),
+        legend.position = "bottom")
+
+dev.off()
+
+
+##### Getting different iterations
+
+all_ve <- data.frame()
+
+models <- c("2k_8cha", "5k_10cha", "10k_10cha", "10k_20cha", "20k_10cha")
+
+for (variation in 1:length(models)) {
+  
+  add <- read.xlsx(xlsxFile = paste0("Results/Checks_", models[variation], "_2D_results_table.xlsx"),
+                   sheet = "VarAdvantage")
+  
+  add$model <- paste0(models[variation])
+  
+  add[,1] <- c(" WT", "Alpha", "Delta")
+  
+  colnames(add) <- c("variant", "ad", "low", "upp", "model")
+  
+  all_ve <- rbind(all_ve, add)
+}
+
+### Plot
+
+png(paste0("Figures/Comparing_2Dmodels)VarAd.png"),
+    width = 8, height = 5, units = 'in', res = 1200)
+
+ggplot(data = all_ve) +
+  geom_point(mapping = aes(x = variant, y = ad, color = model),
+             position = position_dodge(0.5)) +
+  geom_errorbar(mapping = aes(x = variant, y = ad, color = model,
+                              ymin = low, ymax = upp),
+                position = position_dodge(0.5), width = 0.2) +
+  scale_color_manual(values = carto_pal(name = "Safe")) +
+  labs(title = "Model 2D - iter and chain variations", y = "VarAdvantage estimates", color = "Model") +
+  theme_bw() +
+  theme(title = element_text(face = "bold"),
+        axis.title.x = element_blank(),
+        legend.position = "bottom")
+
+dev.off()
