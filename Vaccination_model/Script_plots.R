@@ -64,9 +64,7 @@ if (DoAge == 0) {
   
   LTLA <- data_stan[[20]]
   
-  Dose_1 <- data_stan[[23]][,1]
-  Dose_2 <- data_stan[[23]][,2]
-  Dose_3 <- data_stan[[23]][,3]
+  VarProp <- data_stan[[24]]
   
   date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[19]]*7
   
@@ -76,9 +74,7 @@ if (DoAge == 0) {
   
   LTLA <- data_stan_age[[20]]
   
-  Dose_1 <- data_stan_age[[23]][,1]
-  Dose_2 <- data_stan_age[[23]][,2]
-  Dose_3 <- data_stan_age[[23]][,3]
+  VarProp <- data_stan_age[[24]]
   
   date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan_age[[19]]*7
   
@@ -102,12 +98,12 @@ Steps <- c(max(c(min(data_rt$date), min(data_var$date))),
 
 # Insert models names
 
-names <- c("Checks_2k_8cha_2D", "Checks_5k_10cha_2D",
-           "Checks_10k_10cha_2D", "Checks_10k_20cha_2D", "Checks_20k_10cha_2D")
+names <- c("Checks_10k_10cha_2B", "Checks_10k_10cha_2D",
+           "Checks_10k_10cha_3B", "Checks_10k_10cha_3D")
 
 # Insert Variant status
 
-variants <- c(rep(1, times = 5))
+variants <- c(rep(1, times = 4))
 
 
 #### Loop
@@ -150,9 +146,10 @@ for (i in 1:length(names)) {
   Lambda_data <- list_result[[7]]
   Lambda <- list_result[[7]][1]
   
-  sum_rt <- data.frame(LTLA, date, Rt_data,
-                       Rt_Predictions_data, RegionalTrends_data, NationalTrend_data,
-                       Dose_1, Dose_2, Dose_3)
+  Rt_NoVax <- as.matrix(VarProp) %*% as.matrix(VarAdvantage)
+  
+  sum_rt <- data.frame(LTLA, date, Rt_data, Rt_Predictions_data,
+                       Rt_NoVax, RegionalTrends_data, NationalTrend_data)
   
   
   
@@ -196,10 +193,11 @@ for (i in 1:length(names)) {
   
   table_list <- list("VaxEffect" = VaxEffect_data,
                      "VarAdvantage" = VarAdvantage_data,
-                     "RtPredictions" = Rt_Predictions_data,
-                     "RegionalTrends" = RegionalTrends_data,
                      "NationalTrends" = NationalTrend_data,
-                     "Lambda" = Lambda_data)
+                     "RegionalTrends" = RegionalTrends_data,
+                     "Rt_NoVax_[VarAd_x_RegTrend]" = Rt_NoVax,
+                     "RtPredictions" = Rt_Predictions_data,
+                     "RtData" = Rt_data)
   
   write.xlsx(table_list, rowNames = TRUE,
              file = paste0("Results/", model_name, "_results_table.xlsx"))
@@ -237,14 +235,19 @@ for (i in 1:length(names)) {
   
   p <- ggplot(data = sum_rt) +
     geom_boxplot (mapping = aes(x = date, y = Rt_data, group = date,
-                                color = "Rt_data"), size = rel(0.5)) +
+                                color = "Rt_data", fill = "Rt_data"),
+                  alpha = 0.3, size = rel(0.5)) +
     geom_boxplot (mapping = aes(x = date, y = Rt, group = date,
-                                color = "Rt_LogP"), size = rel(0.5)) + 
+                                color = "Rt_LogP", fill = "Rt_LogP"),
+                  alpha = 0.3, size = rel(0.5)) + 
     scale_color_manual(name="Reproduction number",
                        breaks = c("Rt_data", "Rt_LogP"),
-                       values = c("Rt_data"="firebrick", 
-                                  "Rt_LogP"="forestgreen"),
+                       values = c("firebrick4", "springgreen4"),
                        labels=c("Observed", "Predicted")) +
+    scale_fill_manual(name="Reproduction number",
+                      breaks = c("Rt_data", "Rt_LogP"),
+                      values = c("firebrick4", "springgreen4"),
+                      labels=c("Observed", "Predicted")) +
     theme_classic() +
     labs(title = "Observed and Predicted Rt in all LTLAs over time",
          x = "Date",
@@ -313,19 +316,19 @@ for (i in 1:length(names)) {
                              color = "Lambda"), linewidth = 1.3) +
     geom_line (mapping = aes(x = date, y = RegionalTrends,
                              color = "RanEffect"), linewidth = 1.3) +
+    geom_line (mapping = aes(x = date, y = VarAdvantage,
+                             color = "WithVarAd"), linewidth = 1.3) +
     geom_line (mapping = aes(x = date, y = Rt,
                              color = "RtLogP"), linewidth = 1.3) +
     geom_line (mapping = aes(x = date, y = Rt_data,
                              color = "RtData"), linewidth = 1.3) +
     scale_color_manual(name = "Parameter",
-                       breaks = c("Lambda", "RanEffect",
+                       breaks = c("Lambda", "RanEffect", "WithVarAd",
                                   "RtLogP", "RtData"),
-                       values = c("Lambda" = "navy",
-                                  "RanEffect" = "lightgreen",
-                                  "RtLogP" = "forestgreen",
-                                  "RtData" = "firebrick"),
-                       labels = c("National Trend", "Regional Trend",
-                                  "Predicted Rt", "Observed Rt")) +
+                       values = c("royalblue4", "dodgerblue2", "seagreen2",
+                                  "springgreen4", "firebrick4"),
+                       labels = c("National Trend", "Regional Trend [No VarAd - NoVax]", "Trend with VarAdvantage [No Vax]",
+                                  "Predicted Rt [With VarAd and Vax]", "Observed Rt")) +
     theme_classic() +
     labs(title = "Parameters in various LTLAs",
          x = "Date",
@@ -335,9 +338,8 @@ for (i in 1:length(names)) {
       axis.title.x = element_text(size = rel(1.3), face="bold"),
       axis.title.y = element_text(size = rel(1.3), face="bold"),
       axis.text = element_text(size=rel(1.2)),
-      legend.title = element_text(size = rel(1.3), face="bold"),
-      legend.position = "bottom",
-      legend.text = element_text(size=rel(1.2))) +
+      legend.title = element_text(face="bold"),
+      legend.position = "bottom") +
     facet_wrap(LTLA ~ .)
   
   png(paste0("Figures/", model_name, "/LTLA_sum_plot_all.png"),
@@ -354,6 +356,8 @@ for (i in 1:length(names)) {
                              color = "RanEffect")) +
     geom_ribbon(mapping = aes(x = date, ymin = X2.5..1, ymax = X97.5..1,
                               fill = "RanEffect"), alpha = 0.2) +
+    geom_line (mapping = aes(x = date, y = VarAdvantage,
+                             color = "WithVarAd")) +
     geom_line (mapping = aes(x = date, y = Rt,
                              color = "RtLogP")) +
     geom_ribbon(mapping = aes(x = date, ymin = X2.5., ymax = X97.5.,
@@ -361,23 +365,19 @@ for (i in 1:length(names)) {
     geom_line (mapping = aes(x = date, y = Rt_data,
                              color = "RtData")) +
     scale_color_manual(name = "Parameter",
-                       breaks = c("Lambda", "RanEffect",
+                       breaks = c("Lambda", "RanEffect", "WithVarAd",
                                   "RtLogP", "RtData"),
-                       values = c("Lambda" = "navy",
-                                  "RanEffect" = "lightgreen",
-                                  "RtLogP" = "forestgreen",
-                                  "RtData" = "firebrick"),
-                       labels = c("National Trend", "Regional Trend",
-                                  "Predicted Rt", "Observed Rt")) +
+                       values = c("royalblue4", "dodgerblue2", "seagreen2",
+                                  "springgreen4", "firebrick4"),
+                       labels = c("National Trend", "Regional Trend [No VarAd - NoVax]", "Trend with VarAdvantage [No Vax]",
+                                  "Predicted Rt [With VarAd and Vax]", "Observed Rt")) +
     scale_fill_manual(name = "Parameter",
-                      breaks = c("Lambda", "RanEffect",
-                                 "RtLogP", "RtData"),
-                      values = c("Lambda" = "navy",
-                                 "RanEffect" = "lightgreen",
-                                 "RtLogP" = "forestgreen",
-                                 "RtData" = "firebrick"),
-                      labels = c("National Trend", "Regional Trend",
-                                 "Predicted Rt", "Observed Rt")) +
+                       breaks = c("Lambda", "RanEffect", "WithVarAd",
+                                  "RtLogP", "RtData"),
+                       values = c("royalblue4", "dodgerblue2", "seagreen2",
+                                  "springgreen4", "firebrick4"),
+                       labels = c("National Trend", "Regional Trend [No VarAd - NoVax]", "Trend with VarAdvantage [No Vax]",
+                                  "Predicted Rt [With VarAd and Vax]", "Observed Rt")) +
     theme_classic() +
     labs(title = "Parameters in various LTLAs",
          x = "Date",
@@ -387,9 +387,8 @@ for (i in 1:length(names)) {
       axis.title.x = element_text(size = rel(1.3), face="bold"),
       axis.title.y = element_text(size = rel(1.3), face="bold"),
       axis.text = element_text(size=rel(1.2)),
-      legend.title = element_text(size = rel(1.3), face="bold"),
-      legend.position = "bottom",
-      legend.text = element_text(size=rel(1.2))) +
+      legend.title = element_text(face="bold"),
+      legend.position = "bottom") +
     facet_wrap(LTLA ~ .)
   
   png(paste0("Figures/", model_name, "/LTLA_plot.png"),
@@ -412,9 +411,8 @@ library(rcartocolor)
 
 all_ve <- data.frame()
 
-models <- c("1A", "1B", "1C", "1D",
-            "2A", "2B", "2C", "2D",
-            "3A", "3B", "3C", "3D")
+models <- c("2B", "2D",
+            "3B", "3D")
 
 for (variation in 1:length(models)) {
   
