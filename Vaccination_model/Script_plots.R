@@ -416,7 +416,7 @@ models <- c("2B", "2D",
 
 for (variation in 1:length(models)) {
   
-  add <- read.xlsx(xlsxFile = paste0("Results/CorrectVar_10k_20_sum_", models[variation], "_results_table.xlsx"),
+  add <- read.xlsx(xlsxFile = paste0("Results/Checks_10k_10cha_", models[variation], "_results_table.xlsx"),
                    sheet = "VaxEffect")
   
   add$model <- paste0(models[variation])
@@ -552,12 +552,11 @@ library(rcartocolor)
 
 all_ve <- data.frame()
 
-models <- c("2A", "2B", "2C", "2D",
-            "3A", "3B", "3C", "3D")
+models <- c("2B", "2D", "3B", "3D")
 
 for (variation in 1:length(models)) {
   
-  add <- read.xlsx(xlsxFile = paste0("Results/CorrectVar_10k_20_sum_", models[variation], "_results_table.xlsx"),
+  add <- read.xlsx(xlsxFile = paste0("Results/Checks_10k_10cha_", models[variation], "_results_table.xlsx"),
                    sheet = "VarAdvantage")
   
   add$model <- paste0(models[variation])
@@ -597,9 +596,9 @@ png(paste0("Figures/VarAd_sum_model3.png"),
 
 ggplot(data = filter(all_ve, model == "3A" |  model == "3B" |
                        model == "3C" |  model == "3D")) +
-  geom_point(mapping = aes(x = variant, y = ve, color = model),
+  geom_point(mapping = aes(x = variant, y = ad, color = model),
              position = position_dodge(0.5)) +
-  geom_errorbar(mapping = aes(x = variant, y = ve, color = model,
+  geom_errorbar(mapping = aes(x = variant, y = ad, color = model,
                               ymin = low, ymax = upp),
                 position = position_dodge(0.5), width = 0.2) +
   scale_color_manual(values = carto_pal(name = "Safe")) +
