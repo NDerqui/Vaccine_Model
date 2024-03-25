@@ -50,13 +50,7 @@ parameters {
 	
   matrix <lower = 0> [NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
   
-  if (DoVaxAge) {
-    
-    matrix <lower = 0, upper = 1> [NumDoses, NumVaxVar*NumVaxGroup] 	VaxEffect_nc;	
-  } else {
-    
-    matrix <lower = 0, upper = 1> [NumDoses, NumVaxVar] 	VaxEffect_nc;	
-  }
+  matrix <lower = 0, upper = 1> [NumDoses, NumVaxVar*NumVaxGroup] 	VaxEffect_nc;
 
 	vector <lower = 1> [NumVar-1] VarAdvantage_nc;
 }
@@ -105,7 +99,7 @@ transformed parameters{
 	gamma 		= gamma_nc 		* phi2;
 	intercept 	= intercept_nc	* phi3;
 
-	if (NumVaxVar == NumVar & NumGroup == NumVaxGroup) {
+	if (NumVaxVar == NumVar && NumGroup == NumVaxGroup) {
 	  
 	  VaxEffect 	= VaxEffect_nc	* phi;
 	}
