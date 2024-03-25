@@ -25,11 +25,11 @@ data {
 	vector[NumKnots]		Knots;	        // Sequence of knots
 	vector[NumDatapoints]   Timepoints; // Sequence of timepoints
 	
-	vector[NumDatapoints] 			RtVals; 	    // y: Rt values across all time points and regions (expressed as giant vector) 
-	matrix[NumDatapoints, NumDoses]	VaxProp;	// x predictor: Binary design matrix. Each row is a region and date combination.
-	                                          // Each column has the proportion of vax at that time/LTLA with 1, 2, 3 doses
-	matrix[NumDatapoints, NumVar] VarProp;    // x predictor: Each col has the proportion of variants 1, 2, etc. up to NumVar
-	matrix[NumDatapoints, 1]       AgeProp;   // x predictor: Each age group proportion in each LTLA
+	vector <lower = 0> [NumDatapoints] 			                RtVals;   // y: Rt values across all time points and regions (expressed as giant vector) 
+	matrix <lower = 0, upper = 1> [NumDatapoints, NumDoses]	VaxProp;	// x predictor: Binary design matrix. Each row is a region and date combination.
+	                                                                  // Each column has the proportion of vax at that time/LTLA with 1, 2, 3 doses
+	matrix <lower = 0, upper = 1> [NumDatapoints, NumVar]   VarProp;  // x predictor: Each col has the proportion of variants 1, 2, etc. up to NumVar
+	matrix <lower = 0, upper = 1> [NumDatapoints, 1]        AgeProp;  // x predictor: Each age group proportion in each LTLA
 }
 
 transformed data{
@@ -46,12 +46,12 @@ parameters {
 	matrix[NumLTLAs,IntDim] 		gamma_nc; 	  	// Prev alpha, indexed by: i) LTLA; ii) factor 
 	vector[NumLTLAs] 				intercept_nc;     	// indexed by: i) LTLA
 	
-  matrix[NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
+  matrix <lower = 0> [NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
   
-	matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 	VaxEffect_nc;	
+	matrix <lower = 0, upper = 1> [NumDoses, NumVaxVar] 	VaxEffect_nc;	
 	// matrix<lower = 0>[NumDoses*NumGroup, NumVaxVar] 	VaxEffect_nc;	
 	
-	vector<lower = 1>[NumVar-1] VarAdvantage_nc;
+	vector <lower = 1> [NumVar-1] VarAdvantage_nc;
 }
 
 transformed parameters{
@@ -66,8 +66,8 @@ transformed parameters{
 	vector[NumLTLAs] 			intercept 	= rep_vector(0, NumLTLAs); 
 	matrix[NumLTLAs,IntDim] 	gamma 		= rep_matrix(0, NumLTLAs, IntDim); 
 
-	matrix[NumTrendPar,IntDim] lambda_raw 		= rep_matrix(0, NumTrendPar, IntDim); // has NumKnots/NumTimepoints rows (not NumDatapoints)
-	matrix[NumPointsLine,IntDim] lambda 	= rep_matrix(0, NumPointsLine, IntDim);  // has NumKnots*NumLTLAs rows (not NumTimepoints)
+	matrix <lower = 0> [NumTrendPar,IntDim] lambda_raw 		= rep_matrix(0, NumTrendPar, IntDim); // has NumKnots/NumTimepoints rows (not NumDatapoints)
+	matrix <lower = 0> [NumPointsLine,IntDim] lambda 	= rep_matrix(0, NumPointsLine, IntDim);  // has NumKnots*NumLTLAs rows (not NumTimepoints)
 	
 	matrix[NumKnots-1, IntDim] origin; 	// intercept
 	matrix[NumKnots-1, IntDim] slope;  	// slope
@@ -75,18 +75,18 @@ transformed parameters{
 	matrix[NumKnots-2, IntDim] b; 		// Coeff b for quadratic eq
 	matrix[NumKnots-2, IntDim] c; 		// Coeff c for quadratic eq
 	
-	matrix[NumDatapoints, IntDim]	NationalTrend	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line or free
-	vector[NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
+	matrix <lower = 0> [NumDatapoints, IntDim]	NationalTrend	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line or free
+	vector <lower = 0> [NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
 	
 //	matrix[NumDatapoints, NumVaxVar] VacEffects_Regional 	= rep_matrix(0, NumDatapoints, NumVaxVar);
 	//matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
-	matrix<lower = 0, upper = 1>[NumDoses, NumVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVar); // want 2nd dimension to be NumVar, not NumVaxVar, unlike VaxEffect_nc above
+	matrix <lower = 0, upper = 1> [NumDoses, NumVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVar); // want 2nd dimension to be NumVar, not NumVaxVar, unlike VaxEffect_nc above
 	// matrix[NumDoses*NumGroup, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses*NumGroup, NumVaxVar);
 	
 //	vector[NumDatapoints] VariantsEffect 	= rep_vector(0, NumDatapoints);
-	vector<lower = 1>[NumVar] VarAdvantage;
+	vector <lower = 1> [NumVar] VarAdvantage;
 	
-	vector[NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
+	vector <lower = 0> [NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
 	
 	// VarAdvantage for base variant set to 1
 	VarAdvantage[1] = 1;
