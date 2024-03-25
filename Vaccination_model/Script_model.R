@@ -384,6 +384,13 @@ get_data <- function(data_vax, data_rt, data_var,
       NumVar <- 1
       VarProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
     }
+    
+    # Data
+    
+    RtVals <- data_model$Rt
+    VaxProp <- data_model[,covar_vax]
+    VarProp <- VarProp
+    AgeProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
   
   } else {
     
@@ -452,10 +459,8 @@ get_data <- function(data_vax, data_rt, data_var,
     
     # No of total obs 
     
-    NumDatapoints <- NumLTLAs * NumTimepoints * NumGroup
+    NumDatapoints <- nrow(data_model_age)
     NumDatapoints
-    
-    nrow(data_model_age)
     
     # Variants
     
@@ -466,6 +471,13 @@ get_data <- function(data_vax, data_rt, data_var,
       NumVar <- 1
       VarProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
     }
+    
+    # Data
+    
+    RtVals <- data_model_age$Rt
+    VaxProp <- data_model_age[,covar_vax]
+    VarProp <- VarProp
+    AgeProp <- age_prop
   
   }
   
@@ -498,6 +510,10 @@ get_data <- function(data_vax, data_rt, data_var,
     NumVaxVar <- 1
   }
   
+  # Check point
+  
+  VaxProp[VaxProp > 1] <- 1
+  
   # Stan list
   
   data_stan <- list(
@@ -527,10 +543,10 @@ get_data <- function(data_vax, data_rt, data_var,
     LTLAs = LTLAs,
     Groups = Groups,
     
-    RtVals = data_model$Rt,
-    VaxProp = data_model[,covar_vax],
+    RtVals = RtVals,
+    VaxProp = VaxProp,
     VarProp = VarProp,
-    AgeProp = as.data.frame(matrix(1, nrow = NumDatapoints))
+    AgeProp = AgeProp
   )  
   
   return(data_stan)
