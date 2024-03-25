@@ -49,7 +49,6 @@ parameters {
   matrix <lower = 0> [NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
   
 	matrix <lower = 0, upper = 1> [NumDoses, NumVaxVar] 	VaxEffect_nc;	
-	// matrix<lower = 0>[NumDoses*NumGroup, NumVaxVar] 	VaxEffect_nc;	
 	
 	vector <lower = 1> [NumVar-1] VarAdvantage_nc;
 }
@@ -78,12 +77,9 @@ transformed parameters{
 	matrix <lower = 0> [NumDatapoints, IntDim]	NationalTrend	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line or free
 	vector <lower = 0> [NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
 	
-//	matrix[NumDatapoints, NumVaxVar] VacEffects_Regional 	= rep_matrix(0, NumDatapoints, NumVaxVar);
-	//matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
+  //matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
 	matrix <lower = 0, upper = 1> [NumDoses, NumVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVar); // want 2nd dimension to be NumVar, not NumVaxVar, unlike VaxEffect_nc above
-	// matrix[NumDoses*NumGroup, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses*NumGroup, NumVaxVar);
 	
-//	vector[NumDatapoints] VariantsEffect 	= rep_vector(0, NumDatapoints);
 	vector <lower = 1> [NumVar] VarAdvantage;
 	
 	vector <lower = 0> [NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
@@ -246,7 +242,6 @@ model {
 	sigma_nc 		~ std_normal();
 	
 	for (i in 1:NumDoses)
-	// for (i in 1:NumDoses*NumGroup)
 	  for (j in 1:NumVaxVar)
 		  VaxEffect_nc[i, j] ~ std_normal();
 		  
