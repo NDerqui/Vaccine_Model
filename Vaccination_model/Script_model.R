@@ -133,7 +133,7 @@ get_data <- function(data_vax, data_rt, data_var,
                      covar_var, covar_vax,
                      Date_Start, Date_End,
                      lockdown_steps,
-                     DoVariants, DoVaxVariants, DoAge,
+                     DoVariants, DoVaxVariants, DoAge, DoVaxAge,
                      DoKnots, Quadratic,
                      IncludeIntercept, IncludeScaling) {
   
@@ -207,6 +207,7 @@ get_data <- function(data_vax, data_rt, data_var,
   data_merge <- merge(data_merge, dvar, by = c("ltla_code", "date"), all = TRUE)
   
   data_merge_age <- merge(dage, drt, by = c("ltla_name", "date"), all = TRUE)
+  data_merge_age <- merge(data_merge_age, dvar, by = c("ltla_code", "date"), all = TRUE)
   
   
   ## Final Cleaning ##
@@ -283,6 +284,16 @@ get_data <- function(data_vax, data_rt, data_var,
     mutate(Var_Delta = case_when(total == 0 ~ 0,
                                  total != 0 ~ n_all_delta_variant/total))
   
+  data_merge_age <- data_merge_age %>%
+    mutate(total = (n_all_wildtype_variant + n_all_alpha_variant + n_all_delta_variant)) %>%
+    mutate(Var_PreAlpha = case_when(total == 0 ~ 0,
+                                    total != 0 ~ n_all_wildtype_variant/total)) %>%
+    # mutate(total = (n_all_alpha_variant + n_all_delta_variant)) %>%
+    mutate(Var_Alpha = case_when(total == 0 ~ 1,
+                                 total != 0 ~ n_all_alpha_variant/total)) %>%
+    mutate(Var_Delta = case_when(total == 0 ~ 0,
+                                 total != 0 ~ n_all_delta_variant/total))
+  
   # Select only the ltla with max no of weeks
   
   data_merge <- data_merge %>%
@@ -295,17 +306,17 @@ get_data <- function(data_vax, data_rt, data_var,
   
   data_model <- select(data_merge, "ltla_name", "date", "week", "Rt",
                        "First_Prop", "Second_Prop", "Third_Prop",
-                       # "Var_Alpha", "Var_Delta")
                        "Var_PreAlpha", "Var_Alpha", "Var_Delta")
   data_model_age <- select(data_merge_age, "ltla_name", "date", "week", "Rt","group",
-                           "First_Prop", "Second_Prop", "Third_Prop")
+                           "First_Prop", "Second_Prop", "Third_Prop",
+                           "Var_PreAlpha", "Var_Alpha", "Var_Delta")
   
   
   ## Stan list data ##
   
   if (DoAge == 0) {
     
-    #### No age: var or not ####
+    ## Options without age
     
     dim(data_model)
     
@@ -345,10 +356,14 @@ get_data <- function(data_vax, data_rt, data_var,
     }
     NumWeeksByLTLA
     
-    # No groups
+    # No of age groups
     
     NumGroup <- 1
     NumGroup
+    NumVaxGroup <- 1
+    NumVaxGroup
+    
+    # Names of age groups
     
     Groups <- rep(1, times = nrow(data_model))
     Groups
@@ -360,28 +375,6 @@ get_data <- function(data_vax, data_rt, data_var,
     
     nrow(data_model)
     
-    # No of Knots
-    
-    Knots
-    Knots_weeks
-    
-    NumKnots <- length(Knots)
-    NumKnots
-    
-    # No of LTLAs x No of Knots
-    
-    NumPointsLine <- NumLTLAs*NumKnots
-    NumPointsLine
-    
-    
-    # Spline option
-    
-    if (DoKnots == 1) {
-      NumTrendPar <- NumKnots
-    } else {
-      NumTrendPar <- NumTimepoints
-    }
-    
     # Variants
     
     if (DoVariants == 1) {
@@ -391,49 +384,10 @@ get_data <- function(data_vax, data_rt, data_var,
       NumVar <- 1
       VarProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
     }
-    
-    if (DoVaxVariants == 1) {
-      NumVaxVar <- NumVar
-    } else {
-      NumVaxVar <- 1
-    }
-    
-    # Stan list
-    
-    data_stan <- list(
-      IncludeIntercept = IncludeIntercept,
-      IncludeScaling = IncludeScaling,
-      DoKnots = DoKnots,
-      Quadratic = Quadratic,
-      DoVariants = DoVariants,
-      DoVaxVariants = DoVaxVariants,
-      DoAge = DoAge,
-      
-      NumDatapoints = NumDatapoints,
-      NumLTLAs = NumLTLAs,
-      NumDoses = length(covar_vax),
-      NumVar = NumVar,
-      NumVaxVar = NumVaxVar,
-      NumGroup = NumGroup,
-      NumTimepoints = NumTimepoints,
-      NumKnots = NumKnots,
-      NumPointsLine = NumPointsLine,
-      NumTrendPar = NumTrendPar,
-      
-      Knots = Knots_weeks,
-      Timepoints = Timepoints,
-      LTLAs = LTLAs,
-      Groups = Groups,
-      
-      RtVals = data_model$Rt,
-      VaxProp = data_model[,covar_vax],
-      VarProp = VarProp,
-      AgeProp = as.data.frame(matrix(1, nrow = NumDatapoints))
-    )  
-    
+  
   } else {
     
-    #### Age model ####
+    ## Options with age
     
     dim(data_model_age)
     
@@ -473,10 +427,18 @@ get_data <- function(data_vax, data_rt, data_var,
     }
     NumWeeksByLTLA
     
-    # No groups
+    # No of age groups
     
     NumGroup <- length(unique(data_model_age$group))
     NumGroup
+    
+    if (DoVaxAge == 1) {
+      NumVaxGroup <- NumGroup} else {
+      NumVaxGroup <- 1
+    }
+    NumVaxGroup
+    
+    # Names of age groups
     
     NamesGroups <- unique(data_model_age$group)
     
@@ -495,70 +457,83 @@ get_data <- function(data_vax, data_rt, data_var,
     
     nrow(data_model_age)
     
-    # No of Knots
+    # Variants
     
-    Knots
-    Knots_weeks
-    
-    NumKnots <- length(Knots)
-    NumKnots
-    
-    # No of LTLAs x No of Knots
-    
-    NumPointsLine <- NumLTLAs*NumKnots
-    NumPointsLine
-    
-    
-    # Spline option
-    
-    if (DoKnots == 1) {
-      NumTrendPar <- NumKnots
+    if (DoVariants == 1) {
+      NumVar <- length(covar_var)
+      VarProp <- data_model_age[,covar_var]
     } else {
-      NumTrendPar <- NumTimepoints
+      NumVar <- 1
+      VarProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
     }
-    
-    # Variants / Age groups option
-    
-    NumVar <- 1
-    VarProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
-    NumVaxVar <- 1
-    
-    # Stan list
-    
-    data_stan <- list(
-      IncludeIntercept = IncludeIntercept,
-      IncludeScaling = IncludeScaling,
-      DoKnots = DoKnots,
-      Quadratic = Quadratic,
-      DoVariants = DoVariants,
-      DoVaxVariants = DoVaxVariants,
-      DoAge = DoAge,
-      
-      NumDatapoints = NumDatapoints,
-      NumLTLAs = NumLTLAs,
-      NumDoses = length(covar_vax),
-      NumVar = NumVar,
-      NumVaxVar = NumVaxVar,
-      NumGroup = NumGroup,
-      NumTimepoints = NumTimepoints,
-      NumKnots = NumKnots,
-      NumPointsLine = NumPointsLine,
-      NumTrendPar = NumTrendPar,
-      
-      Knots = Knots_weeks,
-      Timepoints = Timepoints,
-      LTLAs = LTLAs,
-      Groups = Groups,
-      
-      RtVals = data_model_age$Rt,
-      VaxProp = data_model_age[,covar_vax],
-      VarProp = VarProp,
-      AgeProp = age_prop
-    )
-    
+  
   }
+  
+  # No of Knots
+  
+  Knots
+  Knots_weeks
+  
+  NumKnots <- length(Knots)
+  NumKnots
+  
+  # No of LTLAs x No of Knots
+  
+  NumPointsLine <- NumLTLAs*NumKnots
+  NumPointsLine
+  
+  # Spline option
+  
+  if (DoKnots == 1) {
+    NumTrendPar <- NumKnots
+  } else {
+    NumTrendPar <- NumTimepoints
+  }
+  
+  # Variants (common ground)
+  
+  if (DoVaxVariants == 1) {
+    NumVaxVar <- NumVar
+  } else {
+    NumVaxVar <- 1
+  }
+  
+  # Stan list
+  
+  data_stan <- list(
+    IncludeIntercept = IncludeIntercept,
+    IncludeScaling = IncludeScaling,
+    DoKnots = DoKnots,
+    Quadratic = Quadratic,
+    DoVariants = DoVariants,
+    DoVaxVariants = DoVaxVariants,
+    DoAge = DoAge,
+    DoVaxAge = DoVaxAge,
     
-  data_stan
+    NumDatapoints = NumDatapoints,
+    NumLTLAs = NumLTLAs,
+    NumDoses = length(covar_vax),
+    NumVar = NumVar,
+    NumVaxVar = NumVaxVar,
+    NumGroup = NumGroup,
+    NumVaxGroup = NumVaxGroup,
+    NumTimepoints = NumTimepoints,
+    NumKnots = NumKnots,
+    NumPointsLine = NumPointsLine,
+    NumTrendPar = NumTrendPar,
+    
+    Knots = Knots_weeks,
+    Timepoints = Timepoints,
+    LTLAs = LTLAs,
+    Groups = Groups,
+    
+    RtVals = data_model$Rt,
+    VaxProp = data_model[,covar_vax],
+    VarProp = VarProp,
+    AgeProp = as.data.frame(matrix(1, nrow = NumDatapoints))
+  )  
+  
+  return(data_stan)
 }
 
 # Run function to get data
@@ -567,7 +542,7 @@ data_stan <- get_data(data_vax = data_vax, data_rt = data_rt, data_var = data_va
                       covar_var = covar_var, covar_vax = covar_vax,
                       Date_Start = Date_Start, Date_End = Date_End,
                       lockdown_steps = lockdown_steps,
-                      DoVariants = 1, DoVaxVariants = 1, DoAge = 0,
+                      DoVariants = 1, DoVaxVariants = 1, DoAge = 0, DoVaxAge = 0,
                       DoKnots = 0, Quadratic = 0,
                       IncludeIntercept = 0, IncludeScaling = 0)
 
@@ -575,7 +550,7 @@ data_stan_age <- get_data(data_vax = data_vax, data_rt = data_rt, data_var = dat
                       covar_var = covar_var, covar_vax = covar_vax,
                       Date_Start = Date_Start, Date_End = Date_End,
                       lockdown_steps = lockdown_steps,
-                      DoVariants = 1, DoVaxVariants = 0, DoAge = 1,
+                      DoVariants = 1, DoVaxVariants = 0, DoAge = 1, DoVaxAge = 0,
                       DoKnots = 0, Quadratic = 0,
                       IncludeIntercept = 0, IncludeScaling = 0)
 
