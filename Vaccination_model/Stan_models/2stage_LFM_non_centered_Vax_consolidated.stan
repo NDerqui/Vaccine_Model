@@ -6,13 +6,15 @@ data {
 	int <lower = 0, upper = 1>	Quadratic;        // Boolean for quadratic (If 1, quadratic spline, if 0, linear)
 	int <lower = 0, upper = 1>  DoVariants;       // Boolean for Variants model
 	int <lower = 0, upper = 1>  DoVaxVariants;    // Boolean for specific variant's VEs
-	// int <lower = 0, upper = 1>  DoAge;            // Boolean for age model
+	int <lower = 0, upper = 1>  DoAge;            // Boolean for age model
+	int <lower = 0, upper = 1>  DoVaxAge;         // Boolean for specific age's VEs
 	
 	int<lower = 1>	NumDatapoints; 	// Number of Rt values (all timepoints x regions) 
 	int<lower = 1>	NumDoses; 		  // Number of parameters: Vax doses
 	int<lower = 1>  NumVar;         // Number of parameters: SARS-CoV-2 variants
 	int<lower = 1>  NumVaxVar;      // Number of parameters: variants considered for the VEs
-	// int<lower = 1>  NumGroup;       // Number of parameters: age groups
+	int<lower = 1>  NumGroup;       // Number of parameters: age groups
+	int<lower = 1>  NumVaxGroup;    // Number of parameters: agr groups considered for the VEs
 	int<lower = 1>	NumLTLAs;		    // Number of regions / LTLAs
 	int<lower = 1>	NumTimepoints;	// Number of timepoints (weeks)
 	int<lower = 1>	NumKnots;       // Number of knots
@@ -48,8 +50,14 @@ parameters {
 	
   matrix <lower = 0> [NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
   
-	matrix <lower = 0, upper = 1> [NumDoses, NumVaxVar] 	VaxEffect_nc;	
-	
+  if (DoVaxAge) {
+    
+    matrix <lower = 0, upper = 1> [NumDoses, NumVaxVar*NumVaxGroup] 	VaxEffect_nc;	
+  } else {
+    
+    matrix <lower = 0, upper = 1> [NumDoses, NumVaxVar] 	VaxEffect_nc;	
+  }
+
 	vector <lower = 1> [NumVar-1] VarAdvantage_nc;
 }
 
@@ -78,7 +86,7 @@ transformed parameters{
 	vector <lower = 0> [NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
 	
   //matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
-	matrix <lower = 0, upper = 1> [NumDoses, NumVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVar); // want 2nd dimension to be NumVar, not NumVaxVar, unlike VaxEffect_nc above
+	matrix <lower = 0, upper = 1> [NumDoses, NumVar*NumGroup] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVar*NumGroup); // want 2nd dimension to be NumVar, not NumVaxVar, unlike VaxEffect_nc above
 	
 	vector <lower = 1> [NumVar] VarAdvantage;
 	
@@ -97,11 +105,28 @@ transformed parameters{
 	gamma 		= gamma_nc 		* phi2;
 	intercept 	= intercept_nc	* phi3;
 
-	if (NumVaxVar == NumVar) 
-	  VaxEffect 	= VaxEffect_nc	* phi; else 
-	for (Variant in 1:NumVar) // i.e. NumVaxVar < NumVar (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
-	  for (Dose in 1:NumDoses)  
-	    VaxEffect[Dose, Variant] = VaxEffect_nc[Dose, 1] * phi;
+	if (NumVaxVar == NumVar & NumGroup == NumVaxGroup) {
+	  
+	  VaxEffect 	= VaxEffect_nc	* phi;
+	}
+	   else {
+	     
+	     if (NumGroup == NumVaxGroup) {
+	       
+	       for (Variant in 1:NumVar) // i.e. NumVaxVar < NumVar (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
+	          for (Dose in 1:NumDoses)  
+	            VaxEffect[Dose, Variant] = VaxEffect_nc[Dose, 1] * phi;
+	     }
+	       else {
+	         
+	         for (Group in 1:NumGroup) // i.e. NumVaxVar < NumVar (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
+	          for (Dose in 1:NumDoses)  
+	            VaxEffect[Dose, Group] = VaxEffect_nc[Dose, 1] * phi;
+	         
+	       }
+	     
+	   }
+	
 	
 	if(DoVariants) {
 	 VarAdvantage[2:NumVar] 	= VarAdvantage_nc	* phi;
@@ -215,7 +240,8 @@ transformed parameters{
 	      DummyForFinalLoop = VarProp[TimeRegion, Variant] * VarAdvantage[Variant] * RegionalTrends[TimeRegion]; 
 	      
 	      for (Dose in 1:NumDoses)
-	        DummyForFinalLoop *= (1 - (VaxProp[TimeRegion,Dose] * VaxEffect[Dose, Variant])); 
+	        for (Group in 1:NumGroup)
+	          DummyForFinalLoop *= (1 - (VaxProp[TimeRegion,Dose] * VaxEffect[Dose, Variant] * AgeProp[Group, 1])); 
 	        
 	      LogPredictions[TimeRegion] += DummyForFinalLoop; 
 	  }
