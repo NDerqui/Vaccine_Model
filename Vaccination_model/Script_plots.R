@@ -60,23 +60,23 @@ DoAge <- 0
 
 if (DoAge == 0) {
   
-  Rt_data <- data_stan[[22]]
+  Rt_data <- data_stan[[24]]
   
-  LTLA <- data_stan[[20]]
+  LTLA <- data_stan[[22]]
   
-  VarProp <- data_stan[[24]]
+  VarProp <- data_stan[[26]]
   
-  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[19]]*7
+  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[21]]*7
   
 } else {
   
-  Rt_data <- data_stan_age[[22]]
+  Rt_data <- data_stan_age[[24]]
   
-  LTLA <- data_stan_age[[20]]
+  LTLA <- data_stan_age[[22]]
   
-  VarProp <- data_stan_age[[24]]
+  VarProp <- data_stan_age[[26]]
   
-  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan_age[[19]]*7
+  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan_age[[21]]*7
   
 }
 
@@ -98,8 +98,8 @@ Steps <- c(max(c(min(data_rt$date), min(data_var$date))),
 
 # Insert models names
 
-names <- c("Checks_10k_10cha_2B", "Checks_10k_10cha_2D",
-           "Checks_10k_10cha_3B", "Checks_10k_10cha_3D")
+names <- c("Hipercow_2k_10cha_1_Old_NoAgeModel", "Hipercow_2k_10cha_2_Old_NoAgeModel_VariantVE",
+           "Hipercow_2k_10cha_3_New_NoAgeModel", "Hipercow_2k_10cha_4_New_NoAgeModel_VariantVE")
 
 # Insert Variant status
 
@@ -411,22 +411,21 @@ library(rcartocolor)
 
 all_ve <- data.frame()
 
-models <- c("2B", "2D",
-            "3B", "3D")
+models <- c("1_Old_NoAgeModel", "2_Old_NoAgeModel_VariantVE",
+            "3_New_NoAgeModel", "4_New_NoAgeModel_VariantVE")
 
 for (variation in 1:length(models)) {
   
-  add <- read.xlsx(xlsxFile = paste0("Results/Checks_10k_10cha_", models[variation], "_results_table.xlsx"),
+  add <- read.xlsx(xlsxFile = paste0("Results/Hipercow_2k_10cha_", models[variation], "_results_table.xlsx"),
                    sheet = "VaxEffect")
   
   add$model <- paste0(models[variation])
   
-  if(models[variation] == "2A" | models[variation] == "2B" |
-     models[variation] == "2C" | models[variation] == "2D") {
-    
-    add[,1] <- rep(c("Dose 1", "Dose 2", "Dose 3"), times = 3)}
+  add$dose <- rep(c("Dose 1", "Dose 2", "Dose 3"), times = 3)
   
-  colnames(add) <- c("variant", "ve", "low", "upp", "model")
+  add$variant <- c(rep("WT", times = 3), rep("Alpha", times = 3), rep("Delta", times = 3))
+  
+  colnames(add) <- c("name", "ve", "low", "upp", "model", "dose", "variant")
   
   all_ve <- rbind(all_ve, add)
 }
@@ -437,105 +436,22 @@ all_ve[all_ve == "PreAl_3"] <- "WT3"
 
 ### Model 1
 
-png(paste0("Figures/VE_sum_model1.png"),
-    width = 8, height = 5, units = 'in', res = 1200)
-
-ggplot(data = filter(all_ve, model == "1A" |  model == "1B" |
-                       model == "1C" |  model == "1D")) +
-  geom_point(mapping = aes(x = variant, y = ve, color = model),
-             position = position_dodge(0.5)) +
-  geom_errorbar(mapping = aes(x = variant, y = ve, color = model,
-                              ymin = low, ymax = upp),
-                position = position_dodge(0.5), width = 0.2) +
-  scale_color_manual(values = carto_pal(name = "Safe")) +
-  labs(title = "Model 1", y = "VE estimates", color = "Model") +
-  theme_bw() +
-  theme(title = element_text(face = "bold"),
-        axis.title.x = element_blank(),
-        legend.position = "bottom")
-
-dev.off()
-
-### Model 2
-
-png(paste0("Figures/VE_sum_model2.png"),
-    width = 8, height = 5, units = 'in', res = 1200)
-
-ggplot(data = filter(all_ve, model == "2A" |  model == "2B" |
-                       model == "2C" |  model == "2D")) +
-  geom_point(mapping = aes(x = variant, y = ve, color = model),
-             position = position_dodge(0.5)) +
-  geom_errorbar(mapping = aes(x = variant, y = ve, color = model,
-                              ymin = low, ymax = upp),
-                position = position_dodge(0.5), width = 0.2) +
-  scale_color_manual(values = carto_pal(name = "Safe")) +
-  labs(title = "Model 2", y = "VE estimates", color = "Model") +
-  theme_bw() +
-  theme(title = element_text(face = "bold"),
-        axis.title.x = element_blank(),
-        legend.position = "bottom")
-
-dev.off()
-
-### Model 3
-
-png(paste0("Figures/VE_sum_model3.png"),
-    width = 10, height = 6, units = 'in', res = 1200)
-
-ggplot(data = filter(all_ve, model == "3A" |  model == "3B" |
-                       model == "3C" |  model == "3D")) +
-  geom_point(mapping = aes(x = variant, y = ve, color = model),
-             position = position_dodge(0.5)) +
-  geom_errorbar(mapping = aes(x = variant, y = ve, color = model,
-                              ymin = low, ymax = upp),
-                position = position_dodge(0.5), width = 0.2) +
-  scale_color_manual(values = carto_pal(name = "Safe")) +
-  labs(title = "Model 3", y = "VE estimates", color = "Model") +
-  theme_bw() +
-  theme(title = element_text(face = "bold"),
-        axis.title.x = element_blank(),
-        legend.position = "bottom")
-
-dev.off()
-
-
-##### Getting different iterations
-
-all_ve <- data.frame()
-
-models <- c("2k_8cha", "5k_10cha", "10k_10cha", "10k_20cha", "20k_10cha")
-
-for (variation in 1:length(models)) {
-  
-  add <- read.xlsx(xlsxFile = paste0("Results/Checks_", models[variation], "_2D_results_table.xlsx"),
-                   sheet = "VaxEffect")
-  
-  add$model <- paste0(models[variation])
-  
-  add[,1] <- rep(c("Dose 1", "Dose 2", "Dose 3"), times = 3)
-  
-  colnames(add) <- c("variant", "ve", "low", "upp", "model")
-  
-  all_ve <- rbind(all_ve, add)
-}
-
-### Plot
-
-png(paste0("Figures/Comparing_2Dmodels.png"),
+png(paste0("Figures/VE_sum.png"),
     width = 8, height = 5, units = 'in', res = 1200)
 
 ggplot(data = all_ve) +
-  geom_point(mapping = aes(x = variant, y = ve, color = model),
+  geom_point(mapping = aes(x = dose, y = ve, color = variant),
              position = position_dodge(0.5)) +
-  geom_errorbar(mapping = aes(x = variant, y = ve, color = model,
+  geom_errorbar(mapping = aes(x = dose, y = ve, color = variant,
                               ymin = low, ymax = upp),
                 position = position_dodge(0.5), width = 0.2) +
   scale_color_manual(values = carto_pal(name = "Safe")) +
-  labs(title = "Model 2D - iter and chain variations", y = "VE estimates", color = "Model") +
+  labs(y = "VE estimates", color = "Model") +
   theme_bw() +
   theme(title = element_text(face = "bold"),
         axis.title.x = element_blank(),
-        legend.position = "bottom")
+        legend.position = "bottom") +
+  facet_wrap(. ~ model)
 
 dev.off()
 
@@ -552,11 +468,12 @@ library(rcartocolor)
 
 all_ve <- data.frame()
 
-models <- c("2B", "2D", "3B", "3D")
+models <- c("1_Old_NoAgeModel", "2_Old_NoAgeModel_VariantVE",
+            "3_New_NoAgeModel", "4_New_NoAgeModel_VariantVE")
 
 for (variation in 1:length(models)) {
   
-  add <- read.xlsx(xlsxFile = paste0("Results/Checks_10k_10cha_", models[variation], "_results_table.xlsx"),
+  add <- read.xlsx(xlsxFile = paste0("Results/Hipercow_2k_10cha_", models[variation], "_results_table.xlsx"),
                    sheet = "VarAdvantage")
   
   add$model <- paste0(models[variation])
@@ -570,70 +487,7 @@ for (variation in 1:length(models)) {
 
 ### Model 2
 
-png(paste0("Figures/VarAd_sum_model2.png"),
-    width = 8, height = 5, units = 'in', res = 1200)
-
-ggplot(data = filter(all_ve, model == "2A" |  model == "2B" |
-                       model == "2C" |  model == "2D")) +
-  geom_point(mapping = aes(x = variant, y = ad, color = model),
-             position = position_dodge(0.5)) +
-  geom_errorbar(mapping = aes(x = variant, y = ad, color = model,
-                              ymin = low, ymax = upp),
-                position = position_dodge(0.5), width = 0.2) +
-  scale_color_manual(values = carto_pal(name = "Safe")) +
-  labs(title = "Model 2", y = "VarAd estimates", color = "Model") +
-  theme_bw() +
-  theme(title = element_text(face = "bold"),
-        axis.title.x = element_blank(),
-        legend.position = "bottom")
-
-dev.off()
-
-### Model 3
-
-png(paste0("Figures/VarAd_sum_model3.png"),
-    width = 10, height = 6, units = 'in', res = 1200)
-
-ggplot(data = filter(all_ve, model == "3A" |  model == "3B" |
-                       model == "3C" |  model == "3D")) +
-  geom_point(mapping = aes(x = variant, y = ad, color = model),
-             position = position_dodge(0.5)) +
-  geom_errorbar(mapping = aes(x = variant, y = ad, color = model,
-                              ymin = low, ymax = upp),
-                position = position_dodge(0.5), width = 0.2) +
-  scale_color_manual(values = carto_pal(name = "Safe")) +
-  labs(title = "Model 3", y = "VarAd estimates", color = "Model") +
-  theme_bw() +
-  theme(title = element_text(face = "bold"),
-        axis.title.x = element_blank(),
-        legend.position = "bottom")
-
-dev.off()
-
-
-##### Getting different iterations
-
-all_ve <- data.frame()
-
-models <- c("2k_8cha", "5k_10cha", "10k_10cha", "10k_20cha", "20k_10cha")
-
-for (variation in 1:length(models)) {
-  
-  add <- read.xlsx(xlsxFile = paste0("Results/Checks_", models[variation], "_2D_results_table.xlsx"),
-                   sheet = "VarAdvantage")
-  
-  add$model <- paste0(models[variation])
-  
-  add[,1] <- c(" WT", "Alpha", "Delta")
-  
-  colnames(add) <- c("variant", "ad", "low", "upp", "model")
-  
-  all_ve <- rbind(all_ve, add)
-}
-
-### Plot
-
-png(paste0("Figures/Comparing_2Dmodels)VarAd.png"),
+png(paste0("Figures/VarAd_sum.png"),
     width = 8, height = 5, units = 'in', res = 1200)
 
 ggplot(data = all_ve) +
@@ -643,7 +497,7 @@ ggplot(data = all_ve) +
                               ymin = low, ymax = upp),
                 position = position_dodge(0.5), width = 0.2) +
   scale_color_manual(values = carto_pal(name = "Safe")) +
-  labs(title = "Model 2D - iter and chain variations", y = "VarAdvantage estimates", color = "Model") +
+  labs(y = "VarAd estimates", color = "Model") +
   theme_bw() +
   theme(title = element_text(face = "bold"),
         axis.title.x = element_blank(),
