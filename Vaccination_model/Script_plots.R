@@ -53,32 +53,6 @@ library(openxlsx)
 DoKnots <- 0
 Quadratic <- 0
 
-DoAge <- 0
-
-
-#### Extract parameters ####
-
-if (DoAge == 0) {
-  
-  Rt_data <- data_stan[[24]]
-  
-  LTLA <- data_stan[[22]]
-  
-  VarProp <- data_stan[[26]]
-  
-  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[21]]*7
-  
-} else {
-  
-  Rt_data <- data_stan_age[[24]]
-  
-  LTLA <- data_stan_age[[22]]
-  
-  VarProp <- data_stan_age[[26]]
-  
-  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan_age[[21]]*7
-  
-}
 
 Steps <- c(max(c(min(data_rt$date), min(data_var$date))),
            lockdown_steps[2:length(lockdown_steps)],
@@ -98,12 +72,17 @@ Steps <- c(max(c(min(data_rt$date), min(data_var$date))),
 
 # Insert models names
 
-names <- c("Hipercow_2k_10cha_1_Old_NoAgeModel", "Hipercow_2k_10cha_2_Old_NoAgeModel_VariantVE",
-           "Hipercow_2k_10cha_3_New_NoAgeModel", "Hipercow_2k_10cha_4_New_NoAgeModel_VariantVE")
+names <- c("1B_Old_NoAgeModel", "2B_Old_NoAgeModel_VariantVE",
+           "3B_New_NoAgeModel", "4B_New_NoAgeModel_VariantVE",
+           "5B_New_AgeModel", "6B_New_AgeModel_AgeVE", "7B_New_AgeModel_VariantAge")
+
+names <- paste0("Hipercow_2k_10cha_", names)
 
 # Insert Variant status
 
-variants <- c(rep(1, times = 4))
+variants <- c(1, 1, 1, 1, 0, 0, 1)
+
+ages <- c(0, 0, 0, 0, 1, 1, 1)
 
 
 #### Loop
@@ -111,11 +90,41 @@ variants <- c(rep(1, times = 4))
 for (i in 1:length(names)) {
   
   
-  #### Load data ####
+  #### Options ####
   
   DoVariants <- variants[i]
   
   model_name <- names[i]
+  
+  DoAge <- ages[i]
+  
+  
+  #### Extract parameters ####
+  
+  if (DoAge == 0) {
+    
+    Rt_data <- data_stan[[24]]
+    
+    LTLA <- data_stan[[22]]
+    
+    VarProp <- data_stan[[26]]
+    
+    date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[21]]*7
+    
+  } else {
+    
+    Rt_data <- data_stan_age[[24]]
+    
+    LTLA <- data_stan_age[[22]]
+    
+    VarProp <- data_stan_age[[26]]
+    
+    date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan_age[[21]]*7
+    
+  }
+  
+  
+  #### Load data ####
   
   list_result <- readRDS(paste0("C:/Users/nd1316/OneDrive - Imperial College London/MRes/PROJECT 1/Analyses/Models_BackUp/", model_name, ".Rds"))
   
@@ -397,6 +406,10 @@ for (i in 1:length(names)) {
   dev.off()
 
 }
+
+
+
+# OTHER -------------------------------------------------------------------
 
 
 #### Summary VE effects ####
