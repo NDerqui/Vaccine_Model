@@ -76,7 +76,7 @@ names <- c("1B_Old_NoAgeModel", "2B_Old_NoAgeModel_VariantVE",
            "3B_New_NoAgeModel", "4B_New_NoAgeModel_VariantVE",
            "5B_New_AgeModel", "6B_New_AgeModel_AgeVE", "7B_New_AgeModel_VariantAge")
 
-names <- paste0("Hipercow_2k_10cha_", names)
+names <- paste0("Hipercow_5k_10cha_", names)
 
 # Insert Variant status
 
@@ -87,7 +87,7 @@ ages <- c(0, 0, 0, 0, 1, 1, 1)
 
 #### Loop
 
-for (i in 1:length(names)) {
+for (i in 1:6) {
   
   
   #### Options ####
@@ -155,10 +155,12 @@ for (i in 1:length(names)) {
   Lambda_data <- list_result[[7]]
   Lambda <- list_result[[7]][1]
   
-  Rt_NoVax <- as.matrix(VarProp) %*% as.matrix(VarAdvantage)
+  Rt_NoVax <- (as.matrix(VarProp) %*% as.matrix(VarAdvantage))*RegionalTrends
+  Rt_NoVax_data <- data.frame(Rt_NoVax)
+  colnames(Rt_NoVax_data) <- "Rt_NoVax"
   
   sum_rt <- data.frame(LTLA, date, Rt_data, Rt_Predictions_data,
-                       Rt_NoVax, RegionalTrends_data, NationalTrend_data)
+                       Rt_NoVax_data, RegionalTrends_data, NationalTrend_data)
   
   
   
@@ -325,7 +327,7 @@ for (i in 1:length(names)) {
                              color = "Lambda"), linewidth = 1.3) +
     geom_line (mapping = aes(x = date, y = RegionalTrends,
                              color = "RanEffect"), linewidth = 1.3) +
-    geom_line (mapping = aes(x = date, y = VarAdvantage,
+    geom_line (mapping = aes(x = date, y = Rt_NoVax,
                              color = "WithVarAd"), linewidth = 1.3) +
     geom_line (mapping = aes(x = date, y = Rt,
                              color = "RtLogP"), linewidth = 1.3) +
@@ -365,7 +367,7 @@ for (i in 1:length(names)) {
                              color = "RanEffect")) +
     geom_ribbon(mapping = aes(x = date, ymin = X2.5..1, ymax = X97.5..1,
                               fill = "RanEffect"), alpha = 0.2) +
-    geom_line (mapping = aes(x = date, y = VarAdvantage,
+    geom_line (mapping = aes(x = date, y = Rt_NoVax,
                              color = "WithVarAd")) +
     geom_line (mapping = aes(x = date, y = Rt,
                              color = "RtLogP")) +
@@ -424,12 +426,12 @@ library(rcartocolor)
 
 all_ve <- data.frame()
 
-models <- c("1_Old_NoAgeModel", "2_Old_NoAgeModel_VariantVE",
-            "3_New_NoAgeModel", "4_New_NoAgeModel_VariantVE")
+models <- c("1B_Old_NoAgeModel", "2B_Old_NoAgeModel_VariantVE",
+            "3B_New_NoAgeModel", "4B_New_NoAgeModel_VariantVE")
 
 for (variation in 1:length(models)) {
   
-  add <- read.xlsx(xlsxFile = paste0("Results/Hipercow_2k_10cha_", models[variation], "_results_table.xlsx"),
+  add <- read.xlsx(xlsxFile = paste0("Results/Hipercow_5k_10cha_", models[variation], "_results_table.xlsx"),
                    sheet = "VaxEffect")
   
   add$model <- paste0(models[variation])
@@ -481,12 +483,12 @@ library(rcartocolor)
 
 all_ve <- data.frame()
 
-models <- c("1_Old_NoAgeModel", "2_Old_NoAgeModel_VariantVE",
-            "3_New_NoAgeModel", "4_New_NoAgeModel_VariantVE")
+models <- c("1B_Old_NoAgeModel", "2B_Old_NoAgeModel_VariantVE",
+            "3B_New_NoAgeModel", "4B_New_NoAgeModel_VariantVE")
 
 for (variation in 1:length(models)) {
   
-  add <- read.xlsx(xlsxFile = paste0("Results/Hipercow_2k_10cha_", models[variation], "_results_table.xlsx"),
+  add <- read.xlsx(xlsxFile = paste0("Results/Hipercow_5k_10cha_", models[variation], "_results_table.xlsx"),
                    sheet = "VarAdvantage")
   
   add$model <- paste0(models[variation])
