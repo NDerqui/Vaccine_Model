@@ -76,15 +76,15 @@ transformed parameters{
 	matrix[NumKnots-2, IntDim] b; 		// Coeff b for quadratic eq
 	matrix[NumKnots-2, IntDim] c; 		// Coeff c for quadratic eq
 	
-	matrix <lower = 0> [NumDatapoints, IntDim]	NationalTrend	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line or free
-	vector <lower = 0> [NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
+	matrix [NumDatapoints, IntDim]	NationalTrend	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line or free
+	vector [NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
 	
   //matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
 	matrix <lower = 0, upper = 1> [NumDoses, NumVar*NumGroup] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVar*NumGroup); // want 2nd dimension to be NumVar, not NumVaxVar, unlike VaxEffect_nc above
 	
 	vector <lower = 1> [NumVar] VarAdvantage;
 	
-	vector <lower = 0> [NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
+	vector [NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
 	
 	// VarAdvantage for base variant set to 1
 	VarAdvantage[1] = 1;
