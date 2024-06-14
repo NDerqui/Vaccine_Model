@@ -43,7 +43,7 @@ parameters {
 	real<lower = 0> 				phi3_nc;
 	real<lower = 0> 				phi4_nc;
 	
-	matrix[NumLTLAs,IntDim] 		gamma_nc; 	  	// Prev alpha, indexed by: i) LTLA; ii) factor 
+	matrix <lower = 0> [NumLTLAs,IntDim] 		gamma_nc; 	  	// Prev alpha, indexed by: i) LTLA; ii) factor 
 	vector[NumLTLAs] 				intercept_nc;     	// indexed by: i) LTLA
 	
   matrix <lower = 0> [NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
@@ -63,7 +63,7 @@ transformed parameters{
 
 	// allocate
 	vector[NumLTLAs] 			intercept 	= rep_vector(0, NumLTLAs); 
-	matrix[NumLTLAs,IntDim] 	gamma 		= rep_matrix(0, NumLTLAs, IntDim); 
+	matrix[NumLTLAs,IntDim] 	gamma 		= rep_matrix(1, NumLTLAs, IntDim); 
 
 	matrix <lower = 0> [NumTrendPar,IntDim] lambda_raw 		= rep_matrix(0, NumTrendPar, IntDim); // has NumKnots/NumTimepoints rows (not NumDatapoints)
 	matrix <lower = 0> [NumPointsLine,IntDim] lambda 	= rep_matrix(0, NumPointsLine, IntDim);  // has NumKnots*NumLTLAs rows (not NumTimepoints)
