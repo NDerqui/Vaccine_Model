@@ -204,6 +204,7 @@ for (i in 1:6) {
   
   table_list <- list("VaxEffect" = VaxEffect_data,
                      "VarAdvantage" = VarAdvantage_data,
+                     "Scaling" = Scaling_data,
                      "NationalTrends" = NationalTrend_data,
                      "RegionalTrends" = RegionalTrends_data,
                      "Rt_NoVax_[VarAd_x_RegTrend]" = Rt_NoVax,
