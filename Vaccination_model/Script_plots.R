@@ -72,11 +72,11 @@ Steps <- c(max(c(min(data_rt$date), min(data_var$date))),
 
 # Insert models names
 
-names <- c("1B_Old_NoAgeModel", "2B_Old_NoAgeModel_VariantVE",
-           "3B_New_NoAgeModel", "4B_New_NoAgeModel_VariantVE",
-           "5B_New_AgeModel", "6B_New_AgeModel_AgeVE", "7B_New_AgeModel_VariantAge")
+short_names <- c("1B_Old_NoAgeModel", "2B_Old_NoAgeModel_VariantVE",
+                 "3B_New_NoAgeModel", "4B_New_NoAgeModel_VariantVE",
+                 "5B_New_AgeModel", "6B_New_AgeModel_AgeVE", "7B_New_AgeModel_VariantAge")
 
-names <- paste0("Hipercow_5k_10cha_", names)
+names <- paste0("Hipercow_5k_10cha_", short_names)
 
 # Insert Variant status
 
@@ -227,7 +227,7 @@ for (i in 1:6) {
   p <- ggplot(data = sum_rt) +
     geom_point(mapping = aes(x = Rt_data, y = Rt), size = rel(0.8)) +
     geom_abline(x = 0, y = 1, col = "red") +
-    theme_classic() +
+    theme_bw() +
     labs(title = "Observed versus Predicted Rt in all LTLAs and timepoints",
          x = "Rt Observed",
          y = "Rt Predicted") +
@@ -238,7 +238,7 @@ for (i in 1:6) {
       axis.text = element_text(size=rel(0.7)))
   
   
-  png(paste0("Figures/", model_name, "/Obs_Pre_Rt.png"),
+  png(paste0("Figures/", model_name, "/Rt_PredictedObserved.png"),
       width = 9, height = 8, units = 'in', res = 600)
   print(p)
   dev.off()
@@ -260,7 +260,7 @@ for (i in 1:6) {
                       breaks = c("Rt_data", "Rt_LogP"),
                       values = c("firebrick4", "springgreen4"),
                       labels=c("Observed", "Predicted")) +
-    theme_classic() +
+    theme_bw() +
     labs(title = "Observed and Predicted Rt in all LTLAs over time",
          x = "Date",
          y = "Reproduction number") +
@@ -274,7 +274,7 @@ for (i in 1:6) {
       geom_vline(xintercept = as.Date(Steps, format = "%d/%m/%Y"),
                  color = "darkmagenta")}
   
-  png(paste0("Figures/", model_name, "/Pre_Obs_Rt_time.png"),
+  png(paste0("Figures/", model_name, "/Rt_PredictedObserved_time.png"),
       width = 9, height = 5, units = 'in', res = 600)
   print(p)
   dev.off()
@@ -282,28 +282,73 @@ for (i in 1:6) {
   
   #### National Trend ####
   
+  p <- ggplot(data = sum_rt,
+         mapping = aes(x = date, group = LTLA)) +
+    geom_line(mapping = aes(y = RegionalTrends, color = "RanEffect"), alpha = 0.2) +
+    geom_line(mapping = aes(y = NationalTrend, color = "Lambda"), linewidth = 1.2) +
+    scale_color_manual(name = "Parameter",
+                       breaks = c("Lambda", "RanEffect"),
+                       values = c("royalblue4", "dodgerblue2"),
+                       labels = c("National Trend", "Regional Trend [No VarAd - NoVax]")) +
+    theme_bw() +
+    labs(title = "National and Regional Trends",
+         x = "Date",
+         y = "Parameter value") +
+    theme(
+      plot.title = element_text(face="bold", hjust = 0.5),
+      axis.title.x = element_text(face="bold"),
+      axis.title.y = element_text(face="bold"),
+      legend.position = "bottom",
+      legend.title = element_text(face="bold"))
+  
+  png(paste0("Figures/", model_name, "/National_Regional_Trends.png"),
+      width = 9, height = 5, units = 'in', res = 600)
+  print(p)
+  dev.off()
+  
+  p <- ggplot(data = sum_rt,
+         mapping = aes(x = date, group = LTLA)) +
+    geom_line(mapping = aes(y = Rt_NoVax, color = "WithVarAd"), alpha = 0.2) +
+    geom_line(mapping = aes(y = NationalTrend, color = "Lambda"), linewidth = 1.2) +
+    scale_color_manual(name = "Parameter",
+                       breaks = c("Lambda", "WithVarAd"),
+                       values = c("royalblue4", "seagreen2"),
+                       labels = c("National Trend", "Trend with VarAdvantage [No Vax]")) +
+    theme_bw() +
+    labs(title = "National and Regional Trends",
+         x = "Date",
+         y = "Parameter value") +
+    theme(
+      plot.title = element_text(face="bold", hjust = 0.5),
+      axis.title.x = element_text(face="bold"),
+      axis.title.y = element_text(face="bold"),
+      legend.position = "bottom",
+      legend.title = element_text(face="bold"))
+  
+  png(paste0("Figures/", model_name, "/National_RegionalVarAd_Trends.png"),
+      width = 9, height = 5, units = 'in', res = 600)
+  print(p)
+  dev.off()
   
   
-  
-  #### In one LTLA ####
+  #### In some LTLA ####
   
   some_LTLA <- sum_rt %>%
     filter(LTLA == 1 | LTLA == 47 | LTLA == 93 |
              LTLA == 104 | LTLA == 123 | LTLA == 147 |
              LTLA == 208 | LTLA == 179 | LTLA == 221)
   
-  
   p <- ggplot(data = some_LTLA) +
     geom_line (mapping = aes(x = date, y = NationalTrend, 
-                             color = "Lambda"), linewidth = 1.3) +
+                             color = "Lambda"), linewidth = 1.1) +
     geom_line (mapping = aes(x = date, y = RegionalTrends,
-                             color = "RanEffect"), linewidth = 1.3) +
+                             color = "RanEffect"), linewidth = 1.1) +
     geom_line (mapping = aes(x = date, y = Rt_NoVax,
-                             color = "WithVarAd"), linewidth = 1.3) +
+                             color = "WithVarAd"), linewidth = 1.1) +
     geom_line (mapping = aes(x = date, y = Rt,
-                             color = "RtLogP"), linewidth = 1.3) +
+                             color = "RtLogP"), linewidth = 1.1) +
     geom_line (mapping = aes(x = date, y = Rt_data,
-                             color = "RtData"), linewidth = 1.3) +
+                             color = "RtData"), linewidth = 1.1) +
     scale_color_manual(name = "Parameter",
                        breaks = c("Lambda", "RanEffect", "WithVarAd",
                                   "RtLogP", "RtData"),
@@ -311,8 +356,8 @@ for (i in 1:6) {
                                   "springgreen4", "firebrick4"),
                        labels = c("National Trend", "Regional Trend [No VarAd - NoVax]", "Trend with VarAdvantage [No Vax]",
                                   "Predicted Rt [With VarAd and Vax]", "Observed Rt")) +
-    theme_classic() +
-    labs(title = "Parameters in various LTLAs",
+    theme_bw() +
+    labs(title = paste0("Parameters in various LTLAs: ", short_names[i]),
          x = "Date",
          y = "Parameter value") +
     theme(
@@ -324,7 +369,7 @@ for (i in 1:6) {
       legend.position = "bottom") +
     facet_wrap(LTLA ~ .)
   
-  png(paste0("Figures/", model_name, "/LTLA_sum_plot_all.png"),
+  png(paste0("Figures/", model_name, "/LTLA_detail_plot.png"),
       width = 12, height = 8, units = 'in', res = 300)
   print(p)
   dev.off()
@@ -360,8 +405,8 @@ for (i in 1:6) {
                                   "springgreen4", "firebrick4"),
                        labels = c("National Trend", "Regional Trend [No VarAd - NoVax]", "Trend with VarAdvantage [No Vax]",
                                   "Predicted Rt [With VarAd and Vax]", "Observed Rt")) +
-    theme_classic() +
-    labs(title = "Parameters in various LTLAs",
+    theme_bw() +
+    labs(title = paste0("Parameters in various LTLAs: ", short_names[i]),
          x = "Date",
          y = "Parameter value") +
     theme(
@@ -371,9 +416,9 @@ for (i in 1:6) {
       axis.text = element_text(size=rel(1.2)),
       legend.title = element_text(face="bold"),
       legend.position = "bottom") +
-    facet_wrap(LTLA ~ .)
+    facet_wrap(LTLA ~ .) + guides(fill = "none")
   
-  png(paste0("Figures/", model_name, "/LTLA_plot.png"),
+  png(paste0("Figures/", model_name, "/LTLA_detail_plot_ci.png"),
       width = 12, height = 8, units = 'in', res = 300)
   print(p)
   dev.off()
