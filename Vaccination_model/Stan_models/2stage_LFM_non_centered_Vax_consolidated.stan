@@ -53,8 +53,11 @@ parameters {
   matrix <lower = 0> [NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
   
   matrix <lower = 0, upper = 1> [NumDoses, NumVaxVar*NumVaxGroup] 	VaxEffect_nc;
+  # instead of the above, try this.
+	real<lower = 0, upper = 1> VaxEffect_nc[NumDoses, NumVaxVar, NumVaxGroup];
 
-	vector <lower = 1> [NumVar-1] VarAdvantage_nc;
+
+	vector <lower = 1> [NumVar-1] VarAdvantage_nc; /// move this to data while debugging using Knock Whittles values.
 }
 
 transformed parameters{
@@ -101,23 +104,33 @@ transformed parameters{
 	gamma 		= gamma_nc 		* phi2;
 	intercept 	= intercept_nc	* phi3;
 
+// tidy all of the below so that you always use indices, never an entire vector. Suspect that is where things going wrong.
+
 	if (NumVaxVar == NumVar && NumGroup == NumVaxGroup) {
 	  
-	  VaxEffect 	= VaxEffect_nc	* phi;
+	  VaxEffect 	= VaxEffect_nc	* phi; /// Danny wants to get rid of this
 	}
-	   else {
+	   else { //// NumVaxVar != NumVar OR NumGroup != NumVaxGroup (or both)
 	     
-	     if (NumGroup == NumVaxGroup) {
+	     if (NumGroup == NumVaxGroup) { // i.e. NumVaxVar
 	       
 	       for (Variant in 1:NumVar) // i.e. NumVaxVar < NumVar (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
 	          for (Dose in 1:NumDoses)  
 	            VaxEffect[Dose, Variant] = VaxEffect_nc[Dose, 1] * phi;
 	     }
-	       else {
+	       else if (NumVaxVar == NumVar){
 	         
-	         for (Group in 1:NumGroup) // i.e. NumVaxVar < NumVar (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
+	         for (Group in 1:NumGroup) // i.e. NumVaxGroup < NumGroup (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
 	          for (Dose in 1:NumDoses)  
 	            VaxEffect[Dose, Group] = VaxEffect_nc[Dose, 1] * phi;
+	         
+	       } else { // i.e NumVaxVar != NumVar AND NumGroup != NumVaxGroup
+	       
+	       for (Variant in 1:NumVar) // i.e. NumVaxVar < NumVar (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
+	          for (Dose in 1:NumDoses)  
+	         for (Group in 1:NumGroup) // i.e. NumVaxGroup < NumGroup (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
+	       	            VaxEffect[Dose, Group] = VaxEffect_nc[Dose, 1] * phi; /// WRONG!!!
+
 	         
 	       }
 	     
