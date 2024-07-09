@@ -29,6 +29,8 @@ data {
 	
 	vector <lower = 0> [NumDatapoints] 			                RtVals;   // y: Rt values across all time points and regions (expressed as giant vector) 
 	matrix <lower = 0, upper = 1> [NumDatapoints, NumDoses]	VaxProp;	// x predictor: Binary design matrix. Each row is a region and date combination.
+	# instead of the above, try this.
+	real<lower = 0, upper = 1> VaxProp[NumDatapoints, NumVaxGroup, NumDoses];
 	                                                                  // Each column has the proportion of vax at that time/LTLA with 1, 2, 3 doses
 	matrix <lower = 0, upper = 1> [NumDatapoints, NumVar]   VarProp;  // x predictor: Each col has the proportion of variants 1, 2, etc. up to NumVar
 	matrix <lower = 0, upper = 1> [NumDatapoints, 1]        AgeProp;  // x predictor: Each age group proportion in each LTLA
