@@ -253,7 +253,7 @@ transformed parameters{
 	}
 	
 	// Danny changes - consolodating loops below
-	
+	{ // Bracket to compile
 	int VaxVariantIndex;  // set to 1 by default
 	int VaxAgeIndex    ;  // set to 1 by default
 	
@@ -296,6 +296,8 @@ transformed parameters{
 	      LogPredictions[TimeRegion] += FinalRtperVariantTimeRegion; 
 	  }
 	}
+	
+	} // Bracket to compile
 }
 
 model {
