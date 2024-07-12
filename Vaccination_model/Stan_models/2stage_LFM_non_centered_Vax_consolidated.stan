@@ -28,12 +28,15 @@ data {
 	vector[NumDatapoints]   Timepoints; // Sequence of timepoints
 	
 	vector <lower = 0> [NumDatapoints] 			                RtVals;   // y: Rt values across all time points and regions (expressed as giant vector) 
-	matrix <lower = 0, upper = 1> [NumDatapoints, NumDoses]	VaxProp;	// x predictor: Binary design matrix. Each row is a region and date combination.
-	# instead of the above, try this.
-	real<lower = 0, upper = 1> VaxProp[NumDatapoints, NumVaxGroup, NumDoses];
+	// matrix <lower = 0, upper = 1> [NumDatapoints, NumDoses]	VaxProp;	// x predictor: Binary design matrix. Each row is a region and date combination.
+	// instead of the above, try this.
+	real<lower = 0, upper = 1> VaxProp[NumDatapoints, NumDoses, NumVaxGroup];
 	                                                                  // Each column has the proportion of vax at that time/LTLA with 1, 2, 3 doses
 	matrix <lower = 0, upper = 1> [NumDatapoints, NumVar]   VarProp;  // x predictor: Each col has the proportion of variants 1, 2, etc. up to NumVar
-	matrix <lower = 0, upper = 1> [NumDatapoints, 1]        AgeProp;  // x predictor: Each age group proportion in each LTLA
+	//matrix <lower = 0, upper = 1> [NumDatapoints, 1]        AgeProp;  // x predictor: Each age group proportion in each LTLA
+	// Two changes here - first, make AgeProp a vector, not a matrix.
+	// Second, it only needs a few numbers in it, namely the number of age groups, not the number of data points (i.e. LTLAs x Timepoints)
+	vector <lower = 0, upper = 1> [NumGroup] AgeProp;  // x predictor: Each age group proportion in each LTLA
 }
 
 transformed data{
@@ -52,8 +55,8 @@ parameters {
 	
   matrix <lower = 0> [NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
   
-  matrix <lower = 0, upper = 1> [NumDoses, NumVaxVar*NumVaxGroup] 	VaxEffect_nc;
-  # instead of the above, try this.
+  //matrix <lower = 0, upper = 1> [NumDoses, NumVaxVar*NumVaxGroup] 	VaxEffect_nc;
+  // instead of the above, try this.
 	real<lower = 0, upper = 1> VaxEffect_nc[NumDoses, NumVaxVar, NumVaxGroup];
 
 
@@ -66,11 +69,11 @@ transformed parameters{
 	real phi2 	= 0;
 	real phi3 	= 0;
 	real phi4 	= 0;
-	real DummyForFinalLoop 	= 0;
+	real FinalRtperVariantTimeRegion 	= 0;
 
 	// allocate
-	vector[NumLTLAs] 			intercept 	= rep_vector(0, NumLTLAs); 
-	matrix[NumLTLAs,IntDim] 	gamma 		= rep_matrix(1, NumLTLAs, IntDim); 
+	vector[NumLTLAs] 			    intercept 	= rep_vector(0, NumLTLAs); 
+	matrix[NumLTLAs,IntDim] 	gamma 		  = rep_matrix(1, NumLTLAs, IntDim); 
 
 	matrix <lower = 0> [NumTrendPar,IntDim] lambda_raw 		= rep_matrix(0, NumTrendPar, IntDim); // has NumKnots/NumTimepoints rows (not NumDatapoints)
 	matrix <lower = 0> [NumPointsLine,IntDim] lambda 	= rep_matrix(0, NumPointsLine, IntDim);  // has NumKnots*NumLTLAs rows (not NumTimepoints)
@@ -84,9 +87,12 @@ transformed parameters{
 	matrix [NumDatapoints, IntDim]	NationalTrend	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line or free
 	vector [NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
 	
-  //matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
-	matrix <lower = 0, upper = 1> [NumDoses, NumVar*NumGroup] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVar*NumGroup); // want 2nd dimension to be NumVar, not NumVaxVar, unlike VaxEffect_nc above
+  // matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
+	// matrix <lower = 0, upper = 1> [NumDoses, NumVar*NumGroup] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVar*NumGroup); // want 2nd dimension to be NumVar, not NumVaxVar, unlike VaxEffect_nc above
 	
+  // instead of the above, try this.
+	real<lower = 0, upper = 1> VaxEffect[NumDoses, NumVaxVar, NumVaxGroup];
+
 	vector <lower = 1> [NumVar] VarAdvantage;
 	
 	vector [NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
@@ -104,37 +110,43 @@ transformed parameters{
 	gamma 		= gamma_nc 		* phi2;
 	intercept 	= intercept_nc	* phi3;
 
+  // reckon fine to do it by vector, but can do indicies version below if that doesn't work. 
+  VaxEffect 	= VaxEffect_nc	* phi; /// Danny wants to get rid of this
+
+
 // tidy all of the below so that you always use indices, never an entire vector. Suspect that is where things going wrong.
 
-	if (NumVaxVar == NumVar && NumGroup == NumVaxGroup) {
-	  
-	  VaxEffect 	= VaxEffect_nc	* phi; /// Danny wants to get rid of this
-	}
-	   else { //// NumVaxVar != NumVar OR NumGroup != NumVaxGroup (or both)
-	     
-	     if (NumGroup == NumVaxGroup) { // i.e. NumVaxVar
-	       
-	       for (Variant in 1:NumVar) // i.e. NumVaxVar < NumVar (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
-	          for (Dose in 1:NumDoses)  
-	            VaxEffect[Dose, Variant] = VaxEffect_nc[Dose, 1] * phi;
-	     }
-	       else if (NumVaxVar == NumVar){
-	         
-	         for (Group in 1:NumGroup) // i.e. NumVaxGroup < NumGroup (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
-	          for (Dose in 1:NumDoses)  
-	            VaxEffect[Dose, Group] = VaxEffect_nc[Dose, 1] * phi;
-	         
-	       } else { // i.e NumVaxVar != NumVar AND NumGroup != NumVaxGroup
-	       
-	       for (Variant in 1:NumVar) // i.e. NumVaxVar < NumVar (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
-	          for (Dose in 1:NumDoses)  
-	         for (Group in 1:NumGroup) // i.e. NumVaxGroup < NumGroup (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
-	       	            VaxEffect[Dose, Group] = VaxEffect_nc[Dose, 1] * phi; /// WRONG!!!
 
-	         
-	       }
-	     
-	   }
+
+//	if (NumVaxVar == NumVar && NumGroup == NumVaxGroup) {
+//	  
+//	  VaxEffect 	= VaxEffect_nc	* phi; /// Danny wants to get rid of this
+//	}
+//	   else { //// NumVaxVar != NumVar OR NumGroup != NumVaxGroup (or both)
+//	     
+//	     if (NumGroup == NumVaxGroup) { // i.e. NumVaxVar
+//	       
+//	       for (Variant in 1:NumVar) // i.e. NumVaxVar < NumVar (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
+//          for (Dose in 1:NumDoses)  
+//	            VaxEffect[Dose, Variant] = VaxEffect_nc[Dose, 1] * phi;
+//	     }
+//	       else if (NumVaxVar == NumVar){
+//	         
+//	         for (Group in 1:NumGroup) // i.e. NumVaxGroup < NumGroup (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
+//	          for (Dose in 1:NumDoses)  
+//	            VaxEffect[Dose, Group] = VaxEffect_nc[Dose, 1] * phi;
+//	         
+//	       } else { // i.e NumVaxVar != NumVar AND NumGroup != NumVaxGroup
+//	       
+//	       for (Variant in 1:NumVar) // i.e. NumVaxVar < NumVar (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
+//	          for (Dose in 1:NumDoses)  
+//	         for (Group in 1:NumGroup) // i.e. NumVaxGroup < NumGroup (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
+//	       	            VaxEffect[Dose, Group] = VaxEffect_nc[Dose, 1] * phi; /// WRONG!!!
+//
+//	         
+//	       }
+//	     
+//	   }
 	
 	
 	if(DoVariants) {
@@ -241,21 +253,51 @@ transformed parameters{
 	}
 	
 	// Danny changes - consolodating loops below
+	
+	int VaxVariantIndex = 1;  // set to 1 by default
+	int VaxAgeIndex     = 1;  // set to 1 by default
+	
+	real ProductOfDoses_PerVariantPerAgeGroup; 
+	real WeightedSumEfficacyOverAgeGroups_PerVariant;   
+	
 	for (TimeRegion in 1:NumDatapoints)
 	{
-	  LogPredictions[TimeRegion] = 0; // initialize to zero
+	  LogPredictions[TimeRegion] = 0; // initialize final Rt to zero for each time point and region.
+	  
 	  for (Variant in 1:NumVar) // sum over variants
 	  {
-	      DummyForFinalLoop = VarProp[TimeRegion, Variant] * VarAdvantage[Variant] * RegionalTrends[TimeRegion]; 
+	      // choose appropriate index for variant vaccine 
+	      if (NumVaxVar == NumVar) VaxVariantIndex = Variant; else VaxVariantIndex = 1; // don't need the else as is specified by default above, but you get idea.
+        
+        // (re-)initialize to 0
+        WeightedSumEfficacyOverAgeGroups_PerVariant = 0;   
+
+	      FinalRtperVariantTimeRegion = VarProp[TimeRegion, Variant] * VarAdvantage[Variant] * RegionalTrends[TimeRegion]; 
 	      
-	      for (Dose in 1:NumDoses)
-	        for (Group in 1:NumGroup)
-	          DummyForFinalLoop *= (1 - (VaxProp[TimeRegion,Dose] * VaxEffect[Dose, Variant] * AgeProp[Group, 1])); 
+	      for (Group in 1:NumGroup)
+	      {
+  	      // choose appropriate index for age vaccine 
+	        if (NumVaxGroup == NumGroup) VaxAgeIndex = Group; else VaxAgeIndex = 1; // don't need the else as is specified by default above, but you get idea.
 	        
-	      LogPredictions[TimeRegion] += DummyForFinalLoop; 
+	        DummyForFinalLoop *=  //// taken out of loop below, as otherwise you're multipliying by as many doses, rather than once.
+	        
+	        // calculate product (i.e. effect) of all doses (for this variant and age group)
+	        ProductOfDoses_PerVariantPerAgeGroup = 1 // (re-)initialize.
+  	      for (Dose in 1:NumDoses)
+  	      {
+  	        ProductOfDoses_PerVariantPerAgeGroup                   *= 
+  	            (1 - (VaxProp[TimeRegion,Dose, Group]              *     // note has Group, not index
+  	            VaxEffect[Dose, VaxVariantIndex, VaxAgeIndex]));         // note this has indices, not Group/Variant.
+  	      }
+  	      // add to age group sum
+  	      WeightedSumEfficacyOverAgeGroups_PerVariant += AgeProp[VaxAgeIndex] * ProductOfDoses_PerVariantPerAgeGroup;
+	      }
+	      
+	      FinalRtperVariantTimeRegion *= WeightedSumEfficacyOverAgeGroups_PerVariant; 
+
+	      LogPredictions[TimeRegion] += FinalRtperVariantTimeRegion; 
 	  }
 	}
-
 }
 
 model {
