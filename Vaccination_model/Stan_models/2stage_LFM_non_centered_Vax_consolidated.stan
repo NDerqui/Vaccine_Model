@@ -110,12 +110,12 @@ transformed parameters{
 	gamma 		= gamma_nc 		* phi2;
 	intercept 	= intercept_nc	* phi3;
 
-  // reckon fine to do it by vector, but can do indicies version below if that doesn't work. 
-  VaxEffect 	= VaxEffect_nc	* phi; /// Danny wants to get rid of this
-
-
-// tidy all of the below so that you always use indices, never an entire vector. Suspect that is where things going wrong.
-
+  // VaxEffect 	= VaxEffect_nc	* phi; /// Danny wants to get rid of this. // reckon fine to do it by entire array, but can do indicies version below if that doesn't work.
+  for (VaxVariant in 1:NumVaxVar)
+    for (VaxGroup in 1:NumVaxGroup)
+      for (Dose in 1:NumDoses)
+        VaxEffect[Dose, VaxVariant, VaxGroup] = VaxEffect_nc[Dose, VaxVariant, VaxGroup] * phi; 
+  
 
 
 //	if (NumVaxVar == NumVar && NumGroup == NumVaxGroup) {
