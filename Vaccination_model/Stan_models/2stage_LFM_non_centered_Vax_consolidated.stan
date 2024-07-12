@@ -254,8 +254,8 @@ transformed parameters{
 	
 	// Danny changes - consolodating loops below
 	
-	int VaxVariantIndex = 1;  // set to 1 by default
-	int VaxAgeIndex     = 1;  // set to 1 by default
+	int VaxVariantIndex;  // set to 1 by default
+	int VaxAgeIndex    ;  // set to 1 by default
 	
 	real ProductOfDoses_PerVariantPerAgeGroup; 
 	real WeightedSumEfficacyOverAgeGroups_PerVariant;   
@@ -279,10 +279,8 @@ transformed parameters{
   	      // choose appropriate index for age vaccine 
 	        if (NumVaxGroup == NumGroup) VaxAgeIndex = Group; else VaxAgeIndex = 1; // don't need the else as is specified by default above, but you get idea.
 	        
-	        DummyForFinalLoop *=  //// taken out of loop below, as otherwise you're multipliying by as many doses, rather than once.
-	        
 	        // calculate product (i.e. effect) of all doses (for this variant and age group)
-	        ProductOfDoses_PerVariantPerAgeGroup = 1 // (re-)initialize.
+	        ProductOfDoses_PerVariantPerAgeGroup = 1; // (re-)initialize.
   	      for (Dose in 1:NumDoses)
   	      {
   	        ProductOfDoses_PerVariantPerAgeGroup                   *= 
