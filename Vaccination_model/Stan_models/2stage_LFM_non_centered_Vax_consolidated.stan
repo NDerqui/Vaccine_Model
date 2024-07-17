@@ -320,7 +320,8 @@ model {
 	
 	for (i in 1:NumDoses)
 	  for (j in 1:NumVaxVar)
-		  VaxEffect_nc[i, j] ~ std_normal();
+	    for(k in 1:NumVaxGroup)
+		    VaxEffect_nc[i, j, k] ~ std_normal();
 		  
 	for (i in 1:(NumVar-1))
 	  VarAdvantage_nc[i] ~ std_normal();
