@@ -263,7 +263,10 @@ get_data <- function(data_vax, data_rt, data_var,
     mutate(total_group = sum(total)) %>%
     ungroup() %>%
     mutate(total_total = sum(total)) %>%
-    mutate(age_prop = sum(total_group)/total_total) %>%
+    group_by(group) %>%
+    mutate(age_prop = total_group/total_total) %>%
+    filter(row_number() == 1) %>%
+    ungroup() %>%
     arrange(group) %>%
     select(age_prop)
   
@@ -499,7 +502,7 @@ get_data <- function(data_vax, data_rt, data_var,
     RtVals <- data_model_age_unique$Rt
     VaxProp <- VaxProp
     VarProp <- VarProp
-    AgeProp <- as.vector(age_prop)
+    AgeProp <- age_prop$age_prop
   
   }
   
