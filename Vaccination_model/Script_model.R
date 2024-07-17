@@ -370,7 +370,7 @@ get_data <- function(data_vax, data_rt, data_var,
     
     # No of total obs 
     
-    NumDatapoints <- NumLTLAs * NumTimepoints * NumGroup
+    NumDatapoints <- NumLTLAs * NumTimepoints
     NumDatapoints
     
     nrow(data_model)
@@ -388,9 +388,10 @@ get_data <- function(data_vax, data_rt, data_var,
     # Data
     
     RtVals <- data_model$Rt
-    VaxProp <- data_model[,covar_vax]
+    VaxProp <- array(data = as.matrix(data_model[,covar_vax]),
+                     dim = c(NumDatapoints, length(covar_vax), NumGroup)) # Should have a 3rd dimension with age groups
     VarProp <- VarProp
-    AgeProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
+    AgeProp <- rep(1, times = NumDatapoints)
   
   } else {
     
@@ -457,27 +458,48 @@ get_data <- function(data_vax, data_rt, data_var,
     Groups <- data_model_age$Groups
     Groups
     
+    # Rt, VarProp, etc should only be TimeRegion, thus...
+    
+    data_model_age_unique <- data_model_age %>%
+      group_by(ltla_name, week) %>%
+      filter(row_number() == 1) %>%
+      ungroup()
+    
     # No of total obs 
     
-    NumDatapoints <- nrow(data_model_age)
+    NumDatapoints <- nrow(data_model_age_unique)
     NumDatapoints
     
     # Variants
     
     if (DoVariants == 1) {
       NumVar <- length(covar_var)
-      VarProp <- data_model_age[,covar_var]
+      VarProp <- data_model_age_unique[,covar_var]
     } else {
       NumVar <- 1
       VarProp <- as.data.frame(matrix(1, nrow = NumDatapoints))
     }
     
+    # And the age should be added as a third dimension
+    
+    VaxProp <- data_model_age %>%
+      select(ltla_name, week, group, First_Prop, Second_Prop, Third_Prop) %>%
+      mutate(combi = paste0(ltla_name, "_", week)) %>%
+      select(ltla_name, week, combi, group, First_Prop, Second_Prop, Third_Prop)
+    
+    x <- as.matrix(VaxProp[VaxProp$group == "15-49",covar_vax])
+    y <- as.matrix(VaxProp[VaxProp$group == "50-69",covar_vax])
+    z <- as.matrix(VaxProp[VaxProp$group == "70plus",covar_vax])
+    
+    VaxProp <- array(data = c(x, y, z), dim = c(NumDatapoints, length(covar_vax), NumGroup))
+    rm(x,y,z)
+    
     # Data
     
-    RtVals <- data_model_age$Rt
-    VaxProp <- data_model_age[,covar_vax]
+    RtVals <- data_model_age_unique$Rt
+    VaxProp <- VaxProp
     VarProp <- VarProp
-    AgeProp <- age_prop
+    AgeProp <- as.vector(age_prop)
   
   }
   
