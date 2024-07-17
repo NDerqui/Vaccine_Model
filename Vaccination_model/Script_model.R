@@ -255,16 +255,16 @@ get_data <- function(data_vax, data_rt, data_var,
     ungroup() %>%
     arrange(ltla_name, week, group)
   
-  # Calculate age proportion in each LTLA
+  # Calculate overall proportion in age group, across all LTLAs - chose 1 timepoint
   
   age_prop <- data_merge_age %>%
-    group_by(ltla_name, week) %>%
-    mutate(total_ltla = sum(total)) %>%
+    filter(week == 1) %>%
+    group_by(group) %>%
+    mutate(total_group = sum(total)) %>%
     ungroup() %>%
-    group_by(ltla_name, week, group) %>%
-    mutate(age_prop = sum(total)/total_ltla) %>%
-    filter(row_number() == 1) %>%
-    ungroup() %>%
+    mutate(total_total = sum(total)) %>%
+    mutate(age_prop = sum(total_group)/total_total) %>%
+    arrange(group) %>%
     select(age_prop)
   
   #Remove the duplicates
@@ -391,7 +391,7 @@ get_data <- function(data_vax, data_rt, data_var,
     VaxProp <- array(data = as.matrix(data_model[,covar_vax]),
                      dim = c(NumDatapoints, length(covar_vax), NumGroup)) # Should have a 3rd dimension with age groups
     VarProp <- VarProp
-    AgeProp <- rep(1, times = NumDatapoints)
+    AgeProp <- array(1, dim = 1)
   
   } else {
     
@@ -399,29 +399,36 @@ get_data <- function(data_vax, data_rt, data_var,
     
     dim(data_model_age)
     
+    # Rt, VarProp, etc should only be TimeRegion, thus...
+    
+    data_model_age_unique <- data_model_age %>%
+      group_by(ltla_name, week) %>%
+      filter(row_number() == 1) %>%
+      ungroup()
+    
     # No of LTLA
     
-    NumLTLAs <- length(unique(data_model_age$ltla_name))
+    NumLTLAs <- length(unique(data_model_age_unique$ltla_name))
     NumLTLAs
     
     # LTLAs in the data
     
-    NamesLTLAs <- unique(data_model_age$ltla_name)
+    NamesLTLAs <- unique(data_model_age_unique$ltla_name)
     
-    data_model_age$LTLAs <- NA
+    data_model_age_unique$LTLAs <- NA
     for(i in 1:NumLTLAs){
-      data_model_age$LTLAs[data_model_age$ltla_name == NamesLTLAs[i]] = i
+      data_model_age_unique$LTLAs[data_model_age_unique$ltla_name == NamesLTLAs[i]] = i
     }
     
-    LTLAs <- data_model_age$LTLAs
+    LTLAs <- data_model_age_unique$LTLAs
     LTLAs
     
     # No of weeks
     
-    NumTimepoints <- length(unique(data_model_age$week))
+    NumTimepoints <- length(unique(data_model_age_unique$week))
     NumTimepoints
     
-    Timepoints <- data_model_age$week
+    Timepoints <- data_model_age_unique$week
     Timepoints
     
     # No of weeks per LTLA
@@ -429,7 +436,7 @@ get_data <- function(data_vax, data_rt, data_var,
     NumWeeksByLTLA <- rep(NA, NumLTLAs)
     for(i in 1: NumLTLAs){   
       
-      d_sub = data_model_age[data_model_age$ltla_name == NamesLTLAs[i], ]
+      d_sub = data_model_age_unique[data_model_age_unique$ltla_name == NamesLTLAs[i], ]
       
       NumWeeksByLTLA[i] = length(unique(d_sub$week))
     }
@@ -437,7 +444,7 @@ get_data <- function(data_vax, data_rt, data_var,
     
     # No of age groups
     
-    NumGroup <- length(unique(data_model_age$group))
+    NumGroup <- length(unique(data_model_age_unique$group))
     NumGroup
     
     if (DoVaxAge == 1) {
@@ -448,22 +455,15 @@ get_data <- function(data_vax, data_rt, data_var,
     
     # Names of age groups
     
-    NamesGroups <- unique(data_model_age$group)
+    NamesGroups <- unique(data_model_age_unique$group)
     
-    data_model_age$Groups <- NA
+    data_model_age_unique$Groups <- NA
     for(i in 1:NumGroup){
-      data_model_age$Groups[data_model_age$group == NamesGroups[i]] = i
+      data_model_age_unique$Groups[data_model_age_unique$group == NamesGroups[i]] = i
     }
     
-    Groups <- data_model_age$Groups
+    Groups <- data_model_age_unique$Groups
     Groups
-    
-    # Rt, VarProp, etc should only be TimeRegion, thus...
-    
-    data_model_age_unique <- data_model_age %>%
-      group_by(ltla_name, week) %>%
-      filter(row_number() == 1) %>%
-      ungroup()
     
     # No of total obs 
     
