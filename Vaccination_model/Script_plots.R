@@ -60,23 +60,23 @@ DoAge <- 0
 
 if (DoAge == 0) {
   
-  Rt_data <- data_stan[[22]]
+  Rt_data <- data_stan[[24]]
   
-  LTLA <- data_stan[[20]]
+  LTLA <- data_stan[[22]]
   
-  VarProp <- data_stan[[24]]
+  VarProp <- data_stan[[26]]
   
-  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[19]]*7
+  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[21]]*7
   
 } else {
   
-  Rt_data <- data_stan_age[[22]]
+  Rt_data <- data_stan_age[[24]]
   
-  LTLA <- data_stan_age[[20]]
+  LTLA <- data_stan_age[[22]]
   
-  VarProp <- data_stan_age[[24]]
+  VarProp <- data_stan_age[[26]]
   
-  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan_age[[19]]*7
+  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan_age[[21]]*7
   
 }
 
