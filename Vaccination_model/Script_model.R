@@ -428,7 +428,9 @@ get_data <- function(data_vax, data_rt, data_var,
       RtVals = data_model$Rt,
       VaxProp = data_model[,covar_vax],
       VarProp = VarProp,
-      AgeProp = as.data.frame(matrix(1, nrow = NumDatapoints))
+      AgeProp = as.data.frame(matrix(1, nrow = NumDatapoints)),
+      
+      NamesLTLAs = NamesLTLAs
     )  
     
   } else {
@@ -553,7 +555,9 @@ get_data <- function(data_vax, data_rt, data_var,
       RtVals = data_model_age$Rt,
       VaxProp = data_model_age[,covar_vax],
       VarProp = VarProp,
-      AgeProp = age_prop
+      AgeProp = age_prop,
+      
+      NamesLTLAs = NamesLTLAs
     )
     
   }
