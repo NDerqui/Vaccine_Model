@@ -571,7 +571,9 @@ get_data <- function(data_vax, data_rt, data_var,
     RtVals = RtVals,
     VaxProp = VaxProp,
     VarProp = VarProp,
-    AgeProp = AgeProp
+    AgeProp = AgeProp,
+    
+    NamesLTLAs = NamesLTLAs
   )  
   
   return(data_stan)
