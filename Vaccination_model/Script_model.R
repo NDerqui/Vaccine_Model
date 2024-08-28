@@ -573,7 +573,7 @@ get_data <- function(data_vax, data_rt, data_var,
     VarProp = VarProp,
     AgeProp = AgeProp,
     
-    NamesLTLAs = NamesLTLAs
+    NamesLTLAs = data_model$ltla_name
   )  
   
   return(data_stan)
