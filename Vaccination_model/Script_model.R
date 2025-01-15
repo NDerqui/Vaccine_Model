@@ -405,7 +405,7 @@ get_data <- function(data_vax, data_rt, data_var,
     # Rt, VarProp, etc should only be TimeRegion, thus...
     
     data_model_age_unique <- data_model_age %>%
-      group_by(ltla_name, week) %>%
+      group_by(ltla_name, week, group) %>%
       filter(row_number() == 1) %>%
       ungroup()
     
@@ -632,7 +632,7 @@ colnames(ModelMetaData_dummy) = NULL
 
 #### Run ####
 
-fit = sampling(StanModel, data = data_stan, 
+fit = sampling(StanModel, data = data_stan_age, 
                  iter 	= ModelMetaData$iter, 
                  warmup 	= ModelMetaData$warmup, 
                  thin 	= ModelMetaData$thin, 
