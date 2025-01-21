@@ -310,9 +310,11 @@ get_data <- function(data_vax, data_rt, data_var,
   data_model <- select(data_merge, "ltla_name", "date", "week", "Rt",
                        "First_Prop", "Second_Prop", "Third_Prop",
                        "Var_PreAlpha", "Var_Alpha", "Var_Delta")
+  data_model <- arrange(data_model, ltla_name, week)
   data_model_age <- select(data_merge_age, "ltla_name", "date", "week", "Rt","group",
                            "First_Prop", "Second_Prop", "Third_Prop",
                            "Var_PreAlpha", "Var_Alpha", "Var_Delta")
+  data_model_age <- arrange(data_model_age, group, ltla_name, week)
   
   
   ## Stan list data ##
