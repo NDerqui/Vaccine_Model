@@ -174,12 +174,6 @@ get_data <- function(data_vax, data_rt, data_var,
   drt <- rename(drt, ltla_name = area)
   dvar <- rename(dvar, ltla_code = ltlacode)
   
-  #To calculate new group proportions, only one weekly entry per age band
-  dage$week <- round(as.numeric(floor((dage$date - Date_Start)/7)), digits = 0)
-  dage <- dage %>%
-    mutate(combi = paste0(week, ltla_name, age_band_min))
-  dage <- filter(dage, !duplicated(dage$combi))
-  
   # Three age groups
   
   dage <- dage %>%
@@ -187,6 +181,12 @@ get_data <- function(data_vax, data_rt, data_var,
     mutate(group = case_when(age_band_min >= 15 & age_band_min <= 45 ~ "15-49",
                              age_band_min >= 50 & age_band_min <= 65 ~ "50-69",
                              age_band_min >= 70 & age_band_min <= 90 ~ "70plus"))
+  
+  #To calculate new group proportions, only one weekly entry per age band
+  dage$week <- round(as.numeric(floor((dage$date - Date_Start)/7)), digits = 0)
+  dage <- dage %>%
+    mutate(combi = paste0(week, ltla_name, age_band_min))
+  dage <- filter(dage, !duplicated(dage$combi))
   
   
   ## Merge ##
