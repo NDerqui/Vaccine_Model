@@ -48,43 +48,6 @@ library(openxlsx)
 #                       IncludeIntercept = 1, IncludeScaling = 1)
 
 
-#### Options ####
-
-DoKnots <- 0
-Quadratic <- 0
-
-DoAge <- 0
-
-
-#### Extract parameters ####
-
-if (DoAge == 0) {
-  
-  Rt_data <- data_stan[[24]]
-  
-  LTLA <- data_stan[[22]]
-  
-  VarProp <- data_stan[[26]]
-  
-  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[21]]*7
-  
-} else {
-  
-  Rt_data <- data_stan_age[[24]]
-  
-  LTLA <- data_stan_age[[22]]
-  
-  VarProp <- data_stan_age[[26]]
-  
-  date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan_age[[21]]*7
-  
-}
-
-Steps <- c(max(c(min(data_rt$date), min(data_var$date))),
-           lockdown_steps[2:length(lockdown_steps)],
-           min(c(max(data_rt$date), max(data_var$date))))
-
-
 
 # MODEL DATA ------------------------------------------------------------
 
@@ -96,19 +59,75 @@ Steps <- c(max(c(min(data_rt$date), min(data_var$date))),
 # Loop options account for the variant but not Age or Spline options
 
 
-# Insert models names
+#### Options ####
 
-names <- c("Checks_10k_10cha_2B", "Checks_10k_10cha_2D",
-           "Checks_10k_10cha_3B", "Checks_10k_10cha_3D")
+Steps <- c(max(c(min(data_rt$date), min(data_var$date))),
+           lockdown_steps[2:length(lockdown_steps)],
+           min(c(max(data_rt$date), max(data_var$date))))
 
-# Insert Variant status
+# Spline
 
-variants <- c(rep(1, times = 4))
+DoKnots <- 0
+Quadratic <- 0
+
+# Insert Variant and age
+
+variants <- c(rep(1, times = 8), rep(0, times = 7), rep(1, times = 3))
+
+ages <- c(rep(0, times = 8), rep(1, times = 10))
+
+# Names
+
+Models_names <- c("fit_1", "fit_2", "fit_3", "fit_4", "fit_5")
+Models_names <- gsub("fit_", "", Models_names)
+
+Variants_names <- c("A", "B", "C", "D")
+
+names <- vector()
+
+for (model in 1:length(Models_names)) {
+  
+  for (var in 1:length(Variants_names)) {
+    
+    add <- paste0("CorrectDJL3_2k_10c_", Models_names[model], Variants_names[var])
+    names <- c(names, add)
+  }
+}
+rm(add, model, var)
+
+names <- names[names != "CorrectDJL3_2k_10c_3A" & names != "CorrectDJL3_2k_10c_5B"]
 
 
 #### Loop
 
 for (i in 1:length(names)) {
+  
+  
+  DoAge <- ages[i]
+  
+  #### Extract base data ####
+  
+  if (DoAge == 0) {
+    
+    Rt_data <- data_stan[[24]]
+    
+    LTLA <- data_stan[[22]]
+    
+    VarProp <- data_stan[[26]]
+    
+    date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan[[21]]*7
+    
+  } else {
+    
+    Rt_data <- data_stan_age[[24]]
+    
+    LTLA <- data_stan_age[[22]]
+    
+    VarProp <- data_stan_age[[26]]
+    
+    date <- max(c(min(data_rt$date), min(data_var$date))) + data_stan_age[[21]]*7
+    
+  }
   
   
   #### Load data ####
