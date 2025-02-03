@@ -664,6 +664,8 @@ VE_Quan <- colQuantiles(model_matrix[, grep("VaxEffect", colnames(model_matrix))
 
 VE_data <- round(data.frame(VE, VE_Quan), digits = 4)
 
+VE_all <- model_matrix[, grep("VaxEffect", colnames(model_matrix))]
+
 # Var Advantage
 
 if (data_stan[[5]] == 1) {
@@ -673,6 +675,8 @@ if (data_stan[[5]] == 1) {
   VarAdvantage_Quan <- colQuantiles(model_matrix[, grep('^VarAdvantage\\[', colnames(model_matrix))], probs=c(0.025,0.975))
   
   VarAdvantage_data <- round(data.frame(VarAdvantage, VarAdvantage_Quan), digits = 4)
+  
+  VA_all <- model_matrix[, grep('^VarAdvantage\\[', colnames(model_matrix))]
 }
 
 # Rt predictions
@@ -715,7 +719,9 @@ list_result <- list(loo = loo_cv,
                     Rt_Predictions = Rt_data,
                     RegionalRends = RegionalTrends_data,
                     NationalTrend = NationalTrend_data,
-                    Lambda = Lambda_data)
+                    Lambda = Lambda_data,
+                    VaccineEffect_Matrix = VE_all,
+                    if(data_stan[[5]] == 1) {VarAdvantage_Matrix = VA_all} else {VarAdvantage_Matrix = NA})
 
 list_result
 
