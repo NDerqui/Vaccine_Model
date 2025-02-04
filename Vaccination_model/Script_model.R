@@ -711,6 +711,14 @@ Lambda_Quan <- colQuantiles(model_matrix[, grep('^lambda\\[', colnames(model_mat
 
 Lambda_data <- round(data.frame(Lambda, Lambda_Quan), digits = 4)
 
+# Scaling
+
+Scaling <- colMeans(model_matrix[, grep('^gamma\\[', colnames(model_matrix))])
+
+Scaling_Quan <- matrixStats::colQuantiles(model_matrix[, grep('^gamma\\[', colnames(model_matrix))], probs=c(0.025,0.975))
+
+Scaling_data <- round(data.frame(Scaling, Scaling_Quan), digits = 4)
+
 ## Return object
 
 list_result <- list(loo = loo_cv,
@@ -720,6 +728,7 @@ list_result <- list(loo = loo_cv,
                     RegionalRends = RegionalTrends_data,
                     NationalTrend = NationalTrend_data,
                     Lambda = Lambda_data,
+                    Scaling = Scaling_data,
                     VaccineEffect_Matrix = VE_all,
                     if(data_stan[[5]] == 1) {VarAdvantage_Matrix = VA_all} else {VarAdvantage_Matrix = NA})
 

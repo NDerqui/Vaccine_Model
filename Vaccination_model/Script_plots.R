@@ -164,6 +164,9 @@ for (i in 1:length(names)) {
   
   Lambda_data <- list_result[[7]]
   Lambda <- list_result[[7]][1]
+
+  Scaling_data <- list_result[[8]]
+  Scaling <- list_result[[8]][1]
   
   Rt_NoVax <- as.matrix(VarProp) %*% as.matrix(VarAdvantage)
   
