@@ -72,31 +72,36 @@ Quadratic <- 0
 
 # Insert Variant and age
 
-variants <- c(rep(1, times = 8), rep(0, times = 7), rep(1, times = 3))
+# variants <- c(rep(1, times = 8), rep(0, times = 7), rep(1, times = 3))
+variants <- c(1, 1)
 
-ages <- c(rep(0, times = 8), rep(1, times = 10))
+# ages <- c(rep(0, times = 8), rep(1, times = 10))
+ages <- c(0, 0)
 
 # Names
 
-Models_names <- c("fit_1", "fit_2", "fit_3", "fit_4", "fit_5")
+# Models_names <- c("fit_1", "fit_2", "fit_3", "fit_4", "fit_5")
+# Models_names <- gsub("fit_", "", Models_names)
+# 
+# Variants_names <- c("A", "B", "C", "D")
+# 
+# names <- vector()
+# 
+# for (model in 1:length(Models_names)) {
+#   
+#   for (var in 1:length(Variants_names)) {
+#     
+#     add <- paste0("CorrectDJL3_2k_10c_", Models_names[model], Variants_names[var])
+#     names <- c(names, add)
+#   }
+# }
+# rm(add, model, var)
+# 
+# names <- names[names != "CorrectDJL3_2k_10c_3A" & names != "CorrectDJL3_2k_10c_5B"]
+
+Models_names <- c("fit_1B", "fit_2B")
 Models_names <- gsub("fit_", "", Models_names)
-
-Variants_names <- c("A", "B", "C", "D")
-
-names <- vector()
-
-for (model in 1:length(Models_names)) {
-  
-  for (var in 1:length(Variants_names)) {
-    
-    add <- paste0("CorrectDJL3_2k_10c_", Models_names[model], Variants_names[var])
-    names <- c(names, add)
-  }
-}
-rm(add, model, var)
-
-names <- names[names != "CorrectDJL3_2k_10c_3A" & names != "CorrectDJL3_2k_10c_5B"]
-
+names <- paste0("CorrectDJL3_10k_10c_", Models_names)
 
 #### Loop
 
