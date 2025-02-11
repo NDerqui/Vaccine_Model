@@ -50,7 +50,7 @@ parameters {
 	real<lower = 0> 				phi3_nc;
 	real<lower = 0> 				phi4_nc;
 	
-	matrix <lower = 0> [NumLTLAs,IntDim] 		gamma_nc; 	  	// Prev alpha, indexed by: i) LTLA; ii) factor 
+	matrix <lower = 0> [NumLTLAs,IntDim] 		RegionalScale_nc; 	  	// Prev alpha, indexed by: i) LTLA; ii) factor 
 	vector[NumLTLAs] 				intercept_nc;     	// indexed by: i) LTLA
 	
   matrix <lower = 0> [NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
@@ -64,6 +64,7 @@ parameters {
 }
 
 transformed parameters{
+  
 	real sigma 	= 0;
 	real phi 	  = 0;
 	real phi2 	= 0;
@@ -72,8 +73,8 @@ transformed parameters{
 	real FinalRtperVariantTimeRegion 	= 0;
 
 	// allocate
-	vector[NumLTLAs] 			    intercept 	= rep_vector(0, NumLTLAs); 
-	matrix[NumLTLAs,IntDim] 	gamma 		  = rep_matrix(1, NumLTLAs, IntDim); 
+	vector[NumLTLAs] 			    intercept 	  = rep_vector(0, NumLTLAs); 
+	matrix[NumLTLAs,IntDim] 	RegionalScale = rep_matrix(1, NumLTLAs, IntDim); 
 
 	matrix <lower = 0> [NumTrendPar,IntDim] lambda_raw 		= rep_matrix(0, NumTrendPar, IntDim); // has NumKnots/NumTimepoints rows (not NumDatapoints)
 	matrix <lower = 0> [NumPointsLine,IntDim] lambda 	= rep_matrix(0, NumPointsLine, IntDim);  // has NumKnots*NumLTLAs rows (not NumTimepoints)
@@ -107,7 +108,7 @@ transformed parameters{
 	phi4 		= phi4_nc		* 0.5;
 	
 	sigma 		= sigma_nc		* 0.5;
-	gamma 		= gamma_nc 		* phi2;
+	RegionalScale 		= RegionalScale_nc 		* phi2;
 	intercept 	= intercept_nc	* phi3;
 
   // VaxEffect 	= VaxEffect_nc	* phi; /// Danny wants to get rid of this. // reckon fine to do it by entire array, but can do indicies version below if that doesn't work.
@@ -238,14 +239,14 @@ transformed parameters{
 			if (IncludeIntercept) {
 			
 				if (IncludeScaling) {
-					RegionalTrends[i] += NationalTrend[i,j] * gamma[LTLAs[i],j] + intercept[LTLAs[i]]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
+					RegionalTrends[i] += NationalTrend[i,j] * RegionalScale[LTLAs[i],j] + intercept[LTLAs[i]]; // lambda * RegionalScale^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
 				} else {
 					RegionalTrends[i] += NationalTrend[i,j] + intercept[LTLAs[i]]; }
 			
 			} else {
 			
 				if (IncludeScaling) {
-					RegionalTrends[i] += NationalTrend[i,j] * gamma[LTLAs[i],j]; // lambda * gamma^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
+					RegionalTrends[i] += NationalTrend[i,j] * RegionalScale[LTLAs[i],j]; // lambda * RegionalScale^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
 				} else {
 					RegionalTrends[i] += NationalTrend[i,j]; }
 			}
@@ -304,7 +305,7 @@ model {
 	
 	for (i in 1:NumLTLAs)
 		for(j in 1:IntDim)
-			gamma_nc[i,j] ~ std_normal();
+			RegionalScale_nc[i,j] ~ std_normal();
 	
 	for (i in 1:NumTrendPar)
 		for(j in 1:IntDim)
