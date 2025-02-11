@@ -39,9 +39,6 @@ data {
 	vector <lower = 0, upper = 1> [NumGroup] AgeProp;  // x predictor: Each age group proportion in each LTLA
 }
 
-transformed data{
-	int<lower = 1> 	IntDim = 1;			// internal dimension of matrix factors - number of latent factors.
-}
 
 parameters {
 	real<lower = 0> 				sigma_nc; 
@@ -50,10 +47,10 @@ parameters {
 	real<lower = 0> 				phi3_nc;
 	real<lower = 0> 				phi4_nc;
 	
-	matrix <lower = 0> [NumLTLAs,IntDim] 		RegionalScale_nc; 	  	// Prev alpha, indexed by: i) LTLA; ii) factor 
+	vector <lower = 0> [NumLTLAs] 	RegionalScale_nc; 	  	// Prev alpha, indexed by: i) LTLA; 
 	vector[NumLTLAs] 				intercept_nc;     	// indexed by: i) LTLA
 	
-  matrix <lower = 0> [NumTrendPar,IntDim] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, ii) factor
+	vector <lower = 0> [NumTrendPar] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, 
   
   //matrix <lower = 0, upper = 1> [NumDoses, NumVaxVar*NumVaxGroup] 	VaxEffect_nc;
   // instead of the above, try this.
@@ -73,27 +70,22 @@ transformed parameters{
 	real FinalRtperVariantTimeRegion 	= 0;
 
 	// allocate
-	vector[NumLTLAs] 			    intercept 	  = rep_vector(0, NumLTLAs); 
-	matrix[NumLTLAs,IntDim] 	RegionalScale = rep_matrix(1, NumLTLAs, IntDim); 
+	vector[NumLTLAs] 	intercept 	  = rep_vector(0, NumLTLAs); 
+	vector[NumLTLAs] 	RegionalScale = rep_vector(1, NumLTLAs); 
 
-	matrix <lower = 0> [NumTrendPar,IntDim] lambda_raw 		= rep_matrix(0, NumTrendPar, IntDim); // has NumKnots/NumTimepoints rows (not NumDatapoints)
-	matrix <lower = 0> [NumPointsLine,IntDim] lambda 	= rep_matrix(0, NumPointsLine, IntDim);  // has NumKnots*NumLTLAs rows (not NumTimepoints)
+	vector <lower = 0> [NumTrendPar] lambda_raw = rep_vector(0, NumTrendPar); 	// has NumKnots/NumTimepoints rows (not NumDatapoints)
+	vector <lower = 0> [NumPointsLine] lambda 	= rep_vector(0, NumPointsLine);	// has NumKnots*NumLTLAs rows (not NumTimepoints)
 	
-	matrix[NumKnots-1, IntDim] origin; 	// intercept
-	matrix[NumKnots-1, IntDim] slope;  	// slope
-	matrix[NumKnots-2, IntDim] a; 		// Coeff a for quadratic eq
-	matrix[NumKnots-2, IntDim] b; 		// Coeff b for quadratic eq
-	matrix[NumKnots-2, IntDim] c; 		// Coeff c for quadratic eq
+	vector[NumKnots-1] origin; 	// intercept
+	vector[NumKnots-1] slope;  	// slope
+	vector[NumKnots-2] a; 		// Coeff a for quadratic eq
+	vector[NumKnots-2] b; 		// Coeff b for quadratic eq
+	vector[NumKnots-2] c; 		// Coeff c for quadratic eq
 	
-	matrix [NumDatapoints, IntDim]	NationalTrend	= rep_matrix(0, NumDatapoints, IntDim); // To calculate lambda from line or free
-	vector [NumDatapoints] RegionalTrends 		= rep_vector(0, NumDatapoints);
+	vector [NumDatapoints] NationalTrend	= rep_vector(0, NumDatapoints); // To calculate lambda from line or free
+	vector [NumDatapoints] RegionalTrends 	= rep_vector(0, NumDatapoints);
 	
-  // matrix<lower = 0, upper = 1>[NumDoses, NumVaxVar] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVaxVar);
-	// matrix <lower = 0, upper = 1> [NumDoses, NumVar*NumGroup] 			VaxEffect 	= rep_matrix(0, NumDoses, NumVar*NumGroup); // want 2nd dimension to be NumVar, not NumVaxVar, unlike VaxEffect_nc above
-	
-  // instead of the above, try this.
 	real<lower = 0, upper = 1> VaxEffect[NumDoses, NumVaxVar, NumVaxGroup];
-
 	vector <lower = 1> [NumVar] VarAdvantage;
 	
 	vector [NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
@@ -154,104 +146,21 @@ transformed parameters{
 	 VarAdvantage[2:NumVar] 	= VarAdvantage_nc	* phi;
 	}
 	
-	if (DoKnots) {  
-	 
-		// Lambda for the SPLINE
-		lambda_raw 	= lambda_raw_nc 	* phi4;
-		{  
-			// initialize lambda matrix to have same values for every LTLA
-			int ind = 0; // initialize index
-			
-			for (i in 1:NumLTLAs){
-				for(j in 1:IntDim)
-					lambda[(ind + 1):(ind + NumKnots), j] = lambda_raw[1:NumKnots, j];
-		    
-				ind = ind + NumKnots; // update index
-			}
-		}
-		
-		// spline to fit the lambda: Quadratic or Linear
-		if (Quadratic) {
-		
-			for (i in 1:(NumKnots-2))
-				for (j in 1:IntDim) {
-					a[i,j] = (lambda[i+2, j] - lambda[i+1, j] - ((Knots[i+2] - Knots[i+1]) * (lambda[i, j] - lambda[i+1, j]) / (Knots[i] - Knots[i+1]))) / ((Knots[i+2]*Knots[i+2]) - (Knots[i+1]*Knots[i+1]) - (Knots[i] + Knots[i+1])*(Knots[i+2] - Knots[i+1]));
-					b[i,j] = ((lambda[i, j] - lambda[i+1, j]) / (Knots[i] - Knots[i+1])) - (Knots[i] + Knots[i+1])*a[i,j];
-					c[i,j] = lambda[i, j] - (b[i,j] * Knots[i]) - (a[i,j] * (Knots[i]*Knots[i]));
-				}
-		    
-		} else {
-		
-			for (i in 1:(NumKnots-1))
-				for (j in 1:IntDim) {
-					slope[i,j] = (lambda[i+1, j] - lambda[i, j])/(Knots[i+1] - Knots[i]);
-					origin[i,j] = lambda[i, j] - slope[i, j]*Knots[i]; 
-				}
-		}
-		
-		// Calculate lambda from the spline ONLY IF we are doing knots
-		if (Quadratic) {
-		
-		for (i in 1:NumDatapoints) 
-			for (j in 1:IntDim)
-		  		if (LTLAs[i] == 1) {
-			        
-			        if (Timepoints[i] >= Knots[NumKnots-1] && Timepoints[i] < Knots[NumKnots]) {
-			              NationalTrend[i,j] = a[NumKnots-2,1]*(Timepoints[i] * Timepoints[i]) + b[NumKnots-2,1]*Timepoints[i] + c[NumKnots-2,1]; 
-			        
-			        } else for (k in 1:(NumKnots-2))
-			            if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
-			              NationalTrend[i,j] = a[k,j]*(Timepoints[i] * Timepoints[i]) + b[k,j]*Timepoints[i] + c[k,j];
-			
-		  		} else NationalTrend[i,j] = NationalTrend[(i - NumTimepoints),j]; // i.e. make equal to previous LTLA's NationalTrend 
-		  
-		} else { // i.e. doing knots, linear spline 
-   
-			for (i in 1:NumDatapoints)
-				for (j in 1:IntDim)
-					if (LTLAs[i] == 1) {     
-						for (k in 1:(NumKnots-1)) 
-							if (Timepoints[i] >= Knots[k] && Timepoints[i] < Knots[k+1])
-								NationalTrend[i,j] = origin[k,j] + slope[k,j] * Timepoints[i];
-   
-					} else NationalTrend[i,j] = NationalTrend[(i - NumTimepoints),j]; // i.e. make equal to previous LTLA's NationalTrend 
-		}
-
-	} else { // i.e. step function (each week a free parameter)
- 
-		// Initialise lambda if we are not doing knots: free parameters allowed
-		lambda_raw 	= lambda_raw_nc 	* phi4;
-		{  
+	
+	// Initialise lambda if we are not doing knots: free parameters allowed
+	lambda_raw 	= lambda_raw_nc 	* phi4;
+	{  
 			// initialize lambda matrix to have same values for every LTLA 
 			int ind_par = 0; // initialize index
 			for (i in 1:NumLTLAs){
-		    
-				for(j in 1:IntDim)
-					NationalTrend[(ind_par + 1):(ind_par + NumTimepoints), j] = lambda_raw[1:NumTimepoints, j];
+		    NationalTrend[(ind_par + 1):(ind_par + NumTimepoints)] = lambda_raw[1:NumTimepoints];
 				ind_par = ind_par + NumTimepoints; // update index
 			}
-		}
- 	}
-
- // Calculate regional trend from national trend
-	for (i in 1:NumDatapoints){
-		for(j in 1:IntDim){
-			if (IncludeIntercept) {
-			
-				if (IncludeScaling) {
-					RegionalTrends[i] += NationalTrend[i,j] * RegionalScale[LTLAs[i],j] + intercept[LTLAs[i]]; // lambda * RegionalScale^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
-				} else {
-					RegionalTrends[i] += NationalTrend[i,j] + intercept[LTLAs[i]]; }
-			
-			} else {
-			
-				if (IncludeScaling) {
-					RegionalTrends[i] += NationalTrend[i,j] * RegionalScale[LTLAs[i],j]; // lambda * RegionalScale^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
-				} else {
-					RegionalTrends[i] += NationalTrend[i,j]; }
-			}
-		}
 	}
+	
+	for (i in 1:NumDatapoints)
+	RegionalTrends[i] += NationalTrend[i] * RegionalScale[LTLAs[i]]; // lambda * RegionalScale^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
+
 	
 	// Danny changes - consolodating loops below
 	{ // Bracket to compile
@@ -304,12 +213,10 @@ transformed parameters{
 model {
 	
 	for (i in 1:NumLTLAs)
-		for(j in 1:IntDim)
-			RegionalScale_nc[i,j] ~ std_normal();
+		RegionalScale_nc[i] ~ std_normal();
 	
 	for (i in 1:NumTrendPar)
-		for(j in 1:IntDim)
-			lambda_raw_nc[i,j] ~ std_normal(); 
+		lambda_raw_nc[i] ~ std_normal(); 
 	
 	intercept_nc 	~ std_normal();
 	
