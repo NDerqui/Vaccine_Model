@@ -610,16 +610,17 @@ library(here)
 
 #ModelChar <- "2stage_LFM_non_centered_Vax"
 ModelChar <- "2stage_LFM_non_centered_Vax_consolidated"
-StanModel <- stan_model(here(paste0("Stan_models/",ModelChar, ".stan")))
+#StanModel <- stan_model(here(paste0("Stan_models/",ModelChar, ".stan")))
+StanModel <- stan_model(paste0("Stan_models/",ModelChar, ".stan"))
 #StanModel <- stan_model(here(paste0("Vaccination_model_1/Stan_models/", ModelChar, ".stan"))) ## added this as my here() package playing up and loads to root directory. Switch back to previous line as required.
 
-cat(paste0("Model compilation done\n"))
+cat(paste0("Model compilation done ", Sys.time(), "\n"))
 
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 2000 #Increase
-ModelMetaData$warmup 		= 500 #Increase
+ModelMetaData$iter 			= 5000 #Increase
+ModelMetaData$warmup 		= 100 #Increase
 ModelMetaData$thin 			= 1
 ModelMetaData$chains 		= 1 #Increase
 ModelMetaData$adapt_delta 	= 0.9
@@ -643,9 +644,10 @@ fit = sampling(StanModel, data = data_stan_age,
                            "LogPredictions", "RegionalTrends",
                            "NationalTrend", "gamma", "intercept", "lambda",
                            "log_lik", "VarAdvantage"), 
-                 control = list(adapt_delta = ModelMetaData$adapt_delta,
-                                max_treedepth = ModelMetaData$max_treedepth))
+                 control = list(adapt_delta = ModelMetaData$adapt_delta, max_treedepth = ModelMetaData$max_treedepth))
 
+		 
+		 str(fit)
 #### Get pars of interest
 
 ## LOO-CV
@@ -656,10 +658,39 @@ loo_cv <- loo(fit)
 
 model_matrix <- as.matrix(fit)
 
+dim(model_matrix)
+
+colnames(model_matrix)[1:5000]
+colnames(model_matrix)[5001:10000]
+colnames(model_matrix)[10001:50000]
+
+
+
+model_matrix[,1]
+
+
+colnames(model_matrix)
+length(colnames(model_matrix))
+
+object.size(fit)
+object.size(model_matrix)
+
+
 # Vaccine Effect
 
 VE <- colMeans(model_matrix[, grep("VaxEffect", colnames(model_matrix))])
 
+ReducedMatrix = model_matrix[, grep("VaxEffect", colnames(model_matrix))]
+ReduceedMatrix = cbind(ReducedMatrix, model_matrix[, grep('^VarAdvantage\\[', colnames(model_matrix))]) 
+matplot(ReducedMatrix)
+
+colnames(ReducedMatrix)
+
+
+rm(fit)
+rm(model_matrix)
+gc()
+		
 VE_Quan <- colQuantiles(model_matrix[, grep("VaxEffect", colnames(model_matrix))], probs=c(0.025,0.975))
 
 VE_data <- round(data.frame(VE, VE_Quan), digits = 4)
