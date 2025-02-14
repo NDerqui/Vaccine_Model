@@ -69,8 +69,7 @@ transformed parameters{
 	
 	vector [NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
 	
-	// VarAdvantage for base variant set to 1
-	VarAdvantage[1] = 1;
+	//VarAdvantage[1] = 1; // VarAdvantage for base variant set to 1
 	
 	// Initialise NationalTrend if we are not doing knots: free parameters allowed
 	{  
@@ -93,6 +92,7 @@ transformed parameters{
 	
 	real ProductOfDoses_PerVariantPerAgeGroup; 
 	real WeightedSumEfficacyOverAgeGroups_PerVariant;   
+	real VarAdvantageDummy; 
 	
 	for (TimeRegion in 1:NumDatapoints)
 	{
@@ -105,8 +105,10 @@ transformed parameters{
         
         // (re-)initialize to 0
         WeightedSumEfficacyOverAgeGroups_PerVariant = 0;   
+        
+        if (Variant == 1) VarAdvantageDummy = 1; else VarAdvantageDummy = VarAdvantage[Variant]; 
 
-	      FinalRtperVariantTimeRegion = VarProp[TimeRegion, Variant] * VarAdvantage[Variant] * RegionalTrends[TimeRegion]; 
+	      FinalRtperVariantTimeRegion = VarProp[TimeRegion, Variant] * VarAdvantageDummy * RegionalTrends[TimeRegion]; 
 	      
 	      for (Group in 1:NumGroup)
 	      {
@@ -140,7 +142,7 @@ model {
 	NationalTrend_condensed ~ normal(1, 3);
 	// intercept 	~ normal(0, 3);
 	
-	sigma 		  ~ normal(0,2);
+	sigma 		  ~ normal(0,1);
 	
 	for (i in 1:NumDoses)
 	  for (j in 1:NumVaxVar)

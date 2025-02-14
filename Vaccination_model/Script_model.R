@@ -595,7 +595,7 @@ data_stan_age <- get_data(data_vax = data_vax, data_rt = data_rt, data_var = dat
                       covar_var = covar_var, covar_vax = covar_vax,
                       Date_Start = Date_Start, Date_End = Date_End,
                       lockdown_steps = lockdown_steps,
-                      DoVariants = 1, DoVaxVariants = 0, DoAge = 1, DoVaxAge = 0,
+                      DoVariants = 1, DoVaxVariants = 1, DoAge = 1, DoVaxAge = 1,
                       DoKnots = 0, Quadratic = 0,
                       IncludeIntercept = 0, IncludeScaling = 0)
 
