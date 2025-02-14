@@ -146,7 +146,6 @@ transformed parameters{
 	 VarAdvantage[2:NumVar] 	= VarAdvantage_nc	* phi;
 	}
 	
-	
 	// Initialise lambda if we are not doing knots: free parameters allowed
 	lambda_raw 	= lambda_raw_nc 	* phi4;
 	{  
