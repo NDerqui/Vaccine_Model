@@ -617,7 +617,7 @@ cat(paste0("Model compilation done ", Sys.time(), "\n"))
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 200 #Increase
+ModelMetaData$iter 			= 100 #Increase
 ModelMetaData$warmup 		= 50 #Increase
 ModelMetaData$thin 			= 1
 ModelMetaData$chains 		= 1 #Increase
@@ -640,12 +640,13 @@ fit = sampling(StanModel, data = data_stan_age,
                  chains 	= ModelMetaData$chains, 
                  pars 	= c("VaxEffect",
                            "LogPredictions", "RegionalTrends",
-                           "NationalTrend", "RegionalScale", "intercept", "lambda",
+                           "NationalTrend", "RegionalScale", #"intercept", "lambda",
                            "log_lik", "VarAdvantage"), 
                  control = list(adapt_delta = ModelMetaData$adapt_delta, max_treedepth = ModelMetaData$max_treedepth))
+cat(paste0("Sampling done ", Sys.time(), "\n"))
+#str(fit)
 
-		 
-		 str(fit)
+
 #### Get pars of interest
 
 ## LOO-CV

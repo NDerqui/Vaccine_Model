@@ -41,26 +41,22 @@ data {
 
 
 parameters {
-	real<lower = 0> 				sigma_nc; 
+	real<lower = 0> 				sigma; 
 	real<lower = 0> 				phi_nc;
 	real<lower = 0> 				phi2_nc;
 	real<lower = 0> 				phi3_nc;
 	real<lower = 0> 				phi4_nc;
 	
-	vector <lower = 0> [NumLTLAs] 	RegionalScale; 	  	// Prev alpha, indexed by: i) LTLA; 
-	vector[NumLTLAs] 				intercept_nc;     	// indexed by: i) LTLA
-	
-	vector <lower = 0> [NumTrendPar] 		NationalTrend_condensed; // indexed by: i) Knots/Timepoints, 
-  
-	real<lower = 0, upper = 1> VaxEffect[NumDoses, NumVaxVar, NumVaxGroup];
-
+	vector <lower = 0> [NumLTLAs] 	 RegionalScale; 	  	    // Prev alpha, indexed by: i) LTLA; 
+	vector <lower = 0> [NumTrendPar] NationalTrend_condensed; // indexed by: i) Knots/Timepoints, 
+	// vector[NumLTLAs] 				intercept;     	// indexed by: i) LTLA
+ 	real<lower = 0, upper = 1> VaxEffect[NumDoses, NumVaxVar, NumVaxGroup];
 
 	vector <lower = 1> [NumVar-1] VarAdvantage_nc; /// move this to data while debugging using Knock Whittles values.
 }
 
 transformed parameters{
   
-	real sigma 	= 0;
 	real phi 	  = 0;
 	real phi2 	= 0;
 	real phi3 	= 0;
@@ -68,11 +64,7 @@ transformed parameters{
 	real FinalRtperVariantTimeRegion 	= 0;
 
 	// allocate
-	vector[NumLTLAs] 	intercept 	  = rep_vector(0, NumLTLAs); 
 
-	vector <lower = 0> [NumTrendPar] lambda_raw = rep_vector(0, NumTrendPar); 	// has NumKnots/NumTimepoints rows (not NumDatapoints)
-	vector <lower = 0> [NumPointsLine] lambda 	= rep_vector(0, NumPointsLine);	// has NumKnots*NumLTLAs rows (not NumTimepoints)
-	
 	vector[NumKnots-1] origin; 	// intercept
 	vector[NumKnots-1] slope;  	// slope
 	vector[NumKnots-2] a; 		// Coeff a for quadratic eq
@@ -95,9 +87,6 @@ transformed parameters{
 	phi3 		= phi3_nc		* 0.5;
 	phi4 		= phi4_nc		* 0.5;
 	
-	sigma 		= sigma_nc		* 0.5;
-	intercept 	= intercept_nc	* phi3;
-
 	if(DoVariants) {
 	 VarAdvantage[2:NumVar] 	= VarAdvantage_nc	* phi;
 	}
@@ -113,10 +102,10 @@ transformed parameters{
 			}
 	}
 	
+	/// I've taken out the various booleans (IncludeIntercept etc.) to save time, but can add back in later.
 	for (i in 1:NumDatapoints)
-	RegionalTrends[i] += NationalTrend[i] * RegionalScale[LTLAs[i]]; // lambda * RegionalScale^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
+	  RegionalTrends[i] += NationalTrend[i] * RegionalScale[LTLAs[i]]; // lambda * RegionalScale^T in manuscript. Note use of intercept makes this line akin to IntDim (B) = 2 with column vector of 1s for one column of lambda
 
-	
 	// Danny changes - consolodating loops below
 	{ // Bracket to compile
 	int VaxVariantIndex;  // set to 1 by default
@@ -169,13 +158,13 @@ model {
   
   RegionalScale ~ normal(1, 3);
 	NationalTrend_condensed ~ normal(1, 3);
-	intercept_nc 	~ normal(0, 3);
+	// intercept 	~ normal(0, 3);
 	
 	phi_nc 			~ std_normal();
 	phi2_nc 		~ std_normal();
 	phi3_nc 		~ std_normal();
 	phi4_nc 		~ std_normal();
-	sigma_nc 		~ normal(0,1);
+	sigma 		  ~ normal(0,1);
 	
 	for (i in 1:NumDoses)
 	  for (j in 1:NumVaxVar)
