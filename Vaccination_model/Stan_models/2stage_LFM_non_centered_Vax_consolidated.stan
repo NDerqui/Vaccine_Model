@@ -106,7 +106,8 @@ transformed parameters{
         // (re-)initialize to 0
         WeightedSumEfficacyOverAgeGroups_PerVariant = 0;   
         
-        if (Variant == 1) VarAdvantageDummy = 1; else VarAdvantageDummy = VarAdvantage[Variant]; 
+        
+        if (Variant == 1) VarAdvantageDummy = 1; else VarAdvantageDummy = VarAdvantage[Variant-1];  
 
 	      FinalRtperVariantTimeRegion = VarProp[TimeRegion, Variant] * VarAdvantageDummy * RegionalTrends[TimeRegion]; 
 	      
