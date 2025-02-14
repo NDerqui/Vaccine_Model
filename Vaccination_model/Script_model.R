@@ -731,11 +731,11 @@ NationalTrend_data <- round(data.frame(NationalTrend, NationalTrend_Quan), digit
 
 # Lambda (only useful if doing spline)
 
-Lambda <- colMeans(model_matrix[, grep('^lambda\\[', colnames(model_matrix))])
-
-Lambda_Quan <- colQuantiles(model_matrix[, grep('^lambda\\[', colnames(model_matrix))], probs=c(0.025,0.975))
-
-Lambda_data <- round(data.frame(Lambda, Lambda_Quan), digits = 4)
+#Lambda <- colMeans(model_matrix[, grep('^lambda\\[', colnames(model_matrix))])
+#
+#Lambda_Quan <- colQuantiles(model_matrix[, grep('^lambda\\[', colnames(model_matrix))], probs=c(0.025,0.975))
+#
+#Lambda_data <- round(data.frame(Lambda, Lambda_Quan), digits = 4)
 
 ## Return object
 
@@ -744,8 +744,10 @@ list_result <- list(loo = loo_cv,
                     if(data_stan[[5]] == 1) {VarAdvantage = VarAdvantage_data} else {VarAdvantage = NA},
                     Rt_Predictions = Rt_data,
                     RegionalRends = RegionalTrends_data,
-                    NationalTrend = NationalTrend_data,
-                    Lambda = Lambda_data)
+                    NationalTrend = NationalTrend_data
+#			,
+#                    Lambda = Lambda_data
+			)
 
 list_result
 

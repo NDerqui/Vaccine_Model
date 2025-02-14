@@ -140,7 +140,7 @@ model {
 	NationalTrend_condensed ~ normal(1, 3);
 	// intercept 	~ normal(0, 3);
 	
-	sigma 		  ~ normal(0,1);
+	sigma 		  ~ normal(0,2);
 	
 	for (i in 1:NumDoses)
 	  for (j in 1:NumVaxVar)
