@@ -41,11 +41,8 @@ data {
 
 
 parameters {
-	real<lower = 0> 				sigma; 
-	real<lower = 0> 				phi_nc;
-	real<lower = 0> 				phi2_nc;
-	real<lower = 0> 				phi3_nc;
-	real<lower = 0> 				phi4_nc;
+  
+	real<lower = 0> sigma; 
 	
 	vector <lower = 0> [NumLTLAs] 	 RegionalScale; 	  	    // Prev alpha, indexed by: i) LTLA; 
 	vector <lower = 0> [NumTrendPar] NationalTrend_condensed; // indexed by: i) Knots/Timepoints, 
@@ -57,10 +54,6 @@ parameters {
 
 transformed parameters{
   
-	real phi 	  = 0;
-	real phi2 	= 0;
-	real phi3 	= 0;
-	real phi4 	= 0;
 	real FinalRtperVariantTimeRegion 	= 0;
 
 	// allocate
@@ -76,18 +69,10 @@ transformed parameters{
 	
 	vector [NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
 	
-	
-	// initialize - get centered parameter values from their non-centered equivalents.
-	phi  		= phi_nc		* 2.0;
-	phi2 		= phi2_nc		* 0.5;
-	phi3 		= phi3_nc		* 0.5;
-	phi4 		= phi4_nc		* 0.5;
-	
 	// VarAdvantage for base variant set to 1
 	VarAdvantage[1] = 1;
 	
 	// Initialise NationalTrend if we are not doing knots: free parameters allowed
-	//lambda_raw 	= NationalTrend_condensed 	* phi4;
 	{  
 			// initialize NationalTrend to have same values for every LTLA 
 			int ind_par = 0; // initialize index
@@ -155,10 +140,6 @@ model {
 	NationalTrend_condensed ~ normal(1, 3);
 	// intercept 	~ normal(0, 3);
 	
-	phi_nc 			~ std_normal();
-	phi2_nc 		~ std_normal();
-	phi3_nc 		~ std_normal();
-	phi4_nc 		~ std_normal();
 	sigma 		  ~ normal(0,1);
 	
 	for (i in 1:NumDoses)
