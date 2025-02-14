@@ -611,16 +611,14 @@ library(here)
 #ModelChar <- "2stage_LFM_non_centered_Vax"
 ModelChar <- "2stage_LFM_non_centered_Vax_consolidated"
 #StanModel <- stan_model(here(paste0("Stan_models/",ModelChar, ".stan")))
-StanModel <- stan_model(paste0("Stan_models/",ModelChar, ".stan"))
-#StanModel <- stan_model(here(paste0("Vaccination_model_1/Stan_models/", ModelChar, ".stan"))) ## added this as my here() package playing up and loads to root directory. Switch back to previous line as required.
-
+Sys.time(); StanModel <- stan_model(paste0("Stan_models/",ModelChar, ".stan"))
 cat(paste0("Model compilation done ", Sys.time(), "\n"))
 
 # Create and write meta data
 
 ModelMetaData 				= c()
-ModelMetaData$iter 			= 5000 #Increase
-ModelMetaData$warmup 		= 100 #Increase
+ModelMetaData$iter 			= 200 #Increase
+ModelMetaData$warmup 		= 50 #Increase
 ModelMetaData$thin 			= 1
 ModelMetaData$chains 		= 1 #Increase
 ModelMetaData$adapt_delta 	= 0.9
@@ -642,7 +640,7 @@ fit = sampling(StanModel, data = data_stan_age,
                  chains 	= ModelMetaData$chains, 
                  pars 	= c("VaxEffect",
                            "LogPredictions", "RegionalTrends",
-                           "NationalTrend", "gamma", "intercept", "lambda",
+                           "NationalTrend", "RegionalScale", "intercept", "lambda",
                            "log_lik", "VarAdvantage"), 
                  control = list(adapt_delta = ModelMetaData$adapt_delta, max_treedepth = ModelMetaData$max_treedepth))
 

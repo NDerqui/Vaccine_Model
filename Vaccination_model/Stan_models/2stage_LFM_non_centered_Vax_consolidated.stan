@@ -47,7 +47,7 @@ parameters {
 	real<lower = 0> 				phi3_nc;
 	real<lower = 0> 				phi4_nc;
 	
-	vector <lower = 0> [NumLTLAs] 	RegionalScale_nc; 	  	// Prev alpha, indexed by: i) LTLA; 
+	vector <lower = 0> [NumLTLAs] 	RegionalScale; 	  	// Prev alpha, indexed by: i) LTLA; 
 	vector[NumLTLAs] 				intercept_nc;     	// indexed by: i) LTLA
 	
 	vector <lower = 0> [NumTrendPar] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, 
@@ -71,7 +71,6 @@ transformed parameters{
 
 	// allocate
 	vector[NumLTLAs] 	intercept 	  = rep_vector(0, NumLTLAs); 
-	vector[NumLTLAs] 	RegionalScale = rep_vector(1, NumLTLAs); 
 
 	vector <lower = 0> [NumTrendPar] lambda_raw = rep_vector(0, NumTrendPar); 	// has NumKnots/NumTimepoints rows (not NumDatapoints)
 	vector <lower = 0> [NumPointsLine] lambda 	= rep_vector(0, NumPointsLine);	// has NumKnots*NumLTLAs rows (not NumTimepoints)
@@ -100,7 +99,6 @@ transformed parameters{
 	phi4 		= phi4_nc		* 0.5;
 	
 	sigma 		= sigma_nc		* 0.5;
-	RegionalScale 		= RegionalScale_nc 		* phi2;
 	intercept 	= intercept_nc	* phi3;
 
   // VaxEffect 	= VaxEffect_nc	* phi; /// Danny wants to get rid of this. // reckon fine to do it by entire array, but can do indicies version below if that doesn't work.
@@ -108,39 +106,6 @@ transformed parameters{
     for (VaxGroup in 1:NumVaxGroup)
       for (Dose in 1:NumDoses)
         VaxEffect[Dose, VaxVariant, VaxGroup] = VaxEffect_nc[Dose, VaxVariant, VaxGroup] * phi; 
-  
-
-
-//	if (NumVaxVar == NumVar && NumGroup == NumVaxGroup) {
-//	  
-//	  VaxEffect 	= VaxEffect_nc	* phi; /// Danny wants to get rid of this
-//	}
-//	   else { //// NumVaxVar != NumVar OR NumGroup != NumVaxGroup (or both)
-//	     
-//	     if (NumGroup == NumVaxGroup) { // i.e. NumVaxVar
-//	       
-//	       for (Variant in 1:NumVar) // i.e. NumVaxVar < NumVar (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
-//          for (Dose in 1:NumDoses)  
-//	            VaxEffect[Dose, Variant] = VaxEffect_nc[Dose, 1] * phi;
-//	     }
-//	       else if (NumVaxVar == NumVar){
-//	         
-//	         for (Group in 1:NumGroup) // i.e. NumVaxGroup < NumGroup (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
-//	          for (Dose in 1:NumDoses)  
-//	            VaxEffect[Dose, Group] = VaxEffect_nc[Dose, 1] * phi;
-//	         
-//	       } else { // i.e NumVaxVar != NumVar AND NumGroup != NumVaxGroup
-//	       
-//	       for (Variant in 1:NumVar) // i.e. NumVaxVar < NumVar (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
-//	          for (Dose in 1:NumDoses)  
-//	         for (Group in 1:NumGroup) // i.e. NumVaxGroup < NumGroup (should be NumVaxVar = 1 and NumVar = 1,2,3, or 4 depending on which variants we're modelling)
-//	       	            VaxEffect[Dose, Group] = VaxEffect_nc[Dose, 1] * phi; /// WRONG!!!
-//
-//	         
-//	       }
-//	     
-//	   }
-	
 	
 	if(DoVariants) {
 	 VarAdvantage[2:NumVar] 	= VarAdvantage_nc	* phi;
@@ -210,14 +175,10 @@ transformed parameters{
 }
 
 model {
-	
-	for (i in 1:NumLTLAs)
-		RegionalScale_nc[i] ~ std_normal();
-	
-	for (i in 1:NumTrendPar)
-		lambda_raw_nc[i] ~ std_normal(); 
-	
-	intercept_nc 	~ std_normal();
+  
+  RegionalScale ~ normal(1, 3);
+	lambda_raw_nc ~ normal(1, 3);
+	intercept_nc 	~ normal(0, 3);
 	
 	phi_nc 			~ std_normal();
 	phi2_nc 		~ std_normal();
@@ -228,10 +189,9 @@ model {
 	for (i in 1:NumDoses)
 	  for (j in 1:NumVaxVar)
 	    for(k in 1:NumVaxGroup)
-		    VaxEffect_nc[i, j, k] ~ std_normal();
-		  
-	for (i in 1:NumVar)
-	  VarAdvantage_nc[i] ~ std_normal();
+		    VaxEffect_nc[i, j, k] ~ uniform(0, 1);
+	
+	VarAdvantage_nc ~ normal(1, 4);
 		
 	RtVals 			~ normal(LogPredictions, sigma);
 }
