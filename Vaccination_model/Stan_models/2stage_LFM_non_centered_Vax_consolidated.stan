@@ -52,7 +52,7 @@ parameters {
 	// vector[NumLTLAs] 				intercept;     	// indexed by: i) LTLA
  	real<lower = 0, upper = 1> VaxEffect[NumDoses, NumVaxVar, NumVaxGroup];
 
-	vector <lower = 1> [NumVar-1] VarAdvantage_nc; /// move this to data while debugging using Knock Whittles values.
+	vector <lower = 1> [NumVar-1] VarAdvantage; /// move this to data while debugging using Knock Whittles values.
 }
 
 transformed parameters{
@@ -74,12 +74,8 @@ transformed parameters{
 	vector [NumDatapoints] NationalTrend	= rep_vector(0, NumDatapoints); // To calculate lambda from line or free
 	vector [NumDatapoints] RegionalTrends 	= rep_vector(0, NumDatapoints);
 	
-	vector <lower = 1> [NumVar] VarAdvantage;
-	
 	vector [NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
 	
-	// VarAdvantage for base variant set to 1
-	VarAdvantage[1] = 1;
 	
 	// initialize - get centered parameter values from their non-centered equivalents.
 	phi  		= phi_nc		* 2.0;
@@ -87,9 +83,8 @@ transformed parameters{
 	phi3 		= phi3_nc		* 0.5;
 	phi4 		= phi4_nc		* 0.5;
 	
-	if(DoVariants) {
-	 VarAdvantage[2:NumVar] 	= VarAdvantage_nc	* phi;
-	}
+	// VarAdvantage for base variant set to 1
+	VarAdvantage[1] = 1;
 	
 	// Initialise NationalTrend if we are not doing knots: free parameters allowed
 	//lambda_raw 	= NationalTrend_condensed 	* phi4;
@@ -171,7 +166,7 @@ model {
 	    for(k in 1:NumVaxGroup)
 		    VaxEffect[i, j, k] ~ uniform(0, 1);
 	
-	VarAdvantage_nc ~ normal(1, 4);
+	VarAdvantage ~ normal(1, 4);
 		
 	RtVals 			~ normal(LogPredictions, sigma);
 }
