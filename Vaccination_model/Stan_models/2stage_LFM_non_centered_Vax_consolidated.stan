@@ -50,7 +50,7 @@ parameters {
 	vector <lower = 0> [NumLTLAs] 	RegionalScale; 	  	// Prev alpha, indexed by: i) LTLA; 
 	vector[NumLTLAs] 				intercept_nc;     	// indexed by: i) LTLA
 	
-	vector <lower = 0> [NumTrendPar] 		lambda_raw_nc; // indexed by: i) Knots/Timepoints, 
+	vector <lower = 0> [NumTrendPar] 		NationalTrend_condensed; // indexed by: i) Knots/Timepoints, 
   
   //matrix <lower = 0, upper = 1> [NumDoses, NumVaxVar*NumVaxGroup] 	VaxEffect_nc;
   // instead of the above, try this.
@@ -112,7 +112,7 @@ transformed parameters{
 	}
 	
 	// Initialise lambda if we are not doing knots: free parameters allowed
-	lambda_raw 	= lambda_raw_nc 	* phi4;
+	lambda_raw 	= NationalTrend_condensed 	* phi4;
 	{  
 			// initialize lambda matrix to have same values for every LTLA 
 			int ind_par = 0; // initialize index
@@ -177,14 +177,14 @@ transformed parameters{
 model {
   
   RegionalScale ~ normal(1, 3);
-	lambda_raw_nc ~ normal(1, 3);
+	NationalTrend_condensed ~ normal(1, 3);
 	intercept_nc 	~ normal(0, 3);
 	
 	phi_nc 			~ std_normal();
 	phi2_nc 		~ std_normal();
 	phi3_nc 		~ std_normal();
 	phi4_nc 		~ std_normal();
-	sigma_nc 		~ std_normal();
+	sigma_nc 		~ normal(0,1);
 	
 	for (i in 1:NumDoses)
 	  for (j in 1:NumVaxVar)
