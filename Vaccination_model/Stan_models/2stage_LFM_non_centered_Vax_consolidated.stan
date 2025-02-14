@@ -52,9 +52,7 @@ parameters {
 	
 	vector <lower = 0> [NumTrendPar] 		NationalTrend_condensed; // indexed by: i) Knots/Timepoints, 
   
-  //matrix <lower = 0, upper = 1> [NumDoses, NumVaxVar*NumVaxGroup] 	VaxEffect_nc;
-  // instead of the above, try this.
-	real<lower = 0, upper = 1> VaxEffect_nc[NumDoses, NumVaxVar, NumVaxGroup];
+	real<lower = 0, upper = 1> VaxEffect[NumDoses, NumVaxVar, NumVaxGroup];
 
 
 	vector <lower = 1> [NumVar-1] VarAdvantage_nc; /// move this to data while debugging using Knock Whittles values.
@@ -84,7 +82,6 @@ transformed parameters{
 	vector [NumDatapoints] NationalTrend	= rep_vector(0, NumDatapoints); // To calculate lambda from line or free
 	vector [NumDatapoints] RegionalTrends 	= rep_vector(0, NumDatapoints);
 	
-	real<lower = 0, upper = 1> VaxEffect[NumDoses, NumVaxVar, NumVaxGroup];
 	vector <lower = 1> [NumVar] VarAdvantage;
 	
 	vector [NumDatapoints] LogPredictions 		= rep_vector(0, NumDatapoints);
@@ -101,23 +98,17 @@ transformed parameters{
 	sigma 		= sigma_nc		* 0.5;
 	intercept 	= intercept_nc	* phi3;
 
-  // VaxEffect 	= VaxEffect_nc	* phi; /// Danny wants to get rid of this. // reckon fine to do it by entire array, but can do indicies version below if that doesn't work.
-  for (VaxVariant in 1:NumVaxVar)
-    for (VaxGroup in 1:NumVaxGroup)
-      for (Dose in 1:NumDoses)
-        VaxEffect[Dose, VaxVariant, VaxGroup] = VaxEffect_nc[Dose, VaxVariant, VaxGroup] * phi; 
-	
 	if(DoVariants) {
 	 VarAdvantage[2:NumVar] 	= VarAdvantage_nc	* phi;
 	}
 	
-	// Initialise lambda if we are not doing knots: free parameters allowed
-	lambda_raw 	= NationalTrend_condensed 	* phi4;
+	// Initialise NationalTrend if we are not doing knots: free parameters allowed
+	//lambda_raw 	= NationalTrend_condensed 	* phi4;
 	{  
-			// initialize lambda matrix to have same values for every LTLA 
+			// initialize NationalTrend to have same values for every LTLA 
 			int ind_par = 0; // initialize index
 			for (i in 1:NumLTLAs){
-		    NationalTrend[(ind_par + 1):(ind_par + NumTimepoints)] = lambda_raw[1:NumTimepoints];
+		    NationalTrend[(ind_par + 1):(ind_par + NumTimepoints)] = NationalTrend_condensed[1:NumTimepoints];
 				ind_par = ind_par + NumTimepoints; // update index
 			}
 	}
@@ -189,7 +180,7 @@ model {
 	for (i in 1:NumDoses)
 	  for (j in 1:NumVaxVar)
 	    for(k in 1:NumVaxGroup)
-		    VaxEffect_nc[i, j, k] ~ uniform(0, 1);
+		    VaxEffect[i, j, k] ~ uniform(0, 1);
 	
 	VarAdvantage_nc ~ normal(1, 4);
 		
